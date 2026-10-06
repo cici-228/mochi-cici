@@ -334,6 +334,10 @@
 
 // ===== 开屏加载动画：页面就绪后淡出并移除 =====
 (function () {
+  const card = document.getElementById('splash-cardlock');
+  const systemSettings = document.querySelector('#page-setting [data-sec="system"]');
+  if (card && systemSettings) systemSettings.insertBefore(card, systemSettings.firstChild);
+  
   const splash = document.getElementById('splash');
   if (!splash) return;
   // 2026-10-01（作者直派「已完结停更」收口）：版本块只留静态一行，部署时间/实时秒/检测行退役
