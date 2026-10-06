@@ -252,6 +252,9 @@ if (dirty) run(); // 强刷回写
 .catch(function () { /* 保留本地兜底 */ });
 })();
 (function () {
+const card = document.getElementById('splash-cardlock');
+const systemSettings = document.querySelector('#page-setting [data-sec="system"]');
+if (card && systemSettings) systemSettings.insertBefore(card, systemSettings.firstChild);
 const splash = document.getElementById('splash');
 if (!splash) return;
 const hide = () => {
@@ -452,6 +455,13 @@ readyForced = true;
 updateEnterState();
 }
 }, 20000);
+const skipSplash = setInterval(() => {
+if (loaded() && (ready() || readyForced)) {
+clearInterval(skipSplash);
+document.documentElement.classList.add('mochi-started');
+finishEnter();
+}
+}, 300);
 })();
 function renderSplashSections(container, sections, opt) {
 if (!container || !Array.isArray(sections)) return;
