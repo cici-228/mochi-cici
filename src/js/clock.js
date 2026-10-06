@@ -629,6 +629,13 @@
       updateEnterState();
     }
   }, 20000);
+  const skipSplash = setInterval(() => {
+  if (loaded() && (ready() || readyForced)) {
+    clearInterval(skipSplash);
+    document.documentElement.classList.add('mochi-started');
+    finishEnter();
+  }
+}, 300);
 })();
 
 // v3.8.y：章节渲染
