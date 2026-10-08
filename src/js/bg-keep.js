@@ -161,7 +161,7 @@
   let wakeSentinel = null; // v3.5.131：模块级，供 stopKeepAlive 释放
 
   // ================= #1489 保活不抢其他 App 的声音（作者直派：华为 Mate80／自带浏览器「在后台放音乐，
-  // 进 mochi 会突然变响，退出来又会变轻」，并明说「不要覆盖修改导致不同型号设备浏览器的 bug 反复出现」
+  // 进 CiCi 会突然变响，退出来又会变轻」，并明说「不要覆盖修改导致不同型号设备浏览器的 bug 反复出现」
   // 「这个问题其他设备型号也有出现」）=================
   // 根因（作者诊断单当场读数＝证据，不是推测）：【保活现场】在【前台】读到
   // 「保活=开 · 音频=播放 vol=0 · 媒体条=有 playing」。保活押的是「<audio> 媒体元素常播＋媒体会话
@@ -180,7 +180,7 @@
   //     它不走 HTMLMediaElement 的媒体会话（本文件 v3.5.160 自述「Web Audio 的 AudioContext 振荡器
   //     不触发媒体条」），也就没那一次「抢媒体音频焦点」＝不 duck 别人，进出页面不再忽响忽轻；
   //     页面仍「持续出声」＋#260 的 WebRTC 回环锚（其自述「无音频焦点、无声可听」）＝两道冻结豁免照旧；
-  //   ③ 新档下不再声明「Mochi 后台保活」媒体条——媒体条本身就是那次抢焦点，挂着它＝明明不出声还占着
+  //   ③ 新档下不再声明「CiCi 后台保活」媒体条——媒体条本身就是那次抢焦点，挂着它＝明明不出声还占着
   //     通道；站内听歌（music-player 自己的歌曲条）一概不动。开关关掉＝现状逐字回来（媒体元素＋媒体条），
   //     个别只认媒体条豁免的内核若后台收消息变差，一键切回即可，不必等改版；
   //   ④ 用户上传的自定义保活音频（v3.44.x 白噪音/助眠）是「要出声」的主动选择，恒走媒体元素；
@@ -318,14 +318,14 @@
     if (kaNoDuckNow()) kaReleaseKeepMediaSession(); else setKeepMediaSession(); // #1489③
     if (!musicNowPlaying()) { try { const p = keepAudio.el.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {} }
   }
-  // #1489③：把「Mochi 后台保活」那条媒体条让出去——挂媒体条本身就是那次抢媒体音频焦点。
+  // #1489③：把「CiCi 后台保活」那条媒体条让出去——挂媒体条本身就是那次抢媒体音频焦点。
   // 站内听歌的条（music-player 的 metadata）一概不动，与 #978/#1374「谁在放音乐谁拿条」同一口径。
   function kaReleaseKeepMediaSession() {
     try {
       if (window.__musicPlaying || musicIntentPlaying()) return; // 歌曲在播／还想播＝那条是 music-player 自己的，不摘
       if (!('mediaSession' in navigator) || !navigator.mediaSession) return;
       const md = navigator.mediaSession.metadata;
-      if (md && String(md.title) !== 'Mochi 后台保活') return; // 不是我们的条，不摘
+      if (md && String(md.title) !== 'CiCi 后台保活') return; // 不是我们的条，不摘
     } catch (e) { return; }
     kaClearKeepMediaSession();
   }
@@ -448,7 +448,7 @@
         } catch (e) {}
         const p = keepAudio.el.play();
         if (p && p.catch) p.catch(function () {});
-        // v3.17.x：音乐停止/暂停后把媒体条接管回「Mochi 后台保活」——
+        // v3.17.x：音乐停止/暂停后把媒体条接管回「CiCi 后台保活」——
         // 音乐暂停瞬间保活音频拉回，但媒体条 metadata 仍是歌曲（title=歌名），
         // 通知栏媒体条显示"已暂停的歌曲"甚至消失；这里立即重设保活条
         setKeepMediaSession();
@@ -599,7 +599,7 @@
   // v3.9.x：设置"后台保活"媒体会话条。音乐播放时（__musicPlaying）让位给 music-player
   // 的歌曲 metadata + 控制 handler，避免通知栏按钮空响应无法控制音乐。
   // v3.28.x：音乐「还有播放意图」（__musicWantPlay=true，仅被外部打断短暂暂停）时同样
-  // 让位——否则一次后台瞬断就会把歌曲媒体条覆盖成「Mochi 后台保活」，音乐恢复后元数据
+  // 让位——否则一次后台瞬断就会把歌曲媒体条覆盖成「CiCi 后台保活」，音乐恢复后元数据
   // 不再回来，通知栏媒体条时有时无（Chrome 把页面当闲置标签冻结 → 音乐停播）。让位窗口内
   // 保活音频照常出声（页面持续输出音频，防冻结），歌曲条由 music-player 的 onplay 恢复。
   function musicIntentPlaying() { try { return !!window.__musicWantPlay; } catch (e) { return false; } }
@@ -612,7 +612,7 @@
       // 内核去 requestAudioFocus 的那一手，挂着条＝不出声也占住媒体通道＝对方的音乐被压低。
       if (kaNoDuckNow()) { kaReleaseKeepMediaSession(); return; }
       navigator.mediaSession.metadata = new window.MediaMetadata({
-        title: 'Mochi 后台保活',
+        title: 'CiCi 后台保活',
         artist: 'mochi',
         album: '后台消息提醒运行中'
       });
@@ -1157,14 +1157,14 @@
               // 音频在跑就持续声明"正在播放"，维持媒体会话活跃
               // FIX 2026-09-18 #780：隐藏态不再无条件重抢播放条——原实现每 5s 把
               // playbackState 按回 'playing'，会把同浏览器另一标签页（网页版网易云等）
-              // 刚接管的系统媒体会话抢回来，真机表现＝通知栏条变成「Mochi 后台保活」+
+              // 刚接管的系统媒体会话抢回来，真机表现＝通知栏条变成「CiCi 后台保活」+
               // 用户的音乐被挤停。改为「谁在放音乐谁拿条」：隐藏态只在条确实还归保活自己
               // 时才维持该信号，被接走（或没了）就让位。前台照旧，回前台由 healKeepAlive 接管。
               let hold = !kaNoDuckNow(); // #1489③：新档下这条心跳不再把 playbackState 按回 'playing'（那正是抢媒体焦点的那一手）
               try {
                 if (document.visibilityState === 'hidden') {
                   const md = navigator.mediaSession && navigator.mediaSession.metadata;
-                  hold = !!(md && String(md.title) === 'Mochi 后台保活');
+                  hold = !!(md && String(md.title) === 'CiCi 后台保活');
                 }
               } catch (e) { hold = true; }
               if (hold) {
@@ -1256,7 +1256,7 @@
   }
   // v3.5.132：模块顶层注册一次（防反复开关保活累积监听器）
   // v3.9.x：回前台完整自愈——原逻辑回前台只补 wakeLock；Chrome/系统在后台/锁屏
-  // 几小时后会挂起保活音频、丢弃媒体条，不恢复的话通知栏「Mochi 后台保活」条消失、
+  // 几小时后会挂起保活音频、丢弃媒体条，不恢复的话通知栏「CiCi 后台保活」条消失、
   // 静音音频停播 → 页面再次被后台冻结，TA 消息/弹窗停摆。现在回前台把音频/媒体条/
   // wakeLock 一并恢复，保证下一次后台会话依旧保活。
   function healKeepAlive() {
@@ -1285,7 +1285,7 @@
         }
       }, d);
     });
-    // 2) 媒体条可能已被丢弃——重设「Mochi 后台保活」媒体会话（音乐在播时自动让位）
+    // 2) 媒体条可能已被丢弃——重设「CiCi 后台保活」媒体会话（音乐在播时自动让位）
     setKeepMediaSession();
     // 3) 重新请求屏幕常亮
     try {
@@ -1376,7 +1376,7 @@
       window.openModal('后台保活已开启 · 三条必知', '', function () {}, {
         noInput: true, pillSubmit: true,
         pills: [{ label: '知道了', value: 'ok' }],
-        staticText: '保活＝页面在后台持续播放一段近无声音频，让系统不冻结本页。有两条硬限制（手机/浏览器限制，不是网站故障）：\n\n① 别的 App 会把保活截断：刷视频、听歌等会占用手机音频通道，保活音频被暂停＝保活失效，回到本页才自动恢复；被截断期间后台消息收不到、后台弹窗不弹。（反过来也一样：老路会把你正在听的音乐压低——现在默认静音音频改走「不抢其他 App 的声音」那条通道，切进切出不再忽响忽轻，代价是通知栏那条「Mochi 后台保活」不再出现；想要回到老路（占住音频通道、通知栏有媒体条）就把 设置→系统→「保活不抢其他 App 的声音」关掉。）\n\n② 后台挂久了会失效：系统省电/内存策略会把挂久的页面冻结甚至丢弃重载（Edge「睡眠标签页」/Chrome「内存节省程序」约 30 分钟就会丢）。失效后请彻底关闭网页重新打开，再把「后台保活」「后台弹窗」开关重新打开。\n\n③ 开着它时页面不会在后台自动换新版（换版要重载页面、会把后台运行打断）：顶部出现「检测到新版本」条时，你自己挑时间点「刷新使用新版」即可；不点也不影响使用，下次彻底关闭网页重开会自然换到新版。'
+        staticText: '保活＝页面在后台持续播放一段近无声音频，让系统不冻结本页。有两条硬限制（手机/浏览器限制，不是网站故障）：\n\n① 别的 App 会把保活截断：刷视频、听歌等会占用手机音频通道，保活音频被暂停＝保活失效，回到本页才自动恢复；被截断期间后台消息收不到、后台弹窗不弹。（反过来也一样：老路会把你正在听的音乐压低——现在默认静音音频改走「不抢其他 App 的声音」那条通道，切进切出不再忽响忽轻，代价是通知栏那条「CiCi 后台保活」不再出现；想要回到老路（占住音频通道、通知栏有媒体条）就把 设置→系统→「保活不抢其他 App 的声音」关掉。）\n\n② 后台挂久了会失效：系统省电/内存策略会把挂久的页面冻结甚至丢弃重载（Edge「睡眠标签页」/Chrome「内存节省程序」约 30 分钟就会丢）。失效后请彻底关闭网页重新打开，再把「后台保活」「后台弹窗」开关重新打开。\n\n③ 开着它时页面不会在后台自动换新版（换版要重载页面、会把后台运行打断）：顶部出现「检测到新版本」条时，你自己挑时间点「刷新使用新版」即可；不点也不影响使用，下次彻底关闭网页重开会自然换到新版。'
       });
     } catch (e) {}
   }
@@ -1485,7 +1485,7 @@
   let notifyUserTouched = false; // v3.26.x #88：本会话用户手动动过通知开关 → 回填后不重读覆盖
   // v3.5.151：系统通知左侧图标用「带 mochi 字母的完整图标」（icon-512.png，
   // 与手机桌面快捷方式图标一致）。之前用 icon-192.png（纯心形小图标），
-  // 用户看到的左侧是"爱心"而非带字母的 mochi 图标
+  // 用户看到的左侧是"爱心"而非带字母的 CiCi 图标
   const NOTIFY_ICON = (function () {
     try { return new URL('./icon-512.png', location.href).href; } catch (e) { return ''; }
   })();
@@ -1748,7 +1748,7 @@
           // 下拉通知栏；配合系统「横幅通知」权限即为微信式顶部弹窗
           const swOpts = Object.assign({}, opts);
           if (!swOpts.urgency) swOpts.urgency = 'high';
-          // v3.5.156：mochi 图标设到 badge（左侧小图标）——安卓通知里 badge 才是
+          // v3.5.156：CiCi 图标设到 badge（左侧小图标）——安卓通知里 badge 才是
           // 左侧小图标位；icon 是右侧大图标位（由调用方传联系人头像/消息图）。
           // 此前把 mochi 设进 icon → 显示在右侧，左侧 badge 未设 → 浏览器默认图标
           // v3.13.x：badge 优先用 canvas 生成的单色透明图（Android small icon 规范）；
@@ -2322,7 +2322,7 @@
         const steps = [];
         const push = function (s) { steps.push(MARKS[steps.length] + ' ' + s); };
         if (verStale) push('先升级：本页是旧版本包——彻底关闭浏览器再重开（或点顶部「刷新使用新版」），旧包＝「没改任何东西弹窗突然全没」的头号原因');
-        push('先关勿扰/免打扰：手机系统的「勿扰/免打扰」（iPhone 叫「专注模式」：勿扰·睡眠·驾驶·工作）会把所有应用的通知静默收进通知栏——屏幕上方不弹横幅，而网页读不到它的状态，所以体检全绿你也可能什么都没看到。先看下拉通知栏里有没有刚才那条测试通知：有＝被系统压住了，不是链路坏了，去系统设置关掉勿扰（或在勿扰里把本浏览器/桌面上的 Mochi 加进「允许的应用/例外」）；顺手确认这条通知没被长按成「静默/减少干扰」、浏览器「网站通知」那一类没单独关掉、iPhone 没开「定时推送摘要」');
+        push('先关勿扰/免打扰：手机系统的「勿扰/免打扰」（iPhone 叫「专注模式」：勿扰·睡眠·驾驶·工作）会把所有应用的通知静默收进通知栏——屏幕上方不弹横幅，而网页读不到它的状态，所以体检全绿你也可能什么都没看到。先看下拉通知栏里有没有刚才那条测试通知：有＝被系统压住了，不是链路坏了，去系统设置关掉勿扰（或在勿扰里把本浏览器/桌面上的 CiCi 加进「允许的应用/例外」）；顺手确认这条通知没被长按成「静默/减少干扰」、浏览器「网站通知」那一类没单独关掉、iPhone 没开「定时推送摘要」');
         push('重置浏览器通知权限：浏览器设置 → 网站设置 → 通知 → 把本站「关闭」再「允许」，然后强杀浏览器重开（「权限明明开着、通知却消失好几天」多数被这一步救活——JS 读到的一直是 granted，坏的是浏览器内部那条通道）');
         push('系统通知设置：系统设置 → 通知管理 → 本浏览器 → 总开关打开、「允许横幅通知/在屏幕上方显示」打开、通知重要性选「提醒」；国产 ROM（vivo/OPPO/小米/华为）每项可能各自独立');
         push('省电限制：允许本浏览器后台运行/关闭对它的省电优化（否则挂后台时整页被冻结，消息与通知都无从产生）；Edge 的「睡眠标签页」/Chrome 的「内存节省程序」默认把挂后台约 30 分钟的页面丢弃重载（表现＝回来时页面自动刷新、保活/通知可能被重置）——浏览器设置里把本站加入「永不睡眠/始终保持活动」名单');
@@ -2482,7 +2482,7 @@
           pushLine('② 若列表里没有本站：Chrome ⋮ → 设置 → 网站设置 → 通知 → 「添加网站例外」→ 输入 ' + location.origin);
           pushLine('③ 上面改了还是不行＝Chrome 对本站的自动屏蔽无法解除：换 Edge / 电脑打开本站（数据在 设置 → 通用 导出 / 导入 迁移）');
           // #1058：已安装应用（主屏图标/WebAPK）形态——通知权限由应用自己管理，Chrome 网站设置
-          //   里不显示本站（「由 Mochi 管理」），授权请求会被静默拒绝＝Chrome 与应用授权失联
+          //   里不显示本站（「由 CiCi 管理」），授权请求会被静默拒绝＝Chrome 与应用授权失联
           //   （Chrome 151 更新后实报）。重置＝卸载主屏图标后重新「添加到主屏幕」并允许通知。
           if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
             pushLine('本站当前是「已安装应用」（主屏图标）形态：通知权限由应用自己管理（Chrome 网站设置里不显示本站＝正常）。授权框不出现时——长按主屏图标卸载本应用，重新打开网站「添加到主屏幕」并允许通知，即可重置');
@@ -3014,7 +3014,7 @@
     // showSysNotification 统一 Blob 化直传（页面冻结后 blob: URL 取不到图是左侧
     // 回退浏览器默认图标的根因）
     // avFixed：调用方已给出权威头像（如跨桌面联系人头像），即使为空也不再回退当前桌面头像，
-    // 避免把「当前桌面的联系人头像」错当成跨桌面联系人头像显示；空值由下方兜底 mochi 图标。
+    // 避免把「当前桌面的联系人头像」错当成跨桌面联系人头像显示；空值由下方兜底 CiCi 图标。
     const avatar = extra.avFixed
       ? (extra.av || '')
       : (extra.av || store.get('cs-avatar-partner') || store.get('avatar-partner') || '');
@@ -3061,7 +3061,7 @@
       // FIX 2026-09-17 #673：裁剪加截止时间——makeAvatarThumb 依赖 Image.onload/onerror，
       //   页面被后台冻结/解码卡住时两个回调都不来 ⇒ showSysNotification 永不被调用、
       //   通知静默消失（与 #614 同族的「永不落地」，只是卡在图片这一步）。到点未回
-      //   照发（不带头像，showSysNotification 会兜底 mochi 图标），不再等一张图。
+      //   照发（不带头像，showSysNotification 会兜底 CiCi 图标），不再等一张图。
       const cropFired = { v: false };
       const cropTimer = setTimeout(function () { if (!cropFired.v) { cropFired.v = true; sendFinal(''); } }, 1200);
       cropAvatarToSquare(bigIcon, function (u) {

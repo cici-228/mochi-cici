@@ -4325,6 +4325,7 @@ b.dataset.showing = '0';
 } else {
 b.innerHTML = b.dataset.orig;
 b.dataset.showing = '1';
+refreshChatTagVisibilityIn(b);
 }
 chatRetractToggleAfter('toggle'); // #871：展开/收起＝滚动区内容高突变，按钉住/解钉两态做贴底或落定重落
 };
@@ -4449,7 +4450,7 @@ try { return chatPartnerName() + '\u0001' + chatUserName(); } catch (e) { return
 //   整窗渲染时记下当时三个闸的存储值，值变了＝屏上标签已过期，作废同窗补丁、走整窗重建。
 let windowRenderedSrcTags = '';
 function srcTagSig() {
-try { return store.get('reply-py-en') + '\u0001' + store.get('reply-qs-en') + '\u0001' + store.get('reply-mjf-en'); } catch (e) { return windowRenderedSrcTags; }
+try { return store.get('reply-py-en') + '\u0001' + store.get('reply-qs-en') + '\u0001' + store.get('reply-mjf-en') + '\u0001' + store.get('cs-chat-tags-off'); } catch (e) { return windowRenderedSrcTags; }
 }
 
 // FIX 2026-09-13 #402（进聊天跳动一下·多机型偶发）：归一化窗口内改动的下标清单。
@@ -6142,10 +6143,10 @@ appendMsg(m);
 maybeScrollChatBottom(rec.side);
 return m;
 }
-// v3.15.x：TA 向 Mochi 申请心意币的回执卡（金额与红包同款随机分布）
+// v3.15.x：TA 向 CiCi 申请心意币的回执卡（金额与红包同款随机分布）
 if (rec.special === 'askcoin') {
 m.className = 'msg-poke';
-m.innerHTML = '<span>🪙 ' + escTxt(chatPartnerName()) + ' 向 Mochi 申请了心意币 ¥' + (Number(rec.askFen || 0) / 100).toFixed(2) + '</span>';
+m.innerHTML = '<span>🪙 ' + escTxt(chatPartnerName()) + ' 向 CiCi 申请了心意币 ¥' + (Number(rec.askFen || 0) / 100).toFixed(2) + '</span>';
 appendMsg(m);
 maybeScrollChatBottom(rec.side);
 return m;
@@ -6580,6 +6581,7 @@ if (Date.now() - ts < 6000 && chatVisible()) maybeScrollChatBottom(rec.side);
 });
 });
 } catch (e) {}
+refreshChatTagVisibilityIn(m);
 appendMsg(m);
 maybeScrollChatBottom(rec.side);
 return m;
@@ -8173,6 +8175,18 @@ if (probe.parentNode === page) page.removeChild(probe);
 }
 }
 window.chatKaoJoinSep = chatKaoJoinSep; // group-chat.js 同源共用
+// milk：每条文字回复固定 20% 抽一枚自定义 Emoji；开启时等概率放句首/句尾，
+// 关闭时不取消抽签，而是把同一枚 Emoji 交给投递侧延时另发一条。
+function chatMilkEmojiReply(text, emojiPool, enabled) {
+const unchanged = { text: text, separateEmoji: null };
+if (typeof text !== 'string' || !text.trim() || chatHasMediaPayload(text) || !Array.isArray(emojiPool)) return unchanged;
+const cards = emojiPool.filter(card => typeof card === 'string' && card.trim() && !chatHasMediaPayload(card));
+if (!cards.length || !hit(20)) return unchanged;
+const emoji = cards[Math.floor(Math.random() * cards.length)].trim();
+if (enabled === 0) return { text: text, separateEmoji: emoji };
+return { text: Math.random() < 0.5 ? emoji + ' ' + text : text + ' ' + emoji, separateEmoji: null };
+}
+window.chatMilkEmojiReply = chatMilkEmojiReply;
 function genReplyText(c) {
 const pool = getPool();
 let reply = '', type = 'text';
@@ -8316,7 +8330,7 @@ if (q) lastQuotedText = quoteKey;
 replyOnce(c, q, i > 0, q ? quoteSrcIdx : -1);
 if (i < count - 1) showTyping();
 if (i === count - 1) {
-setTimeout(() => { if (!sameCid()) return; if (window.maybeMusicRequest) window.maybeMusicRequest(); }, 2000);
+setTimeout(() => { if (!sameCid()) return; if (window.maybeMovieRequest && window.maybeMovieRequest()) return; if (window.maybeMusicRequest) window.maybeMusicRequest(); }, 2000);
 }
 }, i * randInt(1200, 2800));
 }
@@ -8428,6 +8442,23 @@ const pyMultiExtra = (pyMultiHit || (rep.spell && rep.spellOne)) ? [{ tag: '多�
 // 横幅/系统通知、不播音效，未读角标照增——墓碑也是未读事件），1~3 秒随机（retractDelayMs）后照常撤回；rc-refix
 // 补发保持正常投递（此刻弹通知名正言顺，内容不会再消失）。
 const willRetractR = hit(c['rc-prob']);
+const milkEmojiPool = (window.getCustomEmojiCards && window.getCustomEmojiCards()) || [];
+let milkSeparateEmoji = null;
+function milkSendSeparate(emoji, delivered) {
+if (!emoji || !delivered) return;
+setTimeout(() => {
+if (!sameCid()) return;
+addIn(emoji, { type: 'emoji', silent: true, sfx: true });
+}, 300 + Math.random() * 400);
+}
+if (rep.type === 'text' && !(rep.spell && !rep.spellOne)) {
+const mixed = chatMilkEmojiReply(rep.text, milkEmojiPool, c['emoji-mix-en']);
+if (mixed.text !== rep.text) {
+rep.text = mixed.text;
+rep.parts = spellPartsSync(rep.text, rep.parts);
+}
+milkSeparateEmoji = mixed.separateEmoji;
+}
 if (rep.spell && rep.spellOne) {
 // FIX 2026-09-29 #1451 单气泡拼字正文改用 rep.text（＝pyJoinCards 的连接符池结果）——旧写法用
 // 单空格硬拼，让「拼接随机标点」在这条路上从未生效（设置页却写着单气泡形态也用同一套符号池，
@@ -8453,12 +8484,13 @@ await new Promise(r => setTimeout(r, randInt(900, 1800)));
 if (!sameCid()) { hideTyping(); return; }
 hideTyping();
 }
-m = addIn(rep.spell[si], {
+const milkStep = chatMilkEmojiReply(rep.spell[si], milkEmojiPool, c['emoji-mix-en']);
+m = addIn(milkStep.text, {
 quote: si === 0 ? quote : null,
 qside: 'out',
 qidx: (si === 0 && quote) ? quoteIdx : undefined,
 type: 'text',
-parts: si === rep.spell.length - 1 ? spellPartsSync(rep.spell[si], spellImgParts) : null,
+parts: si === rep.spell.length - 1 ? spellPartsSync(milkStep.text, spellImgParts) : null,
 silent: si > 0 ? true : (silent || willRetractR),
 // #1042 逐条连发＝一条气泡一条收件（卡与卡之间还各走一次「正在输入」），收件音效按条响：
 // 旧写法 si>0 一律 silent ⇒ 三张卡只响首条一声；当本批落在「多字卡回复」第 2 条及以后
@@ -8474,6 +8506,7 @@ silent: si > 0 ? true : (silent || willRetractR),
  tagExtra: [{ tag: '词典逐卡连发', label: '' }],
  tagNoDup: true
  });
+milkSendSeparate(milkStep.separateEmoji, m);
 }
 } else if (rep.mjFree) {
 // #317 梦角自由造句：单气泡发送，来源 tag「梦角自由造句」（chip 持久化，重进聊天仍在）
@@ -8492,6 +8525,7 @@ silent: silent || willRetractR,
 // #677 普通回复路径：多字卡回复命中时补挂来源 tag（无词典/梦角 tag 时它就是唯一 chip）
 m = addIn(rep.text, { quote: quote, qside: 'out', qidx: quote ? quoteIdx : undefined, type: rep.type, parts: rep.parts, silent: silent || willRetractR, tag: pyMultiHit ? '多字卡回复' : undefined, tagNoDup: true });
 }
+if (!(rep.spell && !rep.spellOne)) milkSendSeparate(milkSeparateEmoji, m);
 const _favProbMsg = (window.favCfg ? window.favCfg().taMsg : 30);
 if (lastMineText && Math.random() * 100 < _favProbMsg) {
 const fav = getFav();
@@ -8550,6 +8584,7 @@ chain.forEach(it => {
 const tag = typeName[it.type] || '情绪';
 mm.innerHTML += '<div class="msg-mood' + (it.type === 'intent' ? ' msg-intent' : '') + '"><span class="msg-mood-tag">' + tag + '</span><span>' + it.content + '</span></div>';
 });
+refreshChatTagVisibilityIn(mm);
 const idx2 = Number(m.dataset.idx);
 if (!isNaN(idx2) && msgs[idx2]) {
 msgs[idx2].mood = msgs[idx2].mood || [];
@@ -8615,7 +8650,7 @@ hideTyping();
 chatUserFollowScroll = true; // #1023 用户主动要的回应：本条落地即贴底（上翻态也滑过来）
 replyOnce(c, null, i > 0);
 if (i < count - 1) showTyping();
-if (i === count - 1) setTimeout(() => { if (!sameCid()) return; if (window.maybeMusicRequest) window.maybeMusicRequest(); }, 2000);
+if (i === count - 1) setTimeout(() => { if (!sameCid()) return; if (window.maybeMovieRequest && window.maybeMovieRequest()) return; if (window.maybeMusicRequest) window.maybeMusicRequest(); }, 2000);
 }, i * randInt(1200, 2800));
 }
 }, delay);
@@ -8855,6 +8890,40 @@ return !qsOn || !pyOn;
 } catch (e) { return false; }
 }
 
+// 下方词条的显示设置与字卡生成开关独立：保留 rec.mood，重新开启即可恢复旧词条。
+function chatTagOffSet() {
+try {
+const saved = JSON.parse(store.get('cs-chat-tags-off') || '[]');
+return new Set(Array.isArray(saved) ? saved.filter(tag => typeof tag === 'string') : []);
+} catch (e) { return new Set(); }
+}
+function refreshChatTagVisibilityIn(rootNode) {
+if (!rootNode || !rootNode.querySelectorAll) return;
+const off = chatTagOffSet();
+const groups = rootNode.matches && rootNode.matches('.msg-moods') ? [rootNode] : rootNode.querySelectorAll('.msg-moods');
+groups.forEach(group => {
+let visible = false;
+group.querySelectorAll('.msg-mood').forEach(item => {
+const label = item.querySelector('.msg-mood-tag');
+const tag = item.getAttribute('data-chat-tag') || (label && label.textContent) || '';
+if (tag && !item.getAttribute('data-chat-tag')) item.setAttribute('data-chat-tag', tag);
+item.hidden = off.has(tag);
+if (!item.hidden) visible = true;
+});
+group.hidden = !visible && !group.querySelector('.msg-poke-seg[data-rcm]');
+});
+}
+window.chatRefreshTagVisibility = function () { refreshChatTagVisibilityIn(chatPage); };
+window.chatKnownTagTypes = function () {
+const tags = new Set();
+msgs.forEach(rec => { if (rec && Array.isArray(rec.mood)) rec.mood.forEach(item => {
+const tag = item && typeof item.tag === 'string' ? item.tag.trim() : '';
+if (tag && tag.length <= 80) tags.add(tag);
+}); });
+return Array.from(tags);
+};
+document.addEventListener('chat-tag-display-changed', window.chatRefreshTagVisibility);
+
 // v3.43.x #677 「多字卡回复」来源 tag 判定：genOneReply 内 多字卡回复(py-en) 抽卡分支命中且掷到
 // ≥2 张时置位（每次生成先重置），replyOnce 据此给本条（批）气泡挂 tag；与词典/词典拼字 tag 共存
 let pyMultiDrawn = false;
@@ -9047,6 +9116,8 @@ window.__asCatchupProbe = { fire: asForegroundCatchup, state: function () { retu
 //   （同 v3.14.x 经期关心的做法，勿当数据源改）。取用一律走 presetReplyPick(分组名, 兜底)——
 //   ⚠ 必须在调用时取：本文件先于 default-cards.js 加载，模块初始化时窗口出口还不存在。
 const INVITE_DECLINE = ['下次吧，现在不太想玩~', '等会儿再陪你玩好不好', '先不玩啦，待会儿再说', '现在没状态，下次一定'];
+const MUSIC_INVITE_DECLINE = ['下次再一起听，好不好？', '我现在想安静一会儿，晚点陪你听', '这首先记着，我们一会儿再听吧', '今天先不听啦，下次一定陪你'];
+const MOVIE_INVITE_DECLINE = ['这次先不看啦，改天一起看好不好？', '我现在还不想看电影，晚点再约你', '先欠你一场电影，下次一定陪你看', '今天先不进放映厅啦，过会儿再说'];
 const CUDDLE_DECLINE = ['下次再贴吧，先记着这笔~', '等会儿补给你，说话算数', '先欠着，攒到晚上一起还~', '今天想先自己待会儿，明天加倍还你'];
 const CUDDLE_REPLIES = ['嗯……蹭到了。暖暖的，很喜欢。', '那我要贴很久哦，不许偷偷跑掉。', '手被握住了，就这样待一会儿。', '感觉到了，你在旁边。很安心。', '贴贴充电中……好，满格了。'];
 // #1422：取一句该组现存的预设语。返回空串＝用户把这一组逐句关掉/整组停用（＝真停用），
@@ -9060,6 +9131,15 @@ return l.length ? pick(l) : '';
 } catch (e) {}
 return fallback.length ? pick(fallback) : '';
 }
+// 听歌和看电影的独立邀请面板复用猜拳邀请的拒绝方式：由「我」发一条婉拒气泡。
+// 文案从系统预设的互动回应组抽取，逐句关闭与整组停用均生效。
+window.chatInviteDecline = function (kind) {
+const group = kind === 'movie' ? '看电影邀请·婉拒' : '听歌邀请·婉拒';
+const fallback = kind === 'movie' ? MOVIE_INVITE_DECLINE : MUSIC_INVITE_DECLINE;
+const line = presetReplyPick(group, fallback);
+if (line) addOut(line);
+return line;
+};
 // v3.26.x(#122)：注册聊天内置系统回应池跨分类搜索（字卡库列表页搜索同源可查，不再搜不到）
 // #1422：三池已进系统预设，chatcard.js 的「默认聊天字卡」登记项会遍历 DEFAULT_CARD_DATA 全部分类
 //   自动收录它们（标成「[互动回应] 分组名」），此处再列一遍＝同一句搜出两行，故只留没进库的那池。
@@ -10754,7 +10834,7 @@ function askDailyIncr() {
 const k = ASK_DAILY_PREFIX + new Date().toISOString().slice(0, 10);
 store.set(k, String((Number(store.get(k)) || 0) + 1));
 }
-// v3.15.x：TA 也会随机「向 Mochi 申请」心意币——金额与红包同款随机分布（genRpAmount），
+// v3.15.x：TA 也会随机「向 CiCi 申请」心意币——金额与红包同款随机分布（genRpAmount），
 // 概率门读红包半框设置的申请概率（默认 4%，不沿用红包七夕加成）；
 // v3.29.x：概率与每日上限改为「每个联系人单独设」——红包半框「设置」写 cs-rp-ask-prob /
 // cs-rp-ask-daily-max（与自动发红包两行同域同口径）。该联系人没单独设过时回退旧的存钱罐
@@ -10914,10 +10994,10 @@ function rpRenderBalance() {
 const el = document.getElementById('rp-balance');
 if (!el) return;
 const w = rpWalletGet();
-el.textContent = '心意币 ¥' + (w.myBalance / 100).toFixed(2) + ' · ' + chatPartnerName() + ' ¥' + (w.systemBalance / 100).toFixed(2) + ' · 向 Mochi 申请心意币';
+el.textContent = '心意币 ¥' + (w.myBalance / 100).toFixed(2) + ' · ' + chatPartnerName() + ' ¥' + (w.systemBalance / 100).toFixed(2) + ' · 向 CiCi 申请心意币';
 }
-// v3.15.x：余额行改为「向 Mochi 申请心意币」——不再直接改账本数值；
-// 选收款方（我/TA）输入申请金额，确定即模拟 Mochi 打款并入账（累加），留空点【完成】结束
+// v3.15.x：余额行改为「向 CiCi 申请心意币」——不再直接改账本数值；
+// 选收款方（我/TA）输入申请金额，确定即模拟 CiCi 打款并入账（累加），留空点【完成】结束
 function rpEditWallet() {
 if (!window.openModal) return;
 const taName = window.taFit ? window.taFit('TA') : 'TA';
@@ -10928,10 +11008,10 @@ const fmtYuan = (n) => (Math.round(n * 100) / 100).toFixed(2);
 const hintTxt = () => {
 const w = rpWalletGet();
 return '当前：心意币 ¥' + (w.myBalance / 100).toFixed(2) + ' · ' + taName + ' ¥' + (w.systemBalance / 100).toFixed(2) +
-(doneAny ? '\n已到账，可继续为' + LBL[side] + '申请；留空点【完成】结束' : '\n选择收款方，输入申请金额点【申请】，Mochi 打款后自动入账；留空点【完成】结束');
+(doneAny ? '\n已到账，可继续为' + LBL[side] + '申请；留空点【完成】结束' : '\n选择收款方，输入申请金额点【申请】，CiCi 打款后自动入账；留空点【完成】结束');
 };
 let ctl = null;
-ctl = window.openModal('向 Mochi 申请心意币', '', (arg) => {
+ctl = window.openModal('向 CiCi 申请心意币', '', (arg) => {
 const picked = (arg === 'my' || arg === 'ta');
 const el = document.getElementById('modal-input');
 const raw = String(picked ? ((el && el.value) || '') : (arg == null ? '' : arg)).trim();
@@ -10946,7 +11026,7 @@ const w = rpWalletGet();
 	rpWalletSet(w); rpRenderBalance();
 	// v3.16.x：聊天侧申请同步记入主页申请流水
 	try { if (window.giftCoinLedgerAdd) window.giftCoinLedgerAdd('ask', target === 'my' ? fen : 0, target === 'ta' ? fen : 0, '聊天申请'); } catch (e) {}
-	toast('Mochi 已打款，' + LBL[target] + ' +¥' + fmtYuan(fen / 100));
+	toast('CiCi 已打款，' + LBL[target] + ' +¥' + fmtYuan(fen / 100));
 doneAny = true;
 side = target === 'my' ? 'ta' : 'my';
 if (ctl) {
@@ -11830,6 +11910,8 @@ applyAskAnswer();
 // v3.26.x：邀请发送逻辑从 submitChatAsk 抽出，供「我的邀请」字卡点卡直接复用（可重复发送，
 // 行为与手动输入一致：TA 接受/拒绝/未回应，随消息持久化）
 function sendInviteContent(content) {
+const movieInvite = String(content || '').trim() === '想和你一起看电影';
+const musicInvite = String(content || '').trim() === '想和你一起听歌';
 closeChatAskPanel();
 addRec({ side: 'out', text: '邀请：' + content, special: 'invite', inviteContent: content, inviteStatus: 'pending' });
 const inviteIdx = msgs.length - 1;
@@ -11860,6 +11942,10 @@ const pool = window.getInteractPool
 ? window.getInteractPool('邀请TA·接受', ['好，我答应你。', '可以呀。', '我陪你。', '走吧。', '嗯，陪你。'])
 : ['好，我答应你。', '可以呀。', '我陪你。', '走吧。', '嗯，陪你。'];
 reply = (window.pickAskCardReply ? window.pickAskCardReply(pool) : pool[Math.floor(Math.random() * pool.length)]);
+} else if (movieInvite) {
+status = '下次再说';
+answer = myName + ' 说下次再说';
+reply = '下次再说，过一会儿再看好吗？';
 } else if (roll < 0.85) {
 status = '拒绝';
 answer = myName + ' 拒绝了你的邀请';
@@ -11872,6 +11958,8 @@ status = '未回应';
 answer = myName + ' 暂时没有回应';
 }
 setTimeout(() => {
+if (movieInvite && status === '接受' && window.movieInviteAcceptedFor) window.movieInviteAcceptedFor(myCid);
+if (musicInvite && status === '接受' && sameCid() && window.mochiMusicMyInviteAccepted) window.mochiMusicMyInviteAccepted(myCid);
 // v3.26.x #489：决定落地时已切桌面——跨桌面补投递（接受/拒绝的回应气泡一并落库）
 if (!sameCid()) {
 window.chatDeskCardReply(myCid, 'invite', inviteRecTs, 'inviteStatus', function (rec) { rec.inviteStatus = 'answered'; rec.inviteAnswer = answer; }, reply ? [{ side: 'in', text: reply }] : [], applyInviteResult);
@@ -12034,7 +12122,7 @@ if (chatAskHistClear) chatAskHistClear.addEventListener('click', (e) => {
 // v3.26.x：邀请TA 半框内置「我的邀请」——预设 + 用户分组存邀请字卡，点卡即发送（可重复），
 // 输入框可「存入」当前分组；数据按当前桌面联系人命名空间隔离（activePrefix），
 // 结构化写入 IndexedDB 兜底，防止 iOS 存储清理导致字卡丢失（同 pokeUserGroups 策略）。
-const MY_INVITE_PRESETS = ['想和你猜拳，来一局？', '想和你玩一局 Pong，来吗？', '想和你玩双人贪吃蛇，来吗？', '想和你一起听歌'];
+const MY_INVITE_PRESETS = ['想和你猜拳，来一局？', '想和你玩一局 Pong，来吗？', '想和你玩双人贪吃蛇，来吗？', '想和你一起听歌', '想和你一起看电影'];
 let myInviteDirty = false;
 let myInviteCurGroup = '__preset';
 let myInviteGroups = null;
@@ -12057,6 +12145,15 @@ if (myInviteGroups === null) {
 	myInviteGroups.unshift(['__preset', MY_INVITE_PRESETS.slice()]);
 	myInviteGroupsSave();
 	}
+	// 升级时补入一次；之后用户仍可自行编辑或删除这张预设卡。
+	let addMoviePreset = false;
+	try { addMoviePreset = store.get('my-invite-movie-preset-added') !== '1'; } catch (e) {}
+	if (addMoviePreset) {
+	const preset = myInviteGroups.find(g => g[0] === '__preset');
+	if (preset && !preset[1].includes('想和你一起看电影')) preset[1].push('想和你一起看电影');
+	try { store.set('my-invite-movie-preset-added', '1'); } catch (e) {}
+	myInviteGroupsSave();
+	}
 	return myInviteGroups;
 }
 function myInviteGroupsSave() {
@@ -12077,7 +12174,13 @@ let arr = null;
 try { arr = JSON.parse(v); } catch (e) { return false; }
 if (!Array.isArray(arr)) return false;
 if (myInviteCount(arr) > myInviteCount(myInviteG())) {
+const currentPreset = myInviteGroups.find(g => g[0] === '__preset');
+const restoredPreset = arr.find(g => Array.isArray(g) && g[0] === '__preset' && Array.isArray(g[1]));
+if (currentPreset && currentPreset[1].includes('想和你一起看电影') && restoredPreset && !restoredPreset[1].includes('想和你一起看电影')) {
+restoredPreset[1].push('想和你一起看电影');
+}
 myInviteGroups = arr.filter(g => Array.isArray(g) && Array.isArray(g[1]));
+myInviteGroupsSave();
 return true;
 }
 return false;

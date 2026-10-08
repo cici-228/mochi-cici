@@ -981,7 +981,7 @@ const d = {
 'gc-prob': 60, 'gc-rs-min': 1, 'gc-rs-max': 40,
 'gc-reply-min': 1, 'gc-reply-max': 2,
 'gc-cs-normal': 0, 'gc-cs-trigger-name': 1, 'gc-cs-trigger-bar': 0,
-'gc-touch-prob': 5, 'gc-sticker-prob': 10, 'gc-emoji-prob': 5, 'gc-image-prob': 5, 'gc-voice-prob': 10,
+'gc-touch-prob': 5, 'gc-sticker-prob': 10, 'gc-emoji-prob': 5, 'gc-emoji-mix-en': 1, 'gc-image-prob': 5, 'gc-voice-prob': 10,
 'gc-kaomoji-prob': 5, 'gc-quote-prob': 30, 'gc-rc-prob': 25, 'gc-rc-refix': 35,
 'gc-py-en': 1, 'gc-py-prob': 50, 'gc-py-min': 2, 'gc-py-max': 5
 };
@@ -1068,6 +1068,7 @@ return { text, kaomoji, emoji, sticker, image, voice };
 function gcGenReply(cid, c) {
 const pool = gcPool(cid);
 let t, type = 'text';
+let separateEmoji = null;
 if (c['gc-py-en'] === 1 && hit(c['gc-py-prob']) && pool.text.length) {
 const n = randInt(c['gc-py-min'], c['gc-py-max']);
 t = pickN(pool.text, n).join(' ');
@@ -1094,6 +1095,12 @@ const st = window.storeFor ? window.storeFor(cid) : null;
 const defs = (st && window.getDefaultCardsFor) ? window.getDefaultCardsFor(st) : ((window.getDefaultCards && window.getDefaultCards()) || null);
 if (defs && defs.type === 'text' && defs.text) t = defs.text;
 } catch (e) {}
+if (window.chatMilkEmojiReply) {
+const customEmoji = (window.getCustomEmojiCardsFor && window.getCustomEmojiCardsFor(cid)) || [];
+const mixed = window.chatMilkEmojiReply(t, customEmoji, c['gc-emoji-mix-en']);
+t = mixed.text;
+separateEmoji = mixed.separateEmoji;
+}
 }
 let parts = null;
 if (type === 'text') {
@@ -1103,7 +1110,7 @@ parts = [{ k: 'text', v: t }, { k: 'img', v: pick(pool.sticker), sub: 'sticker' 
 parts = [{ k: 'text', v: t }, { k: 'img', v: pick(pool.image), sub: 'image' }];
 }
 }
-return { text: t, type: type, parts: parts };
+return { text: t, type: type, parts: parts, separateEmoji: separateEmoji };
 }
 function gcPokeText(cid) {
 const name = memberName(cid);
@@ -1160,6 +1167,12 @@ arr.push(rec);
 gcWriteGroupKey(gid, arr);
 return arr.length - 1;
 } catch (e) { return -1; }
+}
+function gcDeliverMilkEmoji(gid, cid, name, emoji) {
+if (!emoji) return;
+setTimeout(() => {
+gcDeliverReply(gid, { side: 'in', cid: cid, name: name, text: emoji, type: 'text', ts: Date.now() }, 'in');
+}, 300 + Math.random() * 400);
 }
 function gcRetractFallbackHtml(rec) {
 const ph = (t) => '<span style="opacity:.6;font-size:12px">' + t + '</span>';
@@ -1278,6 +1291,7 @@ if (window.addChatCount) window.addChatCount();
 } catch (e) {}
 }
 const myIdx = gcDeliverReply(gid, rec, 'in', continuation); // FIX 串群 #242：落回来源群 · #1023 continuation＝用户点「继续说」要的回应，落地强制贴底（上翻态也滑过来）
+if (myIdx >= 0) gcDeliverMilkEmoji(gid, cid, name, rep.separateEmoji);
 if (i < count - 1 && gid === curGid) showTyping(name);
 if (hit(c['gc-rc-prob'])) {
 setTimeout(() => {
@@ -1299,7 +1313,8 @@ rec2.mood = chain2.map(it => ({ tag: typeName2[it.type] || '情绪', label: it.c
 }
 } catch (e) {}
 }
-gcDeliverReply(gid, rec2, 'in'); // FIX 串群 #242：补发落回来源群
+const idx2 = gcDeliverReply(gid, rec2, 'in'); // FIX 串群 #242：补发落回来源群
+if (idx2 >= 0) gcDeliverMilkEmoji(gid, cid, name, rep2.separateEmoji);
 })();
 }, 700);
 }
@@ -2057,6 +2072,7 @@ cb.checked = on;
 cb.addEventListener('change', () => { try { if (window.saveReplyCfg) window.saveReplyCfg(key, cb.checked ? 1 : 0); } catch (e) {} });
 return row;
 };
+(curSec||settingsBody).appendChild(gcReplyToggleRow('表情混入消息', '每条文字回复固定 20% 抽自定义 Emoji；开启时放句首或句尾，关闭时延迟单独发送', 'gc-emoji-mix-en'));
 rTitle('多字卡回复');
 (curSec||settingsBody).appendChild(gcReplyToggleRow('多字卡回复', '总开关：关闭后每个成员每条消息只回一条、只用一张字卡', 'gc-py-en'));
 rStep('触发概率', 'gc-py-prob', 0, 100, 5);

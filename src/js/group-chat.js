@@ -1227,7 +1227,7 @@
       'gc-prob': 60, 'gc-rs-min': 1, 'gc-rs-max': 40,
       'gc-reply-min': 1, 'gc-reply-max': 2,
       'gc-cs-normal': 0, 'gc-cs-trigger-name': 1, 'gc-cs-trigger-bar': 0,
-      'gc-touch-prob': 5, 'gc-sticker-prob': 10, 'gc-emoji-prob': 5, 'gc-image-prob': 5, 'gc-voice-prob': 10,
+      'gc-touch-prob': 5, 'gc-sticker-prob': 10, 'gc-emoji-prob': 5, 'gc-emoji-mix-en': 1, 'gc-image-prob': 5, 'gc-voice-prob': 10,
       'gc-kaomoji-prob': 5, 'gc-quote-prob': 30, 'gc-rc-prob': 25, 'gc-rc-refix': 35,
       'gc-py-en': 1, 'gc-py-prob': 50, 'gc-py-min': 2, 'gc-py-max': 5
     };
@@ -1336,6 +1336,7 @@
   function gcGenReply(cid, c) {
     const pool = gcPool(cid);
     let t, type = 'text';
+    let separateEmoji = null;
     if (c['gc-py-en'] === 1 && hit(c['gc-py-prob']) && pool.text.length) {
       const n = randInt(c['gc-py-min'], c['gc-py-max']);
       t = pickN(pool.text, n).join(' ');
@@ -1367,6 +1368,12 @@ const st = window.storeFor ? window.storeFor(cid) : null;
 const defs = (st && window.getDefaultCardsFor) ? window.getDefaultCardsFor(st) : ((window.getDefaultCards && window.getDefaultCards()) || null);
 if (defs && defs.type === 'text' && defs.text) t = defs.text;
 } catch (e) {}
+if (window.chatMilkEmojiReply) {
+const customEmoji = (window.getCustomEmojiCardsFor && window.getCustomEmojiCardsFor(cid)) || [];
+const mixed = window.chatMilkEmojiReply(t, customEmoji, c['gc-emoji-mix-en']);
+t = mixed.text;
+separateEmoji = mixed.separateEmoji;
+}
 }
     // 组合消息：文字 + 表情包/图片 附加到同一条（同聊天页 genOneReply）
     let parts = null;
@@ -1377,7 +1384,7 @@ if (defs && defs.type === 'text' && defs.text) t = defs.text;
         parts = [{ k: 'text', v: t }, { k: 'img', v: pick(pool.image), sub: 'image' }];
       }
     }
-    return { text: t, type: type, parts: parts };
+    return { text: t, type: type, parts: parts, separateEmoji: separateEmoji };
   }
   // 成员拍一拍文本（该成员视角：成员名 + 字卡，含"你/我"按聊天页规则替换成我的称呼）
   function gcPokeText(cid) {
@@ -1449,6 +1456,12 @@ if (defs && defs.type === 'text' && defs.text) t = defs.text;
       gcWriteGroupKey(gid, arr);
       return arr.length - 1;
     } catch (e) { return -1; }
+  }
+  function gcDeliverMilkEmoji(gid, cid, name, emoji) {
+    if (!emoji) return;
+    setTimeout(() => {
+      gcDeliverReply(gid, { side: 'in', cid: cid, name: name, text: emoji, type: 'text', ts: Date.now() }, 'in');
+    }, 300 + Math.random() * 400);
   }
   // FIX 撤回查看 #244：无渲染快照时的安全回退（存量撤回记录/跨群撤回）——
   // 媒体给占位、文本走转义，绝不 innerHTML 直出原始 rec.text
@@ -1597,6 +1610,7 @@ if (defs && defs.type === 'text' && defs.text) t = defs.text;
             } catch (e) {}
           }
           const myIdx = gcDeliverReply(gid, rec, 'in', continuation); // FIX 串群 #242：落回来源群 · #1023 continuation＝用户点「继续说」要的回应，落地强制贴底（上翻态也滑过来）
+          if (myIdx >= 0) gcDeliverMilkEmoji(gid, cid, name, rep.separateEmoji);
           if (i < count - 1 && gid === curGid) showTyping(name);
           // 撤回 + 撤回补发
           if (hit(c['gc-rc-prob'])) {
@@ -1619,7 +1633,8 @@ if (defs && defs.type === 'text' && defs.text) t = defs.text;
                       }
                     } catch (e) {}
                   }
-                  gcDeliverReply(gid, rec2, 'in'); // FIX 串群 #242：补发落回来源群
+                  const idx2 = gcDeliverReply(gid, rec2, 'in'); // FIX 串群 #242：补发落回来源群
+                  if (idx2 >= 0) gcDeliverMilkEmoji(gid, cid, name, rep2.separateEmoji);
                   })();
                 }, 700);
               }
@@ -2516,6 +2531,7 @@ if (defs && defs.type === 'text' && defs.text) t = defs.text;
       cb.addEventListener('change', () => { try { if (window.saveReplyCfg) window.saveReplyCfg(key, cb.checked ? 1 : 0); } catch (e) {} });
       return row;
     };
+    (curSec||settingsBody).appendChild(gcReplyToggleRow('表情混入消息', '每条文字回复固定 20% 抽自定义 Emoji；开启时放句首或句尾，关闭时延迟单独发送', 'gc-emoji-mix-en'));
     rTitle('多字卡回复');
     (curSec||settingsBody).appendChild(gcReplyToggleRow('多字卡回复', '总开关：关闭后每个成员每条消息只回一条、只用一张字卡', 'gc-py-en'));
     rStep('触发概率', 'gc-py-prob', 0, 100, 5);

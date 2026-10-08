@@ -1,4 +1,4 @@
-﻿// ===== 组装脚本 =====
+// ===== 组装脚本 =====
 // 把 src/ 下的模板 + 按页面拆分的 CSS + 按功能拆分的 JS
 // 拼装成单个可直接双击打开的 index.html（完整功能）。
 // 用法：在 mochi 目录下运行  node build.mjs
@@ -113,7 +113,7 @@ function minifyCss(code) {
 
 // ===== 按顺序拼接样式 / 脚本（顺序即生效顺序） =====
 const cssFiles = ['base.css', 'home.css', 'chat-main.css', 'chat-pages.css', 'market.css', 'group-chat.css', 'setting.css', 'tabbar.css', 'dark.css', 'garden.css', 'memo.css', 'memo-arc.css', 'room.css', 'drift-bottle.css', 'applock.css', 'feature-data.css', 'display-tune.css'];
-const jsFiles = ['device.js', 'idb.js', 'contacts.js', 'applock.js', 'card-lock.js', 'dcp-master.js', 'media-pool.js','storage-slim.js', 'perf-check.js', 'energy-check.js', 'flash-check.js', 'img-compress.js', 'img-ingest.js', 'clock.js', 'tabs.js', 'desktop-slider.js', 'quote-cards.js', 'personalize.js', 'chat.js', 'group-chat.js', 'chatcard.js', 'chat-settings.js', 'reply-settings.js', 'fav-settings.js', 'default-cards-data.js', 'dict-ext-data.js', 'default-cards.js', 'quote-spell.js', 'dream-free.js', 'mood-followup-data.js', 'mood-reply-cards.js', 'ta-mood-data.js', 'ta-mood.js', 'music-player.js', 'calendar.js', 'divination.js', 'avatar-lib.js', 'ta-ask.js', 'ck-question.js', 'incoming-requests.js', 'ta-invite.js', 'bg-keep.js', 'records.js', 'call.js', 'mail.js', 'feed.js', 'loc-lib.js', 'p2-features.js', 'gift-shop.js', 'memo-app.js', 'memo-arc.js', 'my-arc.js', 'period.js', 'accounting.js', 'garden.js', 'room.js', 'drift-bottle.js', 'decision.js', 'group-decision.js', 'pong.js', 'snake-game.js', 'breakout.js', 'connect-four.js', 'coop-mine.js', 'fishing.js', 'memory-game.js', 'gomoku.js', 'linkup.js', 'match3.js', 'auction.js', 'arcade.js', 'mood-diary.js', 'sfx.js', 'fullscreen.js', 'data-backup.js', 'feature-data.js', 'pwa.js', 'cjian.js', 'feature-hub.js', 'settings-help.js', 'onboarding.js', 'page-coach.js', 'card-audit.js', 'storage-guide.js', 'mobile-adapt.js'];
+const jsFiles = ['device.js', 'idb.js', 'contacts.js', 'applock.js', 'card-lock.js', 'dcp-master.js', 'media-pool.js','storage-slim.js', 'perf-check.js', 'energy-check.js', 'flash-check.js', 'img-compress.js', 'img-ingest.js', 'clock.js', 'tabs.js', 'desktop-slider.js', 'quote-cards.js', 'personalize.js', 'chat.js', 'group-chat.js', 'chatcard.js', 'chat-settings.js', 'reply-settings.js', 'fav-settings.js', 'default-cards-data.js', 'dict-ext-data.js', 'default-cards.js', 'quote-spell.js', 'dream-free.js', 'mood-followup-data.js', 'mood-reply-cards.js', 'ta-mood-data.js', 'ta-mood.js', 'music-player.js', 'netease-remote.js', 'calendar.js', 'divination.js', 'avatar-lib.js', 'ta-ask.js', 'ck-question.js', 'incoming-requests.js', 'ta-invite.js', 'bg-keep.js', 'records.js', 'call.js', 'mail.js', 'feed.js', 'loc-lib.js', 'p2-features.js', 'gift-shop.js', 'memo-app.js', 'memo-arc.js', 'my-arc.js', 'period.js', 'movie.js', 'garden.js', 'room.js', 'drift-bottle.js', 'decision.js', 'group-decision.js', 'pong.js', 'snake-game.js', 'breakout.js', 'connect-four.js', 'coop-mine.js', 'fishing.js', 'memory-game.js', 'gomoku.js', 'linkup.js', 'match3.js', 'auction.js', 'arcade.js', 'mood-diary.js', 'sfx.js', 'fullscreen.js', 'data-backup.js', 'feature-data.js', 'pwa.js', 'cjian.js', 'feature-hub.js', 'settings-help.js', 'onboarding.js', 'page-coach.js', 'card-audit.js', 'storage-guide.js', 'mobile-adapt.js'];
 
 // ===== PERF-PLAN 阶段 1：JS 外置化（2026-09-18）=====
 // 首开「3.8MB 内联 JS 主线程整段解析执行」是 iOS/中低端安卓卡顿的结构性大头
@@ -769,7 +769,7 @@ const FIX_SENTINELS = [
   { name: '#141 悬浮键盘推定收口（用户键入 1200ms 内即放行推顶，不等 2200ms 无活动自愈）', file: 'js/mobile-adapt.js', needle: 'if (!tgt || Date.now() - _aUserTypos > 1200) return;' },
   { name: '#144 isIOS 补 iPadOS 伪装 UA 分支（Macintosh+触摸屏，修 iPad Air 全屏开关无反应/ios-pwa-standalone 类不加）', file: 'js/device.js', needle: "((navigator.platform === 'MacIntel' || /Macintosh/i.test(ua)) && navigator.maxTouchPoints > 1 && 'ontouchstart' in window);" },
   { name: '#144 armFgIdbReset 补 touchMac 分支（伪装 UA 的 iPad 回前台重建 IDB 连接；收口第二批改读 mochiDevice.isIOS——device.js isIOS 含 Macintosh 伪装分支，删门=伪装 iPad 断连不重建）', file: 'js/idb.js', needle: 'if (!((window.mochiDevice || {}).isIOS)) return;' },
-  { name: '#148 syncVvFit 顶部避让改 env() 探针实测（iOS26 已避让形态 env=0 不再加页面 padding，修 Mochi 行上方大空白）', file: 'js/mobile-adapt.js', needle: 'padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);visibility:hidden;pointer-events:none;' },
+  { name: '#148 syncVvFit 顶部避让改 env() 探针实测（iOS26 已避让形态 env=0 不再加页面 padding，修 CiCi 行上方大空白）', file: 'js/mobile-adapt.js', needle: 'padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);visibility:hidden;pointer-events:none;' },
   { name: '#148 fs 态写 --mochi-ios-h（判定器 expBase：envTop+inner min 屏高，覆盖=整屏/已避让=inner；#210 起公式收敛到共享判定器）', file: 'js/mobile-adapt.js', needle: 'Math.round(_f.expBase) : 0' },
   { name: '#148 fs 态 .phone 高度用 --mochi-ios-h（回 100vh 兜底）', file: 'css/base.css', needle: 'height:var(--mochi-ios-h, 100vh);' },
   { name: '#175 屏幕适配诊断入口（设置页 row-screen-diag，与信息诊断分开）', file: 'template.html', needle: 'id="row-screen-diag"' },
@@ -884,10 +884,10 @@ const FIX_SENTINELS = [
   { name: '#537 执行器按判定器挂/摘 ios-cover-top（逻辑侧唯一落地开关；删则 CSS 规则永不生效）', file: 'js/mobile-adapt.js', needle: "d.classList.toggle('ios-cover-top', _wantIosCover);" },
   { name: '#537 iOS standalone html/body 钉到与 .phone 同高 + 顶对齐（修「整页上移 + 底部 31px 白条」；改回 100dvh 居中即复发。#114 全屏态同款父类 bug。作用域收在 .ios-cover-top：只有覆盖形态 --mochi-ios-h≠100dvh 才有位移可修。2026-09-19 #853 换锚：dvh 兜底收进 @supports，主行改 vh 基线）', file: 'css/base.css', needle: 'html.ios-pwa-standalone.ios-cover-top body { height:var(--mochi-ios-h, 100vh); min-height:0; align-items:flex-start; }' },
   { name: '#537 iOS 独立应用覆盖形态 .phone 底部内边距归零（修「底部栏不贴手机底部」：原 18px 内边距与 tabbar 的 --mochi-safe-bottom 叠成 52px 空档）', file: 'css/base.css', needle: 'html.ios-cover-top .phone { padding-bottom:0; }' },
-  { name: '#537 iOS 独立应用覆盖形态状态栏自身抬升（该形态 .phone 无顶部 padding 兜底链、窄屏 @media 的 env 留白又被后加载同特异性 .statusbar{padding:4px} 压死 → Mochi 行钻进系统状态栏＝诊断 ✗顶部重叠，删即复发）', file: 'css/base.css', needle: 'html.ios-cover-top .phone .statusbar {' },
+  { name: '#537 iOS 独立应用覆盖形态状态栏自身抬升（该形态 .phone 无顶部 padding 兜底链、窄屏 @media 的 env 留白又被后加载同特异性 .statusbar{padding:4px} 压死 → CiCi 行钻进系统状态栏＝诊断 ✗顶部重叠，删即复发）', file: 'css/base.css', needle: 'html.ios-cover-top .phone .statusbar {' },
   { name: '#129 iOS standalone 底部安全区不归零（screen-innerHeight>60 在 standalone 是系统状态栏/Home 指示条而非浏览器工具条，viewport-fit=cover 下 Home 指示条在可视区内，归零会让 tabbar/底部组件不避让被遮；standalone 下摘除属性回落 env() 正确避让）', file: 'js/mobile-adapt.js', needle: "sh - ih > 60 && !d.classList.contains('ios-pwa-standalone')" },
   { name: 'iOS 全屏态 syncVvFit 不再写 --mochi-ios-h（摘除属性回落 100dvh，修全屏下 visualViewport.height 偏小把 .phone 压矮→底部聊天输入栏整体偏上不贴底；同时不超视口不复发 #109 整页上移）', file: 'js/mobile-adapt.js', needle: "d.classList.contains('ios-fs-active') || d.classList.contains('ios-native-fs')" },
-  { name: 'iOS 全屏保留桌面顶部状态栏（不再 display:none，修「苹果16 添加到桌面+全屏后桌面顶部 Mochi/时间/电量一行不见被遮挡」；absent 守卫：若出现 .ios-fs-active .phone .statusbar { display:none } 即回归）', file: 'css/base.css', needle: '.ios-fs-active .phone .statusbar { display: none', absent: true },
+  { name: 'iOS 全屏保留桌面顶部状态栏（不再 display:none，修「苹果16 添加到桌面+全屏后桌面顶部 CiCi/时间/电量一行不见被遮挡」；absent 守卫：若出现 .ios-fs-active .phone .statusbar { display:none } 即回归）', file: 'css/base.css', needle: '.ios-fs-active .phone .statusbar { display: none', absent: true },
   { name: '#114(复现) iOS 全屏态顶部安全区统一修复（iPhone15+Safari 主屏幕全屏 env(safe-area-inset-top)=0 → 桌面状态栏与系统栏重叠/聊天返回键被吞点；.phone 改 100vh 铺满物理屏 + padding-top:max(var(--mochi-safe-top,env),12px) 整体下移，修顶部重叠 + 底部 59px 空隙 + iPhone17 Edge 图标截断）', file: 'css/base.css', needle: 'padding-top:max(var(--mochi-safe-top, env(safe-area-inset-top, 0px)), 12px);' },
   { name: '#114(复现) iOS standalone 顶部安全区实测（env(safe-area-inset-top)=0 → 用 screen.height-可视高 实测状态栏高度写 --mochi-safe-top 供 CSS 避让，20-160 过滤干扰）', file: 'js/mobile-adapt.js', needle: "d.style.setProperty('--mochi-safe-top'" },
   { name: '#114(复现) 通话缩略窗顶部安全区避让（落位/拖拽上边界抬到系统状态栏下方，修「缩略窗在顶部动不了」被系统栏吞触点）', file: 'js/call.js', needle: 'ty = Math.max(Math.max(miniSafeTop(), voT), Math.min(voT + vh - mh - 4, ty))' },
@@ -1124,7 +1124,7 @@ const FIX_SENTINELS = [
   { name: '#613/#620 免费声明进「必读摘要」并高亮（删则回落到折叠区/章节，用户原话「太靠后」重现；#620 口径改写后锚点同步）', file: 'template.html', needle: '<p class="splash-hl">本站完全免费，个人出资搭建', absent: true }, // #1216 摘要块整块撤除＝转删除型
   { name: '#613 防骗卡重建锚点＝公告区最顶（改回免责卡/锁卡之后＝用户「防骗提醒位置太靠后」回归）', file: 'js/clock.js', needle: 'ensureBar(BARS[0], null)' },
   { name: '#621 pwa.js 看门狗补回合并声明卡也落到公告区最顶（与 clock.js/静态顺序一致）', file: 'js/pwa.js', needle: "mkWatchBar('1', '免费 · 署名 · 防倒卖', W), n.firstChild" },
-  { name: '#613 在线公告源 notice.json alert 同含免费声明句（静态/远程双源一致，删则联网用户看到的防骗卡少这句）', file: 'pwa/notice.json', needle: '个人出资和花费时间搭建的。开放二传二改但禁止以盈利为目的。Mochi字卡网站完全免费。' },
+  { name: '#613 在线公告源 notice.json alert 同含免费声明句（静态/远程双源一致，删则联网用户看到的防骗卡少这句）', file: 'pwa/notice.json', needle: '个人出资和花费时间搭建的。开放二传二改但禁止以盈利为目的。原版字卡网站完全免费。' },
   // ==== 2026-09-16 #621 防骗 + 署名禁倒卖合并为一张置顶声明卡（用户要求「并成一张」）====
   { name: '#621 合并声明卡标题（免费 · 署名 · 防倒卖，template 静态卡）', file: 'template.html', needle: '免费 · 署名 · 防倒卖' },
   { name: '#621 旧「转载署名·严禁倒卖」独立卡不得复活（已并入 tag 1；absent）', file: 'template.html', needle: 'data-anti-scam="2"', absent: true },
@@ -1174,7 +1174,7 @@ const FIX_SENTINELS = [
   { name: '#172 我的表情包刷新必丢·恢复链读空改走按需取回（大键挂起时裸idbGet永远拿不到值；删掉hydrate兜底此分支即消失）', file: 'js/chat.js', needle: 'if (!v) { myeHydrateFallback(); return; }' },
   { name: '#172 我的表情包刷新必丢·保存防覆盖闸门（该键仍挂起=本会话未恢复全量，先取回合并再写；拆掉闸门此判定即消失）', file: 'js/chat.js', needle: 'window.__xyIdbDeferredKeys.indexOf(MYE_KEY()) >= 0' },
   { name: '#173 美化/聊天方案导出统一三级降级保存链（window.mochiExportFile：分享面板→保存框→确认后下载，修 iPhone 主屏 standalone/壳浏览器 a[download] 静默无反应=无法导出）', file: 'js/data-backup.js', needle: 'window.mochiExportFile = function' },
-  { name: '#173 桌面美化导出接统一导出链（downloadBeautyFile 降为兜底）', file: 'js/personalize.js', needle: "window.mochiExportFile(json, fname, 'mochi美化方案')" },
+  { name: '#173 桌面美化导出接统一导出链（downloadBeautyFile 降为兜底）', file: 'js/personalize.js', needle: "window.mochiExportFile(json, fname, 'CiCi美化方案')" },
   { name: '#173 桌面美化导入补回粘贴文本通道（textarea+文件并存，修 standalone 文件选择器不弹=无法导入）', file: 'js/personalize.js', needle: '粘贴美化方案文本' },
   { name: '#173 聊天美化导出接统一导出链（裸 a[download] 降为兜底）', file: 'js/chat-settings.js', needle: "window.mochiExportFile(json, fname, 'mochi聊天美化方案')" },
   { name: '#180 刷新重开丢最近聊天·同步尾巴日志（每条新消息先同步落 LS <cid>:chat-tail 再交低频整包落盘；删掉 append 调用此行即消失）', file: 'js/chat.js', needle: 'chatTailAppend(rec); // #180：同步尾巴日志先落 LS，再交低频整包落盘' },
@@ -1274,7 +1274,7 @@ const FIX_SENTINELS = [
   { name: '#657 键盘滞留读数「几何反证」复原门（信箱写信页滑动＝整页飞出去/只显示上半屏：页面收到的真实触摸点落在可视视口底边以下 ⇒ 该区域没被软键盘占据 ⇒ 键盘必不在场；删掉此判定则 #209/#236 视口闸 + #267/#542 焦点闸在焦点滞留时全被挡住，.phone 永久停在键盘期收缩高）', file: 'js/mobile-adapt.js', needle: 't.clientY > Math.round((_aVV.offsetTop || 0) + _aVV.height) + 24' },
   { name: '#657 平移补偿「成孤儿」恒等式（_aPanComp 补偿量恒等于当时读到的残留平移：读数归零而 .phone 仍带内联 top＝整壳被按旧偏移推下＝用户所见「飞出去+只显示上半屏」；删掉则孤儿补偿永久残留；键盘会话期不参与以免打断动画期零强制读契约）', file: 'js/mobile-adapt.js', needle: "&& Math.abs(Math.round(_aVV.offsetTop || 0)) <= 4) _aPhone.style.removeProperty('top');" },
   { name: '#203 iOS18 保留形态甄别式（standalone+env∈[20,160]+diff≈envTop+iOS≥18，命中即 safeTop 归 0：否则 #179 公式把 .phone 顶出布局视口=居中裁切+文档溢出与 pin 对打=滑动/切换卡顿；#210 起判式收敛到共享判定器，删门槛或改比较符即回归）', file: 'js/device.js', needle: 'diff >= envTop - 8 && iosMajor >= 18' },
-  { name: '#203 iOS18 保留形态显式写 0px（摘除属性会回落 env() 变双重避让，Mochi 行上方 59px 空白；#1318 换锚＝该行改为「系统基准＋顶部轴」一起落 DOM，本针守的是保留形态那一支仍然【显式写值而不摘除】，删掉这半支＝双重避让的 59px 白带复发）', file: 'js/mobile-adapt.js', needle: "(_resStand ? screenVarPx('--mochi-safe-top', 0) : safeTopCss('env'))" },
+  { name: '#203 iOS18 保留形态显式写 0px（摘除属性会回落 env() 变双重避让，CiCi 行上方 59px 空白；#1318 换锚＝该行改为「系统基准＋顶部轴」一起落 DOM，本针守的是保留形态那一支仍然【显式写值而不摘除】，删掉这半支＝双重避让的 59px 白带复发）', file: 'js/mobile-adapt.js', needle: "(_resStand ? screenVarPx('--mochi-safe-top', 0) : safeTopCss('env'))" },
   { name: '#203 执行器接入共享判定器（syncVvFit 形态判定单一事实源 #210；执行器回退手抄判式此行即消失）', file: 'js/mobile-adapt.js', needle: 'var _f = window.mochiViewportForm(_sig0);' },
   { name: '#203 判定器·保留形态期望底边=inner（.phone 超 inner=文档滚动量；#184 iPad 形态/#186 force 声明同走 inner 分支；#210 起收敛到共享判定器 expBase 单点；2026-09-18 #719 e2e 形态并入同分支，登记同步）', file: 'js/device.js', needle: 'const expBase = (coverBrowser || resStand || ipadForm || e2eBrowser) ? innerH' },
   { name: '#200 通话防误挂·挂断掷骰硬闸（总开关或概率<=0 不掷骰——挂断几率为 0 仍被挂断的兜底闸门，删此条件设 0 即回到「读默认 2% 照挂」）', file: 'js/call.js', needle: 'if (!(hp.nohangup || hp.hangup <= 0) && Math.random() * 100 < hp.hangup) {' },
@@ -2032,9 +2032,9 @@ const FIX_SENTINELS = [
   { name: '#718c 拍卖会音效挂起自愈（删则 iOS 锁屏/切后台回来整局哑音；全站音效模块同款修法的最后一个）', file: 'js/auction.js', needle: "if (audioCtx.state === 'suspended' && audioCtx.resume) audioCtx.resume().catch(function () {});" },
   { name: '#718d 键盘期弹窗顶距 env 带 0px 内定（删则不支持 env 的老内核整条 max() 失效＝弹窗贴死状态栏）', file: 'css/base.css', needle: 'max(10px, env(safe-area-inset-top, 0px))' },
   { name: '#718e 自愈提示条 bottom env 带 0px 内定（删则同上＝提示条贴出屏外）', file: 'js/personalize.js', needle: 'max(16px,env(safe-area-inset-bottom,0px))' },
-  // ==== 2026-09-18 #719 OPPO Find X9 Pro + Edge「桌面和聊天上下缘遮挡」（用户直派、明说多机型；#114/#199/#236/#537 同族新姊妹形态）——Android 15+ edge-to-edge 浏览器在 viewport-fit=cover 下把页面画进系统状态栏/手势条区，但 env(safe-area-inset-*) 恒报 0（#236 HeyTapBrowser 报 env≥40 走 coverBrowser，本形态 env=0 靠几何签名识别：inner=400×810 超出 screen=360×785、innerW>screenW＋DPR 2.699≈0.9×系统密度＝缩放渲染实锤，810×0.9=729=785−Edge 底部工具条 56 全数对账＝页面顶到物理屏顶、状态栏悬浮其上）。全部既有避让链因「env≥20」门槛不触发＝状态栏盖住 Mochi 行、手势条盖住 tabbar/输入栏底缘。修复=共享判定器 mochiViewportForm 新增 e2e-browser 形态（顶部 28/z、底部 16/z 估式自动避让，带内 [3,64] 排除 #278 screen 坏值家族；window.__mochiE2eLatch 闩住 Edge 工具条隐匿瞬间的带外波动，旋转重探自清），复用既有 mochi-cover-top/--mochi-safe-bottom 消费链，CSS 零改动；仍偏可经 屏幕位置设置 五轴本机精调 ====
+  // ==== 2026-09-18 #719 OPPO Find X9 Pro + Edge「桌面和聊天上下缘遮挡」（用户直派、明说多机型；#114/#199/#236/#537 同族新姊妹形态）——Android 15+ edge-to-edge 浏览器在 viewport-fit=cover 下把页面画进系统状态栏/手势条区，但 env(safe-area-inset-*) 恒报 0（#236 HeyTapBrowser 报 env≥40 走 coverBrowser，本形态 env=0 靠几何签名识别：inner=400×810 超出 screen=360×785、innerW>screenW＋DPR 2.699≈0.9×系统密度＝缩放渲染实锤，810×0.9=729=785−Edge 底部工具条 56 全数对账＝页面顶到物理屏顶、状态栏悬浮其上）。全部既有避让链因「env≥20」门槛不触发＝状态栏盖住 CiCi 行、手势条盖住 tabbar/输入栏底缘。修复=共享判定器 mochiViewportForm 新增 e2e-browser 形态（顶部 28/z、底部 16/z 估式自动避让，带内 [3,64] 排除 #278 screen 坏值家族；window.__mochiE2eLatch 闩住 Edge 工具条隐匿瞬间的带外波动，旋转重探自清），复用既有 mochi-cover-top/--mochi-safe-bottom 消费链，CSS 零改动；仍偏可经 屏幕位置设置 五轴本机精调 ====
   { name: '#719a 判定器 e2e-browser 形态门（删回则该形态永远 plain＝状态栏/手势条遮挡复发且诊断不再对号）', file: 'js/device.js', needle: 'e2eBrowser = e2eBase && (e2eOverH <= 64 || !!sig.e2eLatch);' },
-  { name: '#719b 安卓执行器 e2e 顶避让接线（补宽度信号+闩；删回则 safe-top 不落盘、Mochi 行仍钻系统状态栏）', file: 'js/mobile-adapt.js', needle: 'if (_fc.e2eBrowser && !window.__mochiE2eLatch) window.__mochiE2eLatch = true;' },
+  { name: '#719b 安卓执行器 e2e 顶避让接线（补宽度信号+闩；删回则 safe-top 不落盘、CiCi 行仍钻系统状态栏）', file: 'js/mobile-adapt.js', needle: 'if (_fc.e2eBrowser && !window.__mochiE2eLatch) window.__mochiE2eLatch = true;' },
   { name: '#719c 安卓键盘收起回落 e2e 底避让（改回摘除属性＝tabbar/输入栏退回 0 避让被手势条盖住；#1318 换锚＝落值口径收进 bottomSafeCss，本针守的是 e2e 那支仍把【手势条估式 px】交给尺子而非退回空串，改成一律传 env 或删该分支＝e2e 壳底栏被手势条盖住复发）', file: 'js/mobile-adapt.js', needle: "_fcB.e2eBrowser && _fcB.safeBottom) ? _fcB.safeBottom : 'env'" },
   // ==== 2026-09-18 #721 低端机触摸滚动被动化（用户「还有没有能优化的，不要出错」；编号说明：#715~#720 已分别被滚动旗标/K80 三联/换头像/兼容四小批/e2e 形态/渲染分帧各批占用，本批由 #719 二次顺延改 #721）——全库 touchmove 审计（共 13 处）发现仅两处处理体只 clearTimeout、从不 preventDefault 却未标 passive：聊天收藏长按 chat.js、美食长按删除 p2-features.js。未标 passive ＝ 手指每次滑动都要等主线程执行完回调才滚动（低端安卓＝列表滚动被阻塞掉帧）。审计结论：文档/窗口级 touchmove 与 breakout/pong（需 preventDefault 保持 passive:false）、snake（已 passive）均正确标注。零行为变化 ====
   { name: '#721a 聊天收藏长按 touchmove 被动化（改回非被动＝低端机列表滑动被该主线程回调阻塞）', file: 'js/chat.js', needle: 'clearTimeout(pressTimer), { passive: true }' },
@@ -3595,14 +3595,14 @@ const FIX_SENTINELS = [
   { name: '#739d 群聊头像 label 激活（删＝群聊上传头像在小米系无反应）', file: 'js/group-chat.js', needle: 'window.mochiFilePickLabel(addBtn, gcAvatarPickInput);' },
   { name: '#739e 朋友圈头像 label 激活（删＝朋友圈换头像在小米系无反应）', file: 'js/feed.js', needle: 'window.mochiFilePickLabel(coverAvEl, feedAvPickInput);' },
   { name: '#739f 头像互动池 label 激活（删＝添加/添加我的头像在小米系无反应）', file: 'js/avatar-lib.js', needle: 'window.mochiFilePickLabel(btn, input);' },
-  // #739g/#739h/#991i/#991j 退役（2026-10-01 用户直派「收进【Mochi字卡 · 开屏说明】新增目录」）：
+  // #739g/#739h/#991i/#991j 退役（2026-10-01 用户直派「收进【CiCi字卡 · 开屏说明】新增目录」）：
   //   开屏两张浏览器必读卡整卡撤除，内容由公告目录第 4/5 章承载（verify-973 S24c/d／verify-976 S15c＋#1216g/#1216i 继续守），见 FIX-REGRESSION.md
   // #1536（2026-10-01 作者直派三连：milk 说明句缩短并入许可块＋必读卡组补备份/数据不互通两卡＋删强制公告末段；同批新增五针）：
   { name: '#1536a 备份提醒必读卡（删＝「本地数据说没就没、定期导出」提醒从开屏必读组消失，作者直派补全）', file: 'template.html', needle: 'data-backup-warn="1"' },
   { name: '#1536b 数据不互通必读卡（删＝「浏览器与桌面快捷方式两套存储、不能同时开」提醒从开屏必读组消失）', file: 'template.html', needle: 'data-store-split="1"' },
   { name: '#1536c 备份卡琥珀形态（#976 定的「需要你操作」族；改色＝占用橙/红名额、打乱四色语义）', file: 'css/base.css', needle: '.splash-alert.splash-backup { background:#fdf3e0;' },
   { name: '#1536d 数据不互通卡橙形态（#976 定的「须知/提醒」族）', file: 'css/base.css', needle: '.splash-alert.splash-storesplit .splash-alert-t { color:#c2410c;' },
-  { name: '#1536e milk 澄清句（缩短版并入许可块；删或改回长版＝作者直派的排版变更回流）', file: 'template.html', needle: '本站不是 milk 字卡代码的二改版本，是从零开始独立编写的字卡传讯二创作品。' },
+  { name: '#1536e 许可块保留二改来源说明', file: 'template.html', needle: 'CiCi 基于言序的原创字卡项目修改；原版项目由言序独立编写。' },
   { name: '#1543a 开屏解锁弹窗可见性修复（删＝开屏点【输入密码解锁】弹层被启动期 visibility:hidden 的 .phone 连带藏掉＝图层不在开屏）', file: 'css/base.css', needle: '.splash.under-modal ~ .phone { visibility:visible;' },
   // #1455 退役：#976 起配色由红(#c22b27)改橙(#c2410c)，live 版 #739h 已在位（build.mjs:4574，needle ".splash-alert.splash-browser .splash-alert-t { color:#c2410c;"），本条为旧底副本
   // ===== #753（2026-09-18 用户直派：iPhone 13 Pro Max Safari「聊天界面发不了图片，点插入图片打开的是
@@ -4532,7 +4532,7 @@ const FIX_SENTINELS = [
   /* ==== 2026-09-21 #994 听歌邀请「同意后没小框也没播放」第二次实报（红米 K80 Chrome PWA；接受链路静默死亡出口再收口） ==== */
   { name: '#994a 邀请面板唯一实现（渲染+接线成对；删＝又出现「只渲染没接线」的死面板＝点了同意零反应）', file: 'js/music-player.js', needle: 'function openMusicInvitePanel(trackId, switching) {' },
   { name: '#994b 诊断邀请入口改走同一面板实现（删＝「诊断邀请→强制触发一次」又是死按钮）', file: 'js/music-player.js', needle: 'openMusicInvitePanel(track.id, false)' },
-  { name: '#994c 聊天邀请走同一面板实现（删＝回到手抄面板，接线必漏）', file: 'js/music-player.js', needle: 'openMusicInvitePanel(track.id, !!currentId)' },
+  { name: '#994c 聊天邀请走统一确认面板并在同意后执行（删＝邀请未经同意直接播放）', file: 'js/music-player.js', needle: 'const opened = openMusicRequestPanel(kind, track, keyword);' },
   { name: '#994d 起播校验「连 audio 都没建起来」不再静默（删＝本地歌异步读未回/读失败时无框无声无提示复发）', file: 'js/music-player.js', needle: 'inviteCheckStage === 0' },
   { name: '#994e 本地歌邀请弹窗期预热音频（删＝冷启动接受邀请要等异步 IDB 读，慢/失败即无框无声）', file: 'js/music-player.js', needle: 'function prewarmLocalAudio(id) {' },
   { name: '#994f 小框恢复位置按视口钳制（删＝保存位置在视口外时小框「没出现」复发）', file: 'js/music-player.js', needle: 'if (floatClampSig === sig) return;' },
@@ -4740,12 +4740,12 @@ const FIX_SENTINELS = [
   { name: '#1000a 开屏锁卡静态兜底提示明确指路第一页章节（删/回退成「答案就在开屏里可以找到」＝用户又去第二页公告的日期里猜）', file: 'index.html', needle: '答案就在开屏第一页的章节目录里' },
   { name: '#1000b 必读摘要高亮条指路第一页章节＋排除第二页日期（删＝摘要退回只说「开屏目录」、第二页日期误导复发）', file: 'index.html', needle: '生日写在开屏第一页的章节目录里——点开第一页顶部的「目录」', absent: true }, // #1216 摘要块整块撤除＝转删除型（暗号口径仍在锁卡 tip 与「许可」章）
   { name: '#1000c 锁定态 tip 的密码指路口径（删＝开屏锁卡又只说「开屏公告的目录」，用户分不清是哪个公告）', file: 'js/clock.js', needle: '生日写在开屏第一页的章节目录里（点开第一页顶部的「目录」逐章翻一下就能找到）' },
-  { name: '#1000e 暗号入口（跳过开屏问答）指路口径', file: 'js/applock.js', needle: 'mochi 字卡的生日写在开屏第一页的章节目录里' },
+  { name: '#1000e 暗号入口（跳过开屏问答）指路口径', file: 'js/applock.js', needle: '原版字卡的生日写在开屏第一页的章节目录里' },
   { name: '#1000f 摘要高亮条·在线权威源同口径（联网用户开屏生效的那份）', file: 'pwa/notice.json', needle: '不是第二页「进入前 · 作者必读公告」上那两个日期，也不是最底下的部署时间', absent: true }, // #1216 summary 整段清空＝转删除型
   { name: '#1000g 删除型：暗号提示不得退回把答案指向「开屏公告」（第二页公告标题正是「作者必读公告」，用户会去那儿找日期）', file: 'js/applock.js', needle: '生日写在开屏公告的目录里，不是开屏最底下的部署时间', absent: true },
   { name: '#1000h 删除型：密码提示不得退回把答案指向「开屏公告」（同 #1000g，密码侧；needle 取三处旧文案共有的那一截）', file: 'js/clock.js', needle: '生日写在开屏公告的目录里——注意不是', absent: true },
   { name: '#1000i 静态兜底章节改用 4 位日期（删/回退＝页 1 章节又写 8.15，用户没法一眼对上 4 位密码）', file: 'index.html', needle: '0812 开搓，0815~0829 内测' },
-  { name: '#1000j 在线权威源同口径（联网用户开屏生效的那份章节）', file: 'pwa/notice.json', needle: '"0812 开搓，0815~0829 内测，谢谢参与内测的各位；Mochi字卡 0829 已完全公开，可二传二改。",' },
+  { name: '#1000j 在线权威源同口径（联网用户开屏生效的那份章节）', file: 'pwa/notice.json', needle: '"0812 开搓，0815~0829 内测，谢谢参与内测的各位；原版字卡 0829 已完全公开，可二传二改。",' },
   { name: '#1000k 删除型：在线源不得退回点号写法（回退＝4 位口径丢，用户又拿 8.15 去凑）', file: 'pwa/notice.json', needle: '"8.12 开搓', absent: true },
   { name: '#1000l 删除型：静态兜底不得退回点号写法', file: 'index.html', needle: '8.12 开搓', absent: true },
   // ==== #1449 开屏新增「关于云存储」章（2026-09-29 作者直派「公告第一页需要新增目录一条，并且二改说明里也要加这一条：没有云存储，如果二改不要公开云存储」）====
@@ -4755,10 +4755,10 @@ const FIX_SENTINELS = [
   //   c 同 b，针钉正文本体而非标题；d 删＝断网/弱网用户看不到，两源分叉。
   { name: '#1449a 开屏「关于云存储」章·在线权威源（#1500 起目录统一编号，needle 去前导引号＝对齐「17、关于云存储」形态仍命中）', file: 'pwa/notice.json', needle: '关于云存储（本站没有云存储，二改请不要公开云存储）"' },
   { name: '#1449b 二传二改说明升为四点·在线权威源', file: 'pwa/notice.json', needle: '二传二改」原则，欢迎分享与再创作。但请遵守以下要求：' },
-  { name: '#1449c 第四条正文·在线权威源', file: 'pwa/notice.json', needle: '二传二改但禁止以盈利为目的。Mochi字卡网站完全免费。' },
+  { name: '#1449c 第四条正文·在线权威源', file: 'pwa/notice.json', needle: '二传二改但禁止以盈利为目的。原版字卡网站完全免费。' },
   { name: '#1449d 「关于云存储」章·离线兜底静态 DOM', file: 'template.html', needle: '关于云存储（本站没有云存储，二改请不要公开云存储）</p>' }, // #1500 目录统一编号：needle 去标签前缀＝对编号不敏感,
   { name: '#1449e 二传二改说明标题升为四点·离线兜底', file: 'template.html', needle: '「二传与二改说明」卡' },
-  { name: '#1449f 第四条·离线兜底（开屏章内）', file: 'template.html', needle: '作者只有两个账号：小红书@言序' },
+  { name: '#1449f 第四条·离线兜底（开屏章内）', file: 'template.html', needle: '原版作者只有两个账号：小红书@言序' },
   { name: '#1449g 第四条·设置 → 关于「二传与二改说明」卡', file: 'template.html', needle: '四、二改可以自加云存储，但请不要公开云存储</b>——这个网站的存储都是保存在个人设备本地的' },
   { name: '#1373a 停更时间线卡在第二页最顶（删＝作者停更口径与「两页都写着」那句指路同时失去落点）', file: 'index.html', needle: 'id="splash-mandatory-timeline"' },
   { name: '#1373b 停更后的使用建议卡在（删＝作者定稿那段建议从产物里消失）', file: 'index.html', needle: 'id="splash-mandatory-usage-advice"' },
@@ -4947,7 +4947,7 @@ const FIX_SENTINELS = [
   /* ==== 2026-09-22 #1042 词典「逐条连发」不响收件音效（用户实报「词典逐条连发时没有触发音效」；根因＝逐卡连发写 silent: si>0?true:…，而这枚 silent 在 addIn 里连音效闸门一起摁掉＝#968 同族。实测：三张卡只响 1 声，落在「多字卡回复」第 2 条及以后时整批零声） ==== */
   { name: '#1042a addIn 音效闸门与横幅解耦（改回 !opts.silent＝连发/追加类「免横幅」通道又把音效一起摁掉）', file: 'js/chat.js', needle: "(!opts.silent || opts.sfx === true)" },
   { name: '#1042b 词典逐条连发每条按条响（删＝连发又只剩首条一声＝用户报障复发）', file: 'js/chat.js', needle: "sfx: !willRetractR," },
-  /* ==== 2026-09-22 #1048 iPhone17+Edge 独立应用「灵动岛这里不显示图标了」（用户实报 + 诊断 docx 实证 vv=874=screen 全出血、--mochi-safe-top 恒未设）：env-top 说谎报 <20 时判定器判 plain、全站顶部避让链回落 env(0)＝模拟状态栏整行（Mochi/时钟/信号/电量图标）钻进灵动岛/系统状态栏底下，#114 同根因复发。修法＝bottom inset 反证（有手势条 inset 的设备顶部必有 inset）→ 按 bottom+18 折算避让下限写回既有 var 链，零机型分支；已避让/健康覆盖/无 inset 设备零触发 ==== */
+  /* ==== 2026-09-22 #1048 iPhone17+Edge 独立应用「灵动岛这里不显示图标了」（用户实报 + 诊断 docx 实证 vv=874=screen 全出血、--mochi-safe-top 恒未设）：env-top 说谎报 <20 时判定器判 plain、全站顶部避让链回落 env(0)＝模拟状态栏整行（CiCi/时钟/信号/电量图标）钻进灵动岛/系统状态栏底下，#114 同根因复发。修法＝bottom inset 反证（有手势条 inset 的设备顶部必有 inset）→ 按 bottom+18 折算避让下限写回既有 var 链，零机型分支；已避让/健康覆盖/无 inset 设备零触发 ==== */
   { name: '#1048a env-top 说谎矛盾检测（删＝iPhone17+Edge 全出血形态顶部避让瘫痪复发、模拟状态栏钻进灵动岛下；判式必含 bottom 反证与 diff≤2 双门，改宽＝已避让形态被误加双倍避让）', file: 'index.html', needle: 'envTop < 20 && envBottom >= 20 && diff <= 2' },
   { name: '#1048b 探针同时量 bottom inset（删＝判定器拿不到反证信号、#1048a 恒不触发＝修复整批哑火）', file: 'js/mobile-adapt.js', needle: 'padding-bottom:env(safe-area-inset-bottom,0px)' },
   /* ==== 2026-09-22 #1047 更新入口「点了没反应」（用户实报「有时候那里仍是旧版点更新还点不动」；根因＝手动通道只在点击那一刻发一次 PRECACHE_NOW，iOS WebKit 冻结空闲 SW 实例时消息没人收、PRECACHE_DONE 永不到来，按钮顶着「正在下载…」且 _prBusy 静默吞后续点击最长 180s。修法＝12s 一发重发同消息唤醒/重试，DONE 即停、12 发封顶与 VER_DL_WAIT 对齐；自动通道 2.5s 兜底口径不变） ==== */
@@ -4979,7 +4979,7 @@ const FIX_SENTINELS = [
   { name: '#1059a 通知逐条弹（关闭去重）开关行在位（删＝用户点名的「多条消息都要看到弹窗」没有入口）', file: 'template.html', needle: 'id="bg-notify-nodedup"' },
   { name: '#1059b 开关打开时跳过内容类去重三闸（删＝打开也不逐条弹；消息身份重放闸 #780 不受影响）', file: 'js/bg-keep.js', needle: 'if (!force && !bgNoDedup() && (notifiedDup(nkey) || seenDup(nkey)))' },
   { name: '#1059c 开关按手势绑定并落全局键（删＝开关点了没反应/跨桌面不生效）', file: 'js/bg-keep.js', needle: "gSet('bg-notify-nodedup', '1')" },
-  { name: '#1058c 测试结果识别「已安装应用」形态并给出重置路径（删＝主屏图标用户授权失联时无路可走——红米 K80 实报「由 Mochi 管理」）', file: 'js/bg-keep.js', needle: '长按主屏图标卸载本应用，重新打开网站「添加到主屏幕」并允许通知' },
+  { name: '#1058c 测试结果识别「已安装应用」形态并给出重置路径（删＝主屏图标用户授权失联时无路可走——红米 K80 实报「由 CiCi 管理」）', file: 'js/bg-keep.js', needle: '长按主屏图标卸载本应用，重新打开网站「添加到主屏幕」并允许通知' },
   { name: '#1058a 标红条/测试结果含「添加网站例外」完整路径与第三层出口（删＝授权框被 Chrome 自动屏蔽的用户按指路仍无处可点）', file: 'js/bg-keep.js', needle: '「添加网站例外」→ 输入本站网址' },
   { name: '#1058b 使用说明前提2 含「添加网站例外」＋「改了仍不弹换 Edge/电脑」出口（删＝最高级自动屏蔽用户无路可走）', file: 'template.html', needle: '「添加网站例外」→ 手动输入本站网址' },
   { name: '#1056a 经期提醒权限被拒不再空发请求＋就地指路（删＝denied 时每次开开关都空发一次授权请求＝再喂浏览器「反复弹授权」自动屏蔽，且提醒静默失效无任何提示）', file: 'js/period.js', needle: "if (Notification.permission === 'denied') { toast(periodPermHint()); return; }" },
@@ -5951,7 +5951,7 @@ const FIX_SENTINELS = [
   { name: '#1400c 强制邀请那颗的接线（#994 教训：渲染与接线成对，只画按钮不挂处理器＝点了没反应的静默死亡）', file: 'js/music-player.js', needle: "if (taInv) taInv.addEventListener('click', () => { forceTaInviteFor(id); });" },
   { name: '#1400d 我方邀请三档掷骰的同意档走 accept 真起播（改成只发台词＝又回到聊天邀请字卡那种「答应了却没播」）', file: 'js/music-player.js', needle: "if (roll < 0.6) { accept(say('音乐邀请TA·同意'" },
   { name: '#1400e 拒绝档在聊天里留一句痕（删＝这次邀请的结果只有气泡，回看不知 TA 答没答应）', file: 'js/music-player.js', needle: "taMusicSys(name + ' 这次没答应，说待会儿再听《' + trackName + '》');" },
-  { name: '#1400f 申请换一首那一跳复用唯一邀请面板（换成新建一层弹窗或改成直接抢播＝与 TA→我 那条「你点一起听才播」的口径分叉）', file: 'js/music-player.js', needle: 'if (!openMusicInvitePanel(pick.id, !!currentId)) {' },
+  { name: '#1400f 申请换一首继续走需要用户同意的统一音乐邀请面板', file: 'js/music-player.js', needle: "if (!openMusicRequestPanel('named', pick, '')) {" },
   { name: '#1400g 我方邀请的在飞闸（TA 的回应延迟 1.5~4s 落地，没这道闸连点就把三条回应叠成一串）', file: 'js/music-player.js', needle: "if (myInvitePending) { toast('刚才那条还在等 TA 回，先看这一条'); return; }" },
   { name: '#1400h 切桌面时交还我方在飞闸（残留＝新桌面的正常邀请被旧桌面那条还没落地的邀请挡掉，看着像按钮坏了）', file: 'js/music-player.js', needle: 'reqData = null;\nmyInvitePending = false;' },
   { name: '#1400i 音乐设置那句「一起听歌」说明指到两颗新按钮（不指路＝功能在做而用户找不到，只能报「没有这个设计」）', file: 'js/music-player.js', needle: '想现在就要（或换你主动邀 TA）' },
@@ -6378,7 +6378,7 @@ const FIX_SENTINELS = [
   { name: '#1490a 症状缓解建议卡查旧与写新同 id（改回 card.id = period-card＝每 render 多留一张，页内重复七八条回流）', file: 'js/period.js', needle: "var olds = scroll.querySelectorAll('#period-card, #period-remedy-card');" },
   { name: '#1490b 症状缓解建议卡就近删除＝只清掉当天症状记录（删掉＝作者报的「内容没有删除的按钮」回流，症状/TOP3 只能绕去日格弹层删）', file: 'js/period.js', needle: 'if (rec) rec.symptoms = [];' },
   { name: '#1489a 保活抢不抢音频通道只由「本档开关＋有没有自定义音频＋这条路基坏没」决定（退回按机型/UA 分支＝作者明令禁止的「修好一个机型弄坏另一个」；也是零机型判据的唯一逻辑锚）', file: 'js/bg-keep.js', needle: 'function kaNoDuckNow() { return kaNoDuckSaved() && !kaCustomWanted() && !kaWaBroken; }' },
-  { name: '#1489b 新档不声明保活媒体条（媒体条 playbackState=playing 就是内核去抢媒体音频焦点的那一手；删＝「进 mochi 变响、退出变轻」的音量泵动复发，Mate80 实报）', file: 'js/bg-keep.js', needle: 'if (kaNoDuckNow()) { kaReleaseKeepMediaSession(); return; }' },
+  { name: '#1489b 新档不声明保活媒体条（媒体条 playbackState=playing 就是内核去抢媒体音频焦点的那一手；删＝「进 CiCi 变响、退出变轻」的音量泵动复发，Mate80 实报）', file: 'js/bg-keep.js', needle: 'if (kaNoDuckNow()) { kaReleaseKeepMediaSession(); return; }' },
   { name: '#1489c 5s 轻心跳不再把 playbackState 按回 playing（旧写法每 5s 无条件重申「我在放媒体」＝被对方接走后又被我们抢回来，与 #780「谁在放谁拿条」相矛盾）', file: 'js/bg-keep.js', needle: 'let hold = !kaNoDuckNow();' },
   { name: '#1489d 启动只经 kaBuildTransducer 选通道（两条转子一个出口；退回各写一份＝新档与老路漂移，音量唯一写入方 #1374a 同时失守）', file: 'js/bg-keep.js', needle: 'if (!kaBuildTransducer(KA_VOL_BASE))' },
   { name: '#1489e 两条转子共用同一套 play/pause 边沿（#153 切后台补播/#901 退避/#924 隐藏期让位/#1374 前台闸的时序不因换通道而分叉）', file: 'js/bg-keep.js', needle: "keepEl.addEventListener('play', function () { kaOnPlayEdge(); });" },

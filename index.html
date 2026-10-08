@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-visual">
-<title>Mochi 字卡传讯（完全免费·禁止倒卖）</title>
+<title>CiCi传讯（完全免费·禁止倒卖）</title>
 <meta name="description" content="情侣专属的字卡传讯，不是小手机。本站完全免费，任何收费均为倒卖诈骗；唯一作者：小红书@言序（1842523578）。如果你是花钱买来的链接：你被骗了，请拒付退款并举报卖家。">
 <meta name="theme-color" content="#e9e9e9">
 <link rel="manifest" href="./manifest.json">
@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Mochi">
+<meta name="apple-mobile-web-app-title" content="CiCi">
 <meta name="format-detection" content="telephone=no,address=no,email=no">
 <!-- v3.6.x：全局无 Referer——网易云外链（music.163.com/song/media/outer/url）
      对带 Referer 的请求返回 403（防盗链），移动端 WebView/Edge 对
@@ -1093,6 +1093,10 @@ box-shadow:0 4px 14px rgba(0,0,0,.05);
 opacity:var(--widget-opacity);
 border:1px solid var(--widget-border);
 }
+.weekend-box.music-comment-active > .we-left,
+.weekend-box.music-comment-active > .we-btn { display:none; }
+.we-music-comment { width:100%; color:var(--ink); font-size:13px; font-weight:600; line-height:1.35; overflow:hidden; }
+.we-music-comment[hidden] { display:none; }
 .we-combo {
 position:absolute; top:-9px; right:10px;
 font-size:10px; font-weight:700; color:#fff; letter-spacing:.5px;
@@ -1380,6 +1384,19 @@ background:var(--widget-bg);
 opacity:var(--widget-opacity);
 border:1px solid var(--widget-border);
 }
+.music-widget.has-together { height:auto; min-height:190px; }
+.mw-together {
+display:flex; align-items:center; justify-content:space-between; gap:8px;
+margin-top:9px; padding:7px 8px 0;
+border-top:1px solid var(--widget-border); color:var(--ink);
+font-size:12px; font-weight:600;
+}
+.mw-together[hidden] { display:none; }
+.mw-together-ok.cc-tool {
+flex:none; width:auto; min-height:30px; padding:5px 11px;
+border-radius:11px; font-size:12px;
+}
+.mw-together-ok.cc-tool[hidden] { display:none; }
 .mw-head {
 display:flex; align-items:center; justify-content:space-between; margin-bottom:9px;
 }
@@ -1582,6 +1599,7 @@ html.tablet .page-slide > .music-widget,
 html.tablet .page-slide > .desk-page-hint,
 html.tablet .page-slide > .desk-page-add { grid-column:1 / -1; }
 html.tablet .deco-widget, html.tablet .music-widget { height:var(--tb-hero); }
+html.tablet .music-widget.has-together { height:auto; min-height:var(--tb-hero); }
 html.tablet .deco-avatars { gap:32px; }
 html.tablet .deco-avatar .ring { width:118px; height:118px; }
 html.tablet .deco-avatar .ring svg { width:48px; height:48px; }
@@ -2619,6 +2637,8 @@ display:flex; flex-wrap:wrap; align-items:center;
 gap:4px 10px; margin-top:5px; padding-top:5px;
 border-top:1px dashed rgba(0,0,0,.12);
 }
+#page-chat.cs-hide-tags .msg-moods { display:none !important; }
+#page-chat .msg-moods[hidden], #page-chat .msg-mood[hidden] { display:none !important; }
 .msg-mood {
 display:inline-flex; align-items:center;
 font-size:11px; color:inherit; opacity:.75;
@@ -3995,111 +4015,70 @@ padding:8px 18px; border-radius:14px; border:1px solid #eee; background:#fff; fo
 .period-day-pop .st-unit { font-size:12px; color:var(--muted); }
 .period-day-pop .dp-ovu-preview { font-size:15px; font-weight:700; color:#f5a623; }
 .period-day-pop .dp-date-input { width:100%; padding:9px 10px; border:1px solid #eee; border-radius:10px; font-size:14px; box-sizing:border-box; }
-.acc-scroll { flex:1; overflow-y:auto; scrollbar-width:none; -ms-overflow-style:none; padding:0 18px; }
-.acc-scroll::-webkit-scrollbar { display:none; }
-.acc-cog { margin-left:auto; width:30px; height:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; -webkit-tap-highlight-color:transparent; }
-.acc-cog svg { width:18px; height:18px; }
-.acc-overview { border-radius:20px; padding:16px 18px; margin:14px 0; }
-.acc-month-head { display:flex; align-items:center; justify-content:center; gap:16px; margin-bottom:14px; }
-.acc-month-txt { font-size:15px; font-weight:700; color:var(--ink); min-width:110px; text-align:center; }
-.acc-month-btn { width:30px; height:30px; border-radius:8px; border:none; background:transparent; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--ink); -webkit-tap-highlight-color:transparent; }
-.acc-month-btn svg { width:15px; height:15px; }
-.acc-month-btn:active { background:rgba(0,0,0,.06); }
-.acc-ov-row { display:flex; gap:8px; }
-.acc-ov-item { flex:1; text-align:center; }
-.acc-ov-label { font-size:11px; color:var(--muted); margin-bottom:4px; }
-.acc-ov-val { font-size:16px; font-weight:800; color:var(--ink); }
-.acc-ov-val.expense { color:#e85a5a; }
-.acc-ov-val.income { color:#3aa86c; }
-.acc-remind { display:flex; align-items:center; gap:10px; border-radius:16px; padding:12px 16px; margin:-2px 0 14px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
-.acc-remind:active { opacity:.7; }
-.acc-remind-main { flex:1; min-width:0; }
-.acc-remind-title { font-size:14px; font-weight:700; color:var(--ink); }
-.acc-remind-sub { font-size:11px; color:var(--muted); margin-top:3px; line-height:1.4; }
-.acc-remind-badge { flex-shrink:0; font-size:11px; font-weight:700; color:var(--muted); border:1px solid var(--card-border); border-radius:12px; padding:4px 10px; white-space:nowrap; }
-.acc-remind-badge.on { color:#fff; background:#3aa86c; border-color:#3aa86c; }
-.acc-form-card { border-radius:20px; padding:16px 18px; margin-bottom:14px; }
-.acc-type-tabs { display:flex; gap:8px; margin-bottom:12px; }
-.acc-type-tab { flex:1; padding:8px 0; border-radius:10px; border:1px solid var(--card-border); background:transparent; font-size:14px; font-weight:600; color:var(--muted); cursor:pointer; -webkit-tap-highlight-color:transparent; }
-.acc-type-tab.sel { background:var(--ink); color:var(--btn-ink); border-color:var(--ink); }
-.acc-type-tab:active { opacity:.8; }
-.acc-amount { width:100%; box-sizing:border-box; border:1px solid var(--input-border); border-radius:10px; padding:10px 12px; font-size:18px; font-weight:700; color:var(--ink); background:var(--input-bg); margin-bottom:12px; outline:none; }
-.acc-amount:focus { border-color:var(--input-focus-border); }
-.acc-cat-grid { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
-.acc-cat { padding:6px 14px; border-radius:16px; border:1px solid var(--pill-border); background:transparent; font-size:13px; color:var(--soft-ink); cursor:pointer; -webkit-tap-highlight-color:transparent; }
-.acc-cat.sel { background:var(--ink); color:var(--btn-ink); border-color:var(--ink); }
-.acc-cat:active { opacity:.8; }
-.acc-note { width:100%; box-sizing:border-box; border:1px solid var(--input-border); border-radius:10px; padding:10px 12px; font-size:14px; color:var(--ink); background:var(--input-bg); margin-bottom:12px; outline:none; }
-.acc-note:focus { border-color:var(--input-focus-border); }
-.acc-form-row { display:flex; gap:10px; align-items:center; }
-.acc-date { flex:1; box-sizing:border-box; border:1px solid var(--input-border); border-radius:10px; padding:9px 12px; font-size:13px; color:var(--ink); background:var(--input-bg); outline:none; }
-.acc-save { padding:10px 22px; border-radius:10px; border:none; background:var(--btn-bg); color:var(--btn-ink); font-size:14px; font-weight:700; cursor:pointer; -webkit-tap-highlight-color:transparent; white-space:nowrap; }
-.acc-save:active { opacity:.8; }
-.acc-filter-card { border-radius:20px; padding:12px 18px; margin-bottom:14px; }
-.acc-filter-tabs { display:flex; gap:8px; }
-.acc-filter-tab { flex:1; padding:7px 0; border-radius:10px; border:1px solid var(--card-border); background:transparent; font-size:13px; font-weight:600; color:var(--muted); cursor:pointer; -webkit-tap-highlight-color:transparent; }
-.acc-filter-tab.sel { background:var(--ink); color:var(--btn-ink); border-color:var(--ink); }
-.acc-filter-tab:active { opacity:.8; }
-.acc-list-card { border-radius:20px; padding:16px 18px; margin-bottom:20px; }
-.acc-list { display:flex; flex-direction:column; gap:16px; }
-.acc-day-head { display:flex; align-items:center; gap:8px; padding-bottom:8px; border-bottom:1px solid var(--line); margin-bottom:8px; }
-.acc-day-date { font-size:12px; font-weight:600; color:var(--muted); flex:1; }
-.acc-day-sum { font-size:12px; font-weight:700; }
-.acc-day-sum.expense { color:#e85a5a; }
-.acc-day-sum.income { color:#3aa86c; }
-.acc-row { display:flex; align-items:center; gap:10px; padding:8px 0; }
-.acc-row-info { flex:1; min-width:0; }
-.acc-row-cat { display:inline-block; font-size:12px; font-weight:600; color:var(--ink); padding:2px 10px; border-radius:8px; background:var(--static-bg); margin-bottom:3px; }
-.acc-row-note { font-size:11px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.acc-row-amount { font-size:15px; font-weight:800; white-space:nowrap; }
-.acc-row-amount.expense { color:#e85a5a; }
-.acc-row-amount.income { color:#3aa86c; }
-.acc-row-del { width:26px; height:26px; border:none; background:transparent; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--muted); -webkit-tap-highlight-color:transparent; flex-shrink:0; }
-.acc-row-del svg { width:15px; height:15px; }
-.acc-row-del:active { color:#e85a5a; }
-.acc-empty { font-size:13px; color:var(--muted); text-align:center; padding:24px 0; }
-.acc-search-tip { font-size:11px; color:var(--muted); padding:0 2px 8px; }
-.acc-view-tabs { display:flex; gap:6px; margin-bottom:12px; }
-.acc-view-tab { flex:1; padding:6px 0; border-radius:8px; border:1px solid var(--card-border); background:transparent; font-size:12px; font-weight:600; color:var(--muted); cursor:pointer; -webkit-tap-highlight-color:transparent; }
-.acc-view-tab.sel { background:var(--ink); color:var(--btn-ink); border-color:var(--ink); }
-.acc-view-tab:active { opacity:.8; }
-.acc-budget-wrap { margin-top:12px; }
-.acc-budget-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
-.acc-budget-head > span { font-size:11px; color:var(--muted); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.acc-budget-set { border:none; background:transparent; font-size:11px; color:var(--ink); cursor:pointer; padding:2px 8px; -webkit-tap-highlight-color:transparent; flex-shrink:0; }
-.acc-budget-set:active { opacity:.6; }
-.acc-budget-track { height:6px; border-radius:3px; background:var(--static-bg); overflow:hidden; }
-.acc-budget-bar { height:100%; border-radius:3px; background:#3aa86c; transition:width .3s; }
-.acc-budget-bar.over { background:#e85a5a; }
-.acc-chart-card { border-radius:20px; padding:14px 18px; margin-bottom:14px; }
-.acc-chart-title { font-size:13px; font-weight:700; color:var(--ink); margin-bottom:10px; }
-.acc-chart-body { display:flex; gap:14px; align-items:center; }
-.acc-chart-bar-wrap { flex:1; min-width:0; }
-.acc-chart-bar-wrap svg { width:100%; height:110px; display:block; }
-.acc-chart-ring-wrap { position:relative; width:110px; height:110px; flex-shrink:0; }
-.acc-chart-ring-wrap svg { width:110px; height:110px; display:block; }
-.acc-chart-ring-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; }
-.acc-ring-val { font-size:13px; font-weight:800; color:var(--ink); }
-.acc-ring-lbl { font-size:10px; color:var(--muted); margin-top:2px; }
-.acc-rank-card { border-radius:20px; padding:14px 18px; margin-bottom:14px; }
-.acc-rank-title { font-size:13px; font-weight:700; color:var(--ink); margin-bottom:10px; }
-.acc-rank-list { display:flex; flex-direction:column; gap:8px; }
-.acc-rank-item { padding:6px 4px; cursor:pointer; -webkit-tap-highlight-color:transparent; border-radius:8px; }
-.acc-rank-item.sel { background:var(--static-bg); }
-.acc-rank-info { display:flex; align-items:center; justify-content:space-between; margin-bottom:5px; }
-.acc-rank-cat { font-size:12px; font-weight:600; color:var(--ink); }
-.acc-rank-amt { font-size:13px; font-weight:700; color:#e85a5a; }
-.acc-rank-bar-wrap { height:4px; border-radius:2px; background:var(--static-bg); overflow:hidden; margin-bottom:3px; }
-.acc-rank-bar { height:100%; border-radius:2px; background:#e85a5a; }
-.acc-rank-pct { font-size:10px; color:var(--muted); }
-.acc-form-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
-.acc-form-title { font-size:14px; font-weight:700; color:var(--ink); }
-.acc-cancel { padding:4px 12px; border-radius:8px; border:1px solid var(--card-border); background:transparent; font-size:12px; color:var(--muted); cursor:pointer; -webkit-tap-highlight-color:transparent; }
-.acc-cancel:active { opacity:.6; }
-.acc-search { width:100%; box-sizing:border-box; border:1px solid var(--input-border); border-radius:10px; padding:9px 12px; font-size:13px; color:var(--ink); background:var(--input-bg); margin-bottom:10px; outline:none; }
-.acc-search:focus { border-color:var(--input-focus-border); }
-.acc-row.editing { background:var(--static-bg); border-radius:8px; padding:8px 6px; }
-.acc-row.editing .acc-row-cat { background:var(--ink); color:var(--btn-ink); }
+.movie-tabs { flex-shrink:0; }
+.movie-choice { margin:18px; padding:24px 18px; border:1px solid rgba(0,0,0,.07); border-radius:16px; background:rgba(255,255,255,.72); color:var(--muted); font-size:13px; line-height:1.7; text-align:center; }
+.movie-player { flex:1; min-height:0; display:flex; flex-direction:column; background:#050505; color:#fff; }
+.movie-player[hidden], .movie-choice[hidden], .movie-library[hidden] { display:none; }
+.movie-screen { position:relative; flex:1; min-height:0; background:#050505; }
+.movie-fullscreen { position:absolute; z-index:1; top:14px; left:16px; width:36px; height:36px; border:1px solid #555; border-radius:10px; background:#202020; color:#fff; font:22px/1 inherit; cursor:pointer; }
+.movie-fullscreen:active { background:#393939; }
+.movie-companion { position:absolute; top:18px; right:18px; max-width:calc(100% - 36px); color:#e8e8e8; font-size:12px; white-space:nowrap; }
+.movie-companion[hidden], .movie-title[hidden], .movie-comment[hidden], .movie-composer[hidden] { display:none; }
+.movie-title { position:absolute; top:54px; left:22px; right:22px; color:#fff; font-size:16px; font-weight:600; text-align:center; overflow-wrap:anywhere; }
+.movie-comment { position:absolute; top:96px; left:0; right:0; bottom:0; overflow-y:auto; overscroll-behavior:contain; padding:10px 16px 18px; scrollbar-width:thin; }
+.movie-comment-inner { display:flex; flex-direction:column; justify-content:flex-end; gap:14px; min-height:100%; }
+.movie-comment .msg { width:max-content; max-width:85%; }
+.movie-comment .msg-bubble { font-size:var(--chat-font-size, 14px); padding:var(--chat-bubble-pad, 11px 14px); border-radius:var(--chat-bubble-radius, 18px); white-space:pre-wrap; user-select:text; -webkit-user-select:text; }
+#page-movie .movie-comment .msg-in .msg-bubble { background:var(--movie-in-bg, #ffffff); color:var(--movie-in-ink, #111111); }
+#page-movie .movie-comment .msg-out .msg-bubble { background:var(--movie-out-bg, #111111); color:var(--movie-out-ink, #ffffff); }
+.movie-comment .msg-av { width:34px; height:34px; }
+.movie-comment .msg-time { color:#d0d0d0; }
+.movie-color-choice { display:inline-flex; align-items:center; justify-content:flex-end; gap:7px; min-width:105px; padding:6px 9px; border:1px solid rgba(0,0,0,.14); border-radius:10px; background:rgba(255,255,255,.8); color:var(--ink); font-family:inherit; font-size:12px; line-height:1.2; cursor:pointer; }
+.movie-color-choice i { width:18px; height:18px; flex-shrink:0; border:1px solid rgba(0,0,0,.18); border-radius:6px; }
+[data-theme="dark"] .movie-color-choice { background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.2); color:#eee; }
+.movie-controls { flex-shrink:0; padding:16px 20px max(28px, env(safe-area-inset-bottom)); background:#050505; }
+.movie-progress { display:block; width:100%; margin:0; accent-color:#fff; cursor:pointer; }
+.movie-time { display:flex; justify-content:space-between; margin-top:9px; color:#d8d8d8; font-size:12px; font-variant-numeric:tabular-nums; }
+.movie-actions { display:flex; align-items:center; justify-content:center; gap:18px; margin-top:24px; }
+.movie-toggle, .movie-stop, .movie-write { width:58px; height:58px; border:1px solid #666; border-radius:50%; background:#242424; color:#fff; font-family:inherit; font-weight:600; line-height:1; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.movie-toggle { font-size:25px; }
+.movie-stop { font-size:21px; }
+.movie-write { font-size:13px; }
+.movie-toggle:active, .movie-stop:active, .movie-write:active { background:#3a3a3a; }
+.movie-toggle:disabled, .movie-stop:disabled, .movie-write:disabled, .movie-progress:disabled { opacity:.45; cursor:default; }
+.movie-composer { display:flex; align-items:flex-end; gap:8px; margin-top:12px; }
+.movie-composer textarea { flex:1; min-width:0; max-height:120px; resize:vertical; border:1px solid #777; border-radius:14px; padding:9px 11px; background:#242424; color:#fff; font-family:inherit; font-size:14px; line-height:1.45; }
+.movie-composer textarea::placeholder { color:#aaa; }
+.movie-composer button { flex-shrink:0; border:1px solid #777; border-radius:12px; padding:10px 12px; background:#eee; color:#111; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; }
+.movie-composer button:disabled { opacity:.45; cursor:default; }
+.movie-library { flex:1; min-height:0; }
+.movie-entry { padding:14px 2px; border-bottom:1px solid rgba(0,0,0,.08); }
+.movie-entry:last-child { border-bottom:0; }
+.movie-entry-title { font-size:15px; font-weight:700; color:var(--ink); overflow-wrap:anywhere; }
+.movie-entry-meta { display:flex; flex-wrap:wrap; gap:4px 14px; margin-top:7px; color:var(--muted); font-size:12px; }
+.movie-entry-review { margin-top:10px; color:var(--ink); font-size:13px; line-height:1.65; }
+.movie-entry-review summary { cursor:pointer; color:var(--accent, var(--ink)); font-weight:600; }
+.movie-entry-review-text { margin-top:7px; white-space:pre-wrap; overflow-wrap:anywhere; }
+.movie-empty { padding:26px 10px; text-align:center; color:var(--muted); font-size:13px; }
+.movie-float { position:fixed; left:12px; top:210px; z-index:9998; width:230px; padding:10px 12px; border:1px solid rgba(0,0,0,.08); border-radius:12px; background:rgba(255,255,255,.97); box-shadow:0 4px 16px rgba(0,0,0,.16); color:#333; font-family:inherit; cursor:grab; touch-action:none; user-select:none; }
+.movie-float.dragging { cursor:grabbing; }
+.movie-float[hidden] { display:none; }
+.movie-float-top, .movie-float-bottom { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.movie-float-title { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; font-weight:600; }
+.movie-float-top button, .movie-float-bottom button { flex-shrink:0; border:0; border-radius:8px; background:rgba(0,0,0,.06); color:#111; font-family:inherit; cursor:pointer; }
+.movie-float-top button { padding:5px 7px; font-size:11px; }
+.movie-float-bottom { margin-top:5px; font-size:11px; font-variant-numeric:tabular-nums; }
+.movie-float-bottom button { width:28px; height:28px; font-size:16px; }
+.movie-float-track { height:3px; margin-top:8px; overflow:hidden; border-radius:3px; background:rgba(0,0,0,.1); }
+.movie-float-track > div { width:0; height:100%; border-radius:3px; background:#111; }
+@media (min-width: 901px) { html:not(.force-mobile):not(.tablet):not(.fs-active):not(.fs-css-active) .movie-float { left:calc(50% - 183px); top:calc(max(24px, 50vh - 422px) + 210px); } }
+.phone.movie-shell-fullscreen { position:fixed; inset:0; width:100vw; max-width:none; height:100vh; height:100dvh; border-radius:0; padding:0; z-index:9999; }
+.phone.movie-shell-fullscreen > .statusbar,
+.phone.movie-shell-fullscreen > .tabbar { display:none; }
+#page-movie.movie-page-fullscreen { padding:0; overflow:hidden; }
+#page-movie.movie-page-fullscreen > .chat-head,
+#page-movie.movie-page-fullscreen > .movie-tabs { display:none; }
+#page-movie.movie-page-fullscreen .movie-player { flex:1; }
 .div-scroll { flex:1; overflow-y:auto; scrollbar-width:none; -ms-overflow-style:none; padding:0 18px; }
 .div-scroll::-webkit-scrollbar { display:none; }
 .div-setup { display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
@@ -7363,6 +7342,45 @@ justify-content:safe center;
 .au-ed-foot { display:flex; align-items:center; justify-content:center; gap:10px; padding-bottom:2px; }
 .au-ed-foot .pong-overlay-btn { min-width:0; flex:1; }
 .au-ed-del { color:#ff8f8f !important; }
+.netease-remote { margin:8px 14px 10px; padding:12px 14px; border-radius:14px; flex-shrink:0; }
+.netease-remote[hidden], .netease-remote-track[hidden], .netease-remote-progress[hidden], .netease-remote-access[hidden] { display:none; }
+.netease-remote-head { display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:13px; }
+.netease-remote-head span, .netease-remote-help, #netease-remote-artist { color:var(--muted); font-size:11px; }
+.netease-remote-help { margin:6px 0 8px; line-height:1.45; }
+.netease-remote-track { display:flex; align-items:center; gap:10px; margin:8px 0; min-width:0; }
+#netease-remote-cover { width:42px; height:42px; border-radius:8px; object-fit:cover; flex-shrink:0; }
+.netease-remote-meta { min-width:0; }
+#netease-remote-title, #netease-remote-artist { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#netease-remote-title { font-size:14px; font-weight:600; }
+.netease-remote-progress { display:flex; align-items:center; gap:8px; font-size:10px; color:var(--muted); }
+.netease-remote-progress input { flex:1; min-width:0; accent-color:var(--ink); }
+.netease-remote-actions { display:flex; gap:6px; margin-top:8px; }
+.netease-remote-actions button, .netease-remote-access { border:1px solid var(--line); border-radius:9px; background:var(--card-bg); color:var(--ink); padding:7px 8px; font:inherit; font-size:11px; }
+.netease-remote-actions button { flex:1; min-width:0; }
+.netease-remote-actions button:disabled { opacity:.38; }
+body.netease-shared #mw-mode,
+body.netease-shared #sm-mode,
+body.netease-shared #sm-f-mode { display:none; }
+.netease-favorites { margin-top:12px; padding-top:10px; border-top:1px solid var(--line); }
+.netease-favorites[hidden] { display:none; }
+.netease-favorites-head { font-size:13px; font-weight:600; margin-bottom:7px; }
+.netease-favorites-head span { display:block; font-size:10px; font-weight:400; color:var(--muted); }
+.netease-favorite-row { display:flex; align-items:center; gap:9px; padding:7px 0; border-top:1px solid var(--line); }
+.netease-favorite-row img { width:34px; height:34px; object-fit:cover; border-radius:7px; flex-shrink:0; }
+.netease-favorite-info { flex:1; min-width:0; }
+.netease-favorite-info strong, .netease-favorite-info small { display:block; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.netease-favorite-info strong { font-size:12px; }
+.netease-favorite-info small { font-size:10px; color:var(--muted); }
+.netease-favorite-row button { border:0; background:transparent; color:var(--muted); font-size:11px; }
+.cs-chat-tag-items { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; padding:10px 14px 4px; }
+.cs-chat-tag-items:empty { display:none; }
+.cs-chat-tag-option { display:flex; align-items:center; gap:6px; min-width:0; padding:8px 9px; border:1px solid var(--line); border-radius:10px; background:rgba(127,127,127,.045); }
+.cs-chat-tag-option > span { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; color:var(--ink); }
+.cs-chat-tag-option .toggle { width:36px; height:21px; }
+.cs-chat-tag-option .tk::before { width:15px; height:15px; }
+.cs-chat-tag-option .toggle input:checked + .tk::before { transform:translateX(15px); }
+.cs-chat-tag-items.is-disabled { opacity:.5; }
+@media (max-width:340px) { .cs-chat-tag-items { grid-template-columns:1fr; } }
 .msg-gift { align-self: center; width: 100%; display: flex; justify-content: center; margin: 8px 0; }
 .msg-gift-card {
 width: min(260px, 80vw); padding: 22px 18px 14px; border-radius: 20px; box-sizing: border-box;
@@ -8084,6 +8102,10 @@ padding:12px 14px; border-bottom:1px solid rgba(0,0,0,.05);
 font-size:13px;
 }
 .gs-row:last-child { border-bottom:none; }
+.mail-ai-setting-field { display:block; padding:9px 14px; font-size:13px; }
+.mail-ai-setting-field > span { display:block; margin-bottom:6px; }
+.mail-ai-setting-field > .tc-input { width:100%; box-sizing:border-box; }
+.mail-ai-setting-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:8px 14px 14px; font-size:12px; color:var(--muted); }
 .gs-sub { font-size:11px; color:var(--muted); padding:0 14px 10px; line-height:1.6; }
 .gs-row .tag {
 display:inline-block; font-size:11px; color:var(--muted); font-weight:400; letter-spacing:.2px;
@@ -8888,7 +8910,6 @@ color-scheme:dark;
 [data-theme="dark"] .qa-close { border-color:var(--dark-border-12); }
 [data-theme="dark"] .qa-mine { background:var(--static-bg); }
 [data-theme="dark"] .qa-send { color:#111; }
-[data-theme="dark"] .acc-month-btn:active { background:var(--dark-hover); }
 [data-theme="dark"] .dec-inp-clear { background:var(--dark-hover); color:#aaa; }
 [data-theme="dark"] .dec-inp-clear:active { background:rgba(255,255,255,.15); }
 [data-theme="dark"] .dc-result { background:var(--static-bg); }
@@ -10511,7 +10532,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         <div class="splash-alert" data-anti-scam="1">
           <div class="splash-alert-t">免费 · 署名 · 防倒卖</div>
           <p><strong>本站完全免费，没有收过任何人一分钱，个人出资和花费时间搭建的。开放二传二改但禁止以盈利为目的。</strong></p>
-          <p><strong>Mochi字卡网站完全免费。作者只有两个账号：小红书@言序（1842523578）和抖音@言序（58334080131）。</strong>作者不玩抖音、不回消息，是看到有人想花钱求网站才开的号，仅用于发布本站链接。本站不收取任何费用，如有出现任何收费情况，均为诈骗，注意防止被骗。</p>
+          <p><strong>原版字卡网站完全免费。原版作者只有两个账号：小红书@言序（1842523578）和抖音@言序（58334080131）。</strong>作者不玩抖音、不回消息，是看到有人想花钱求网站才开的号，仅用于发布本站链接。本站不收取任何费用，如有出现任何收费情况，均为诈骗，注意防止被骗。</p>
           <p><strong>二传、分享本站链接必须标注作者署名：小红书 @言序（1842523578），禁止删除或修改。</strong>严禁冒为自己制作、删除篡改署名，或以任何形式收费倒卖本站链接、安装包——本站完全免费，收费即诈骗。如果你是花钱买来的链接：你被骗了，请拒付退款并举报卖家。</p>
         </div>
         <!-- v3.26.x #864（用户 2026-09-19 直派「开屏显眼的地方，顶部需要说明：公告内容已缩减，原公告内容的
@@ -10522,6 +10543,10 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
              的入口说明，不改公告正文与公告卡（在线 notice.json 覆盖只改公告列表，覆盖不到此处） -->
         <div class="splash-abouttip" data-about-tip="1">
           <p><strong>公告已精简：原公告里的大量使用说明已移到【设置 → 关于】</strong>（数据与存储 / 常见问题 / 使用说明）。有问题先去那里找答案即可。</p>
+        </div>
+        <div class="splash-alert splash-storesplit" id="cici-optional-online-note">
+          <div class="splash-alert-t">CiCi 二改版 · 可选联网功能</div>
+          <p>日常聊天、字卡和信箱数据仍保存在本机，没有自动云同步。你主动点击信件“开始解读”时，当前信件及同一记录内相关寄信或回信文字会发送到你填写的第三方 AI 接口；使用在线点歌或影片链接解析时，检索词或分享链接会发送给相应服务。下方原版说明中的“不会上传”不包括这些由你主动触发的联网功能。</p>
         </div>
         <!-- 2026-10-01（作者直派「必读卡片还缺少提醒备份数据的…帮我补全」）：备份提醒卡——琥珀＝#976 定的
              「需要你操作」族（与系统内置字卡锁同色）；纯静态 DOM（data-backup-warn 标记，不占 data-anti-scam /
@@ -10548,11 +10573,11 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
              看门狗的认领与重建互不干扰）。#792 批已把「2026.9.30 完结永久停更」写进设置→关于，此处为开屏侧同步口径 -->
         <div class="splash-stopupdate" data-stop-update="1">
           <div class="splash-stopupdate-t">停更公告 · 2026年9月底后永久停更</div>
-          <p><strong>mochi字卡 2026年9月底后永久停更。</strong>停更后不会再帮人调不同人的设备型号的兼容 bug。</p>
+          <p><strong>原版字卡 2026年9月底后永久停更。</strong>停更后不会再帮人调不同人的设备型号的兼容 bug。</p>
           <p>作者自己的手机使用无异常情况；其他人的设备上的问题，不报出来作者手机碰不到、也无法发现——不同手机型号的情况就是不同。</p>
           <p><strong>永久停更以后，建议自己拿代码给 AI 调</strong>（代码已在 GitHub 完全开源，可自行下载修改）。</p>
         </div>
-        <!-- 2026-10-01 用户直派「以上内容可以收进【Mochi字卡 · 开屏说明】新增目录放进去」：原「安卓浏览器提醒」
+        <!-- 2026-10-01 用户直派「以上内容可以收进【CiCi字卡 · 开屏说明】新增目录放进去」：原「安卓浏览器提醒」
              与「iPhone / iPad 添加到主屏幕」两张必读卡整卡撤除，内容改由下方公告目录第 4 章（浏览器兼容提醒·安卓）
              与第 5 章（iPhone 用户必读·添加到主屏幕）承载（章节正文为原两卡的超集，在线 notice.json 与本文件
              静态兜底两份同标题同口径，目录可逐章跳转）；配套：两卡专属样式与四支哨针同批退役（FIX-REGRESSION 有案），
@@ -10602,29 +10627,29 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         <div class="splash-logo">
           <svg viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7.5-4.7-9.3-9A5.3 5.3 0 0112 6.4a5.3 5.3 0 019.3 5.6c-1.8 4.3-9.3 9-9.3 9z"/></svg>
         </div>
-        <div class="splash-title">mochi 摸鱼字卡</div>
+        <div class="splash-title">CiCi 字卡</div>
         <!-- v3.8.y：署名（小红书）移到顶部，紧跟标题下方 -->
-        <div class="splash-brand">小红书@言序（1842523578） · 抖音@言序（58334080131）</div>
+        <div class="splash-brand">原版作者：小红书@言序（1842523578） · 抖音@言序（58334080131）</div>
         <!-- 设计作者说明：设计与开发均由作者一个人独立完成，紧跟署名下方 -->
         <div class="splash-source">
-          <div class="splash-source-line">设计与开发均由作者@言序　一个人独立完成。</div>
+          <div class="splash-source-line">原版设计与开发由作者 @言序 独立完成。</div>
         </div>
-        <!-- 2026-10-01（作者直派）：原「Mochi 名字澄清」独块整块撤除，缩短后的一句并入下方「许可 · 署名 · 灵感来源」块
+        <!-- 2026-10-01（作者直派）：原「CiCi 名字澄清」独块整块撤除，缩短后的一句并入下方「许可 · 署名 · 灵感来源」块
              重排——澄清句紧贴借鉴来源行＝「不是 milk 二改、但借鉴了 milk」在同一处说清；#1503 的显眼位要求由合并后整块继承。 -->
         <!-- v8.56 #1503（作者直派「许可 署名 灵感来源应该也放在显眼的地方啊，和 mochi 名字解释的一起」）：
              原公告「许可 · 署名 · 灵感来源」章整章下架，要点搬到品牌卡。静态 DOM：在线 notice.json 只覆盖公告列表、
              覆盖不到品牌卡，故此处即开屏侧唯一落点；改文案须与 设置 → 关于（功能介绍与许可段）及 README 保持同口径。 -->
         <div class="splash-source splash-license">
           <div class="splash-source-line"><strong>许可 · 署名 · 灵感来源</strong></div>
-          <div class="splash-source-line splash-clarify"><strong>本站不是 milk 字卡代码的二改版本，是从零开始独立编写的字卡传讯二创作品。</strong></div>
+          <div class="splash-source-line splash-clarify"><strong>CiCi 基于言序的原创字卡项目修改；原版项目由言序独立编写。</strong></div>
           <div class="splash-source-line">开放<strong>二传二改</strong>，禁止商用、禁止以盈利为目的；<strong>必须保留作者署名：小红书 @言序（1842523578），禁止删除或修改</strong>；二次修改请注明原作者。</div>
           <div class="splash-source-line">二传二改四点要求：① 保留署名；② 不要转发二级验证密码（暗号）；③ 二改后要公开时，不要公开内置字卡；④ 二改可自加云存储，但请不要公开云存储。</div>
-          <div class="splash-source-line"><strong>Mochi字卡为原创独立作品（即原版）</strong>，代码已在 GitHub 完全公开、支持私人部署；借鉴来源：milk 字卡 · 小红书 @milk（基础框架与随机回复逻辑）、@FelixFelicis（帮我决定·多人决定）、@默玉（公用＋专享字卡模式）、@心汋是颗彩虹多宝糖（情绪字卡提议）；其余功能与 UI 均为独立设计。</div>
+          <div class="splash-source-line"><strong>CiCi 是基于言序原版字卡项目的个人修改版</strong>；原版代码已在 GitHub 公开、支持私人部署。原版借鉴来源：milk 字卡 · 小红书 @milk（基础框架与随机回复逻辑）、@FelixFelicis（帮我决定·多人决定）、@默玉（公用＋专享字卡模式）、@心汋是颗彩虹多宝糖（情绪字卡提议）。</div>
           <div class="splash-source-line">使用或借鉴本站功能与代码，必须标注灵感来源；开屏公告为本站内容，不可删除或修改。详见 GitHub 库与 设置 → 关于。</div>
         </div>
         <!-- v3.8.y：原作/部署信息——本人原作本人部署，使用网站 + GitHub 库（每条单行完整显示） -->
         <div class="splash-source">
-          <div class="splash-source-line">本人原作，本人部署。</div>
+          <div class="splash-source-line">以下是原版作者的网站与代码地址。</div>
           <div class="splash-source-line">使用网站为：<span class="splash-source-url">https://ling233330-star.github.io/mochi/</span></div>
           <div class="splash-source-line">github库为：<span class="splash-source-url">https://github.com/ling233330-star/mochi</span></div>
         </div>
@@ -10641,7 +10666,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         <!-- v3.26.x #613 / #621：免费 · 署名 · 防倒卖 合并置顶卡（原「防骗提醒」卡 + 「转载署名·严禁倒卖」卡
              并成一张，用户要求「并成一张」）——静态 DOM（tag '1'），在线 notice.json 覆盖只改公告列表，不影响此处；
              clock.js 运行时按官方源回填、pwa.js 5s 看门狗兜底（被删后重建插入锚点见 clock.js / pwa.js） -->
-        <div class="splash-notice-title">Mochi字卡 · 开屏说明</div>
+        <div class="splash-notice-title">CiCi字卡 · 开屏说明</div>
         <div class="splash-notice-sub">（请认真阅读）</div>
         <!-- v3.26.x #575（用户 2026-09-16 反馈「删掉，这是错的」）：开屏这块静态「新手上路 · 3 步就能用」
              卡整块撤除（DOM 与 .splash-onboard 样式同批删除）。不再补回——开屏只留公告/必读摘要，
@@ -10663,12 +10688,12 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
             <p class="splash-bullet">转载或二传链接，必须保留作者署名（言序）；</p>
             <p class="splash-bullet">二次创作作品请注明「基于言序作品修改」；</p>
             <p class="splash-bullet">禁止抹除署名、伪装原创、或将内容用于恶意引流；</p>
-            <p class="splash-bullet">仅分享网站聊天记录、不涉及搬运字卡的，只需标注 mochi 字卡 tag 即可。</p>
+            <p class="splash-bullet">仅分享网站聊天记录、不涉及搬运字卡的，只需标注 CiCi 字卡 tag 即可。</p>
             <p class="splash-item splash-hl">未经署名转载视为侵权，作者保留追究权利。</p>
           </div>
           <div class="splash-sec-wrap">
             <p class="splash-sec">2、停更公告 · 2026年9月底后永久停更</p>
-            <p class="splash-item">mochi字卡 2026年9月底后永久停更。停更后不会再帮人调不同人的设备型号的兼容 bug。</p>
+            <p class="splash-item">原版字卡 2026年9月底后永久停更。停更后不会再帮人调不同人的设备型号的兼容 bug。</p>
             <p class="splash-item">作者自己的手机使用无异常情况；其他人的设备上的问题，不报出来作者手机碰不到、也无法发现——不同手机型号的情况就是不同。</p>
             <p class="splash-item splash-hl">永久停更以后，建议自己拿代码给 AI 调（代码已在 GitHub 完全开源，可自行下载修改）。</p>
             <p class="splash-bullet">注意：AI 的回答无法保证 100% 正确——AI 也会出错和骗人，请自行甄别。</p>
@@ -10701,7 +10726,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
             <p class="splash-sec">6、当前状态与反馈</p>
             <!-- #1000（2026-09-21 用户直派）：本行三个日期改 4 位写法（开搓／内测起止／完全公开），
                  与「把生日日期原样写成 4 位数」的密码口径对齐——这一章正是密码提示所指的答案位置 -->
-            <p class="splash-item">0812 开搓，0815~0829 内测，谢谢参与内测的各位；Mochi字卡 0829 已完全公开，可二传二改。</p>
+            <p class="splash-item">0812 开搓，0815~0829 内测，谢谢参与内测的各位；原版字卡 0829 已完全公开，可二传二改。</p>
             <p class="splash-item">网站与我更新修复问题是同步的：边修边部署，修一天部署一天；开屏有最新部署时间。</p>
             <p class="splash-item">如果浏览器还没进入新版，可以关掉浏览器再打开，多试几次流量刷新，或者过一段时间再打开。</p>
           </div>
@@ -10755,7 +10780,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
           <div class="splash-sec-wrap">
             <p class="splash-sec">13、关于「在后台放音乐，进本站突然变响、退出来又变轻」（后台保活不再占用手机音频通道）</p>
             <p class="splash-bullet">成因：「后台保活」靠一条近乎无声的音频一直循环播放，让系统别把本页冻结，TA 的消息才照常进来。而这条在系统眼里＝「本站正在放媒体」＝占住了手机音频通道，你另一个 App 的音乐于是被强制压低。前一版为了治「站内一直有嘟嘟声」，把这条音频在前台压成 0、切到后台才恢复音量——于是每次切进切出都在改「本站到底算不算在放媒体」：进本站＝系统收走我们的占用，你的音乐恢复原音量（突然变响）；退出去＝我们又占上，你的音乐再被压低（又变轻）。这是音频通道的性质，不是某一款机型的毛病，各家认音频焦点的浏览器都一样。</p>
-            <p class="splash-bullet">现在的做法：那段近无声音频默认改走「站内音效」那条通道（设置 → 系统 新增一档「保活不抢其他 App 的声音」，默认开启）。页面照样持续出声、系统照样不冻结本页，但不再向手机声明「本站正在放媒体」——你在别的 App 听歌 / 看视频时不会被本站压低音量，切进切出也不再忽响忽轻。代价说清楚：通知栏那条「Mochi 后台保活」的媒体横幅不再出现，因为那条横幅本身就是那次音频通道的占用。</p>
+            <p class="splash-bullet">现在的做法：那段近无声音频默认改走「站内音效」那条通道（设置 → 系统 新增一档「保活不抢其他 App 的声音」，默认开启）。页面照样持续出声、系统照样不冻结本页，但不再向手机声明「本站正在放媒体」——你在别的 App 听歌 / 看视频时不会被本站压低音量，切进切出也不再忽响忽轻。代价说清楚：通知栏那条「CiCi 后台保活」的媒体横幅不再出现，因为那条横幅本身就是那次音频通道的占用。</p>
             <p class="splash-bullet">万一因此收不到后台消息：个别浏览器只认那条媒体横幅给的豁免。把 设置 → 系统 →「保活不抢其他 App 的声音」关掉就回到老路（有横幅、会占用音频通道），当场生效、不用等改版。上传了自定义保活音频（白噪音 / 助眠声）时这一档不参与——那是你要出声放的东西，照旧走媒体通道。想知道此刻走的是哪条：设置 → 查看诊断 →【保活现场】里的「锚=」那一格（媒体元素(占媒体通道) / WebAudio(不占媒体通道)）。</p>
           </div>
           <!-- #1060（2026-09-23 用户直派「关于后台通知相关设置也放在公告里，放在公告的最后新增一个目录」）：
@@ -10767,7 +10792,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
             <p class="splash-bullet"><b>收不到①·浏览器权限</b>：地址栏左侧图标 → 权限 → 通知 → 允许；若列表里没有本站、或授权框从不出现（浏览器会把反复弹过授权框的站自动挡掉）→ Chrome ⋮ → 设置 → 网站设置 → 通知 →「添加网站例外」→ 输入本站网址。若你是从桌面图标（已安装应用）打开的，通知权限由应用自己管理、Chrome 网站设置里不显示本站属正常：<b>长按图标卸载后重新「添加到主屏幕」，安装时允许通知即可重置</b>。</p>
             <p class="splash-bullet"><b>收不到②·页面在后台被冻结或回收</b>：保活靠页面在后台运行，系统省电/内存策略会把挂久的页面冻结甚至丢弃（Chrome「内存节省程序」约 30 分钟，手机内存紧张时更快），别的 App 刷视频/听音乐也会占用音频通道把保活截断——表现就是「弹一下就停了」。恢复：彻底关闭网页重新打开，再把「后台保活」「后台通知」重新打开；并把 Chrome 加入「始终保持活动」、省电策略设「无限制」，到 设置 → 工具 → 查看存储 清掉最占地方的数据（页越轻越不容易被丢）。</p>
             <p class="splash-bullet"><b>收不到③·设计内不弹</b>：你正在前台看着聊天时不弹（聊天里直接可见）；切后台头 15 秒内的旧内容不弹（防刚看完的又弹一遍，打开「通知逐条弹」后此项不再拦）；跨桌面补投递的历史旧消息不弹。</p>
-            <p class="splash-bullet"><b>收不到④·手机开了勿扰/免打扰</b>：安卓的「勿扰/免打扰」、iPhone 的「专注模式」（勿扰·睡眠·驾驶·工作）会把所有应用的通知静默收进通知栏——屏幕上方不弹横幅，而<b>网页读不到这个状态</b>，所以会出现「测试体检全绿、通知真发出去了，屏幕上却什么都没有」。<b>一步自查</b>：下拉通知栏看那条测试通知在不在，<b>在＝被系统压住</b>，不是链路坏了——去系统设置关掉勿扰，或在勿扰设置里把本浏览器（或桌面上的 Mochi）加进「允许的应用/例外」。同一族还有：通知被长按成「静默/减少干扰」、浏览器「网站通知」那一类单独关掉、锁屏设成隐藏通知内容、iPhone 开过「定时推送摘要」（通知攒到点才出现）；电脑端＝Windows「请勿打扰/专注助手」与 macOS「专注模式」。另外开着本站自己的<b>「夜间免打扰模式」</b>（原「夜间模式」）时 22:00–7:00 TA 不主动发消息，后半夜本来就没有可弹的内容——本站那两个档管「有没有消息可弹」，手机系统勿扰管「有消息也弹不出来」。</p>
+            <p class="splash-bullet"><b>收不到④·手机开了勿扰/免打扰</b>：安卓的「勿扰/免打扰」、iPhone 的「专注模式」（勿扰·睡眠·驾驶·工作）会把所有应用的通知静默收进通知栏——屏幕上方不弹横幅，而<b>网页读不到这个状态</b>，所以会出现「测试体检全绿、通知真发出去了，屏幕上却什么都没有」。<b>一步自查</b>：下拉通知栏看那条测试通知在不在，<b>在＝被系统压住</b>，不是链路坏了——去系统设置关掉勿扰，或在勿扰设置里把本浏览器（或桌面上的 CiCi）加进「允许的应用/例外」。同一族还有：通知被长按成「静默/减少干扰」、浏览器「网站通知」那一类单独关掉、锁屏设成隐藏通知内容、iPhone 开过「定时推送摘要」（通知攒到点才出现）；电脑端＝Windows「请勿打扰/专注助手」与 macOS「专注模式」。另外开着本站自己的<b>「夜间免打扰模式」</b>（原「夜间模式」）时 22:00–7:00 TA 不主动发消息，后半夜本来就没有可弹的内容——本站那两个档管「有没有消息可弹」，手机系统勿扰管「有消息也弹不出来」。</p>
             <p class="splash-bullet"><b>换浏览器 / 换网址要重新允许</b>：通知权限按「浏览器 + 网址」记，Chrome 与 Edge 各自独立；同一台手机换了浏览器，按上面「收不到①」重做一遍即可。</p>
           </div>
         </div>
@@ -10787,14 +10812,14 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         <div class="splash-mandatory-card" id="splash-mandatory-timeline">
           <div class="splash-mandatory-h">关于永久停更</div>
           <div class="splash-mandatory-body">
-            <p>mochi 字卡 · 时间线</p>
+            <p>原版字卡 · 时间线</p>
             <p>2026.08.12 开始制作</p>
             <p>2026.08.15 开始内测</p>
             <p>2026.08.29 正式公开</p>
             <p>2026.09.30 完结停更</p>
             <p>2026.08.12 ～ 2026.09.30，制作 50 天，正式完结。</p>
             <p>这个网站不会再继续更新，但不会关闭，内容永久保留，网站依然可以正常使用和下载，GitHub 库开源代码也可继续下载。</p>
-            <p>并不懂代码，网站是 AI 辅助制作。目前来说只有三个月的制作经验，7月做了第一个网站星言，8月做了第二个网站mochi。以后如果有时间，可能会做出更成熟的作品吧。</p>
+            <p>并不懂代码，网站是 AI 辅助制作。目前来说只有三个月的制作经验，7月做了第一个网站星言，8月做了第二个原版字卡网站。以后如果有时间，可能会做出更成熟的作品吧。</p>
             <p>因制作仅 50 天、功能太多、工程量太大，网站内所有文字内容并未一一检查，仅供参考。</p>
           </div>
         </div>
@@ -10884,12 +10909,12 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
           <div class="splash-mandatory-h">关于让 AI 修，先说清楚几句</div>
           <div class="splash-mandatory-body">
             <p>虽然建议使用 AI，但建议不要 100% 依赖和信任 AI。AI 也会出错和骗人。作者也是 0 经验开搓的，目前是从 2026 年 6 月~9 月积累的制作经验，问就是已经体验过了：AI 需要一直自己调，每天和 AI 话几百条。</p>
-            <p>mochi 网站做了一个半月，永久停更后不解答任何问题，请自己解决；代码一直是全部开源的，可查看、可学习、可二改。</p>
+            <p>原版字卡网站做了一个半月，永久停更后不解答任何问题，请自己解决；代码一直是全部开源的，可查看、可学习、可二改。</p>
             <p>关于上面推荐的那两个可以白嫖一点点的 AI：是目前有一点点可以白嫖的额度，以后不知道，仅供参考。</p>
           </div>
         </div>
         <!-- v8.35 #1022（用户 2026-09-22 直派「开屏第二页增加内容」，并给出定稿原文：造谣/恶意引流与不署名、
-             网站一直公开免费从没要求点赞关注评论、星言字卡与 mochi 字卡都是自费制作没收过一分钱、
+             网站一直公开免费从没要求点赞关注评论、星言字卡与原版字卡都是自费制作没收过一分钱、
              并担心停更后有人借网站名义收费）——
              放置口径：接在 #995（2026.09.21）之后、`—— 公告完 ——` 之前＝按页面既有的日期顺序排在页 2 最末；
              拆两张卡＝顺着原文本自带的「还有个问题就是」换题过渡（主题一＝尊重 / 署名 / 免费公开，主题二＝澄清「收费」传闻），
@@ -10916,7 +10941,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
           <div class="splash-mandatory-date">2026.09.22</div>
           <div class="splash-mandatory-h">关于「收费」，一并说清楚</div>
           <div class="splash-mandatory-body">
-            <p>还有个问题就是，不管是 2026 年 7 月搓的星言字卡，还是 8 月搓的 mochi 字卡，作者一直都是自费制作的。这两个字卡网站都是免费网站，没有收过任何人一分钱，有人想悄悄给我塞钱，我也都拒绝了。</p>
+            <p>还有个问题就是，不管是 2026 年 7 月搓的星言字卡，还是 8 月搓的原版字卡，作者一直都是自费制作的。这两个字卡网站都是免费网站，没有收过任何人一分钱，有人想悄悄给我塞钱，我也都拒绝了。</p>
             <p>我一直都说这是免费网站，有人不清楚现状有对外说类似「网站是免费的，但除了作者谁都不要给钱」——完全自相矛盾，这网站本来就是免费的，一直是免费的，请不要在外面乱传。我真怕有人在外面乱传，明明网站一直是免费的，却被说成「免费但作者私下收费」之类的话。</p>
             <p>还有更怕永久停更后有人借着这个网站的名义收费，到时候真传成「这网站收费」，也是说不清了。</p>
             <p>说实话，这个网站是我用了非常多的精力和心血做成的，我做不到对外面那些话语完全零反应。就算对我的网站，我的话不认可，也请互相尊重彼此。</p>
@@ -10954,8 +10979,8 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
            （名称+版号 / 部署时间+实时秒 / 版本检测行）收成一行；检测行随 ver-check.js 退役删除。
            data-build-ts / data-version 两属性保留：device.js 诊断、bg-keep 自检、pwa.js 旧包检测
            仍只读属性（诊断版本号走 data-version 兜底，device.js 两处缓存原生支持）。 -->
-      <div class="splash-ver" id="splash-ver" data-build-ts="1791264555012" data-version="v8.66">
-        <span class="sv-app">Mochi 字卡传讯 已完结停更</span>
+      <div class="splash-ver" id="splash-ver" data-build-ts="1791451913454" data-version="v8.66">
+        <span class="sv-app">CiCi传讯</span>
       </div>
       <!-- v3.5.120：数据（IndexedDB 回填）加载完成前不显示「点击进入」按钮，
            只显示加载提示；就绪后按钮才出现（clock.js 控制显隐） -->
@@ -10989,7 +11014,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
   <div class="phone">
       <div class="phone-bg-mask"></div>
       <div class="statusbar">
-        <span class="brand">Mochi</span>
+        <span class="brand">CiCi</span>
         <div class="sb-right">
           <span id="clock">9:41</span>
           <div class="icons">
@@ -11141,6 +11166,10 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5S4.5 15.2 4.5 9.9A4.9 4.9 0 0112 7.1a4.9 4.9 0 017.5 2.8c0 5.3-7.5 10.6-7.5 10.6z"/></svg>
             </button>
           </div>
+          <div class="mw-together" id="mw-together" hidden>
+            <span id="mw-together-text">TA在和你一起听歌</span>
+            <button type="button" class="cc-tool mw-together-ok" id="mw-together-ok">知道啦</button>
+          </div>
         </div>
 
 <!-- 第二页补充：每周日程（填空白区）；今日备忘/今天的心情已移第三页经期卡下方 -->
@@ -11157,6 +11186,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
 <span class="we-ta" id="weekend-mine-name"><span class="pair"><i>我 摸鱼值</i><b id="weekend-mine">0</b></span><span class="pair"><i>我 工作值</i><b id="weekend-work">0</b></span></span>
 </div>
 <button class="we-btn" id="weekend-fish" title="摸鱼 +1">摸鱼 +<b id="weekend-count">0</b></button>
+<div class="we-music-comment" id="weekend-music-comment" hidden></div>
 </div>
 
 <!-- 第二页功能：两排图标（第一排 音乐/聊天统计/提问记录/寻踪；第二排 花园/此间/同频(注入)/伸手(注入)；
@@ -11216,9 +11246,9 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
 <div class="app-ico"><svg viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2C12 3.2 6 9.2 6 14.2a6 6 0 0 0 12 0c0-5-6-11-6-11z"/><path d="M12 16.4c0 0-2.3-1.4-2.3-2.9a1.25 1.25 0 0 1 2.3-.9 1.25 1.25 0 0 1 2.3.9c0 1.5-2.3 2.9-2.3 2.9z"/></svg></div>
 <div class="app-name">经期记录</div>
 </div>
-<div class="app" data-app="accounting" data-desk-widget="app-accounting">
-<div class="app-ico"><svg viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="3" width="15" height="18" rx="2"/><path d="M4.5 8h15"/><path d="M10 13l2-2 2 2"/><path d="M12 11v6"/><path d="M10.5 14h3"/></svg></div>
-<div class="app-name">记账</div>
+<div class="app" data-app="movie" data-desk-widget="app-movie">
+<div class="app-ico"><svg viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 9h19M7 5l3 4m4-4 3 4"/><path d="m10 11 5 2.5-5 2.5z"/></svg></div>
+<div class="app-name">看电影</div>
 </div>
 <div class="app" data-app="memo-arc" data-desk-widget="app-memo-arc">
 <div class="app-ico"><svg viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5h5L10 4.5h9a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-12z"/><path d="M12 7.6l1.2 2.7 2.7 1.2-2.7 1.2L12 15.4l-1.2-2.7-2.7-1.2 2.7-1.2z"/></svg></div>
@@ -11443,7 +11473,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
       </div>
       <div class="chat-item glass" id="li-ta-invite">
         <div class="av"><svg viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 10.5v3M5.5 12h3"/><path d="M15.5 11h.01M18.5 13h.01"/></svg></div>
-        <div class="ci"><div class="n">TA的邀请</div><div class="m">TA 主动约你玩 · 猜拳/Pong/贪吃蛇邀请话术</div><div class="note">开关/概率在 回复设置 → 其他</div></div>
+        <div class="ci"><div class="n">TA的邀请</div><div class="m">猜拳、游戏、贴贴、听歌和看电影邀请话术</div><div class="note">概率分别在回复、音乐和看电影设置中</div></div>
         <div class="t" id="cc-ta-invite-count">10</div>
       </div>
       </div>
@@ -11770,7 +11800,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
     </button>
     <div class="set-group glass">
       <div class="gs-row"><span>使用系统预设话术</span><label class="toggle"><input type="checkbox" id="ti-default" checked><span class="tk"></span></label></div>
-      <div class="gs-sub" style="padding:0 14px 14px">TA 主动邀请的开关/概率在「回复设置 → 其他」（猜拳 / 玩游戏 / 贴贴）按联系人独立设置；同意猜拳/Pong/贪吃蛇会打开对应半框，同意贴贴则 TA 会回应一句贴贴的话；拒绝都回一句婉拒。题库随当前桌面的联系人保存</div>
+      <div class="gs-sub" style="padding:0 14px 14px">猜拳、游戏和贴贴的概率在「回复设置 → 其他」；听歌邀请在「音乐设置」；看电影邀请在「看电影设置」。拒绝邀请后会回复一句婉拒。题库随当前桌面的联系人保存</div>
     </div>
     <div class="card-tabs" id="ti-tabs" style="padding:6px 12px 8px">
       <button class="cc-tab sel" data-tab="sys">系统预设</button>
@@ -11794,6 +11824,8 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
             <option value="pong">导入到 · Pong 邀请</option>
             <option value="snake">导入到 · 贪吃蛇邀请</option>
             <option value="cuddle">导入到 · 贴贴邀请</option>
+            <option value="music">导入到 · 听歌邀请</option>
+            <option value="movie">导入到 · 看电影邀请</option>
           </select>
           <textarea id="ti-batch" class="tc-input" rows="5" placeholder="每行一条邀请话术，如：&#10;来猜拳呀，输的人答应一件事！&#10;敢不敢来一局 Pong？"></textarea>
           <button class="ta-add-btn" style="width:100%" id="ti-batch-add">批量导入</button>
@@ -12022,6 +12054,8 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         <button class="cc-tab" data-type="drift">漂流瓶</button>
         <button class="cc-tab" data-type="interact">互动回应</button>
         <button class="cc-tab" data-type="music">音乐</button>
+        <button class="cc-tab" data-type="musicKeyword">音乐关键词</button>
+        <button class="cc-tab" data-type="movie">电影</button>
         <!-- #317 梦角自由造句：程序生成（梦角说话截字重造句自动入库），这里可查看/删除 -->
         <button class="cc-tab" data-type="mjfree">梦角自由造句</button>
       </div>
@@ -12078,7 +12112,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
           <div class="txt"><span id="sf-fullscreen-label">全屏模式（隐藏手机状态栏）</span><span class="tag" id="sf-fullscreen-help" role="button" tabindex="0" aria-haspopup="dialog">功能说明</span></div>
           <label class="toggle"><input type="checkbox" id="sf-fullscreen"><span class="tk"></span></label>
         </div>
-        <div class="gs-sub" id="sf-fullscreen-sub"><b>手机端切到后台（锁屏 / 切去别的应用）会自动退出全屏，这是设备限制、不是 bug</b>，切回来手动再开一次即可。<br>开启后尽量隐藏手机顶部状态栏/浏览器栏，让内容占满全屏。<br>iOS 限制：iPhone 顶部系统状态栏（时间/电量）由系统控制，任何网页都无法隐藏；从主屏幕打开时本开关会让内容顶满屏幕，应用内模拟状态栏（Mochi/时间/电量）下移到系统状态栏正下方、两栏不重叠。</div>
+        <div class="gs-sub" id="sf-fullscreen-sub"><b>手机端切到后台（锁屏 / 切去别的应用）会自动退出全屏，这是设备限制、不是 bug</b>，切回来手动再开一次即可。<br>开启后尽量隐藏手机顶部状态栏/浏览器栏，让内容占满全屏。<br>iOS 限制：iPhone 顶部系统状态栏（时间/电量）由系统控制，任何网页都无法隐藏；从主屏幕打开时本开关会让内容顶满屏幕，应用内模拟状态栏（CiCi/时间/电量）下移到系统状态栏正下方、两栏不重叠。</div>
       </div>
       <!-- FIX 2026-09-19 #805（工作树被并行旧缓冲打回，2026-09-20 随 #927 重放）：导出数据/导入数据自「工具」段移入通用段——
            备份是防丢的唯一防线，放太靠后的 tag 用户不知道有这个功能；row id 不变，直达跳转按 closest('.them-sec') 动态取 tag -->
@@ -12106,6 +12140,15 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
           <div class="txt">开启群聊</div>
           <label class="toggle"><input type="checkbox" id="sf-group-chat"><span class="tk"></span></label>
         </div>
+      </div>
+      <div class="set-group glass" id="mail-ai-settings">
+        <div class="gs-row"><strong>信件 AI 解读接口</strong></div>
+        <div class="gs-sub">所有桌面联系人共用。填写兼容 OpenAI Chat Completions 的完整 HTTPS 接口地址、模型名称和 API Key；Qwen 等兼容模型也可使用。</div>
+        <label class="mail-ai-setting-field" for="mail-ai-settings-endpoint"><span>接口地址</span><input class="tc-input" id="mail-ai-settings-endpoint" type="url" inputmode="url" autocomplete="off" placeholder="https://…/chat/completions"></label>
+        <label class="mail-ai-setting-field" for="mail-ai-settings-model"><span>模型名称</span><input class="tc-input" id="mail-ai-settings-model" type="text" autocomplete="off" placeholder="填写接口支持的模型 ID"></label>
+        <label class="mail-ai-setting-field" for="mail-ai-settings-key"><span>API 密钥</span><input class="tc-input" id="mail-ai-settings-key" type="password" autocomplete="off" placeholder="填写 API Key"></label>
+        <div class="gs-sub">密钥会保存在本机，重启后继续使用；完整数据备份也会包含密钥，请妥善保管备份文件。</div>
+        <div class="mail-ai-setting-actions"><button type="button" class="cc-tool" id="mail-ai-settings-save">保存接口设置</button><button type="button" class="cc-tool" id="mail-ai-settings-clear-key">清除密钥</button><span id="mail-ai-settings-status" role="status" aria-live="polite"></span></div>
       </div>
       <!-- #646：打开应用时的入口行为（默认均关闭）——「打开时先进入此间」+「打开时显示联系人列表」+「默认进入的桌面」（contacts.js 接线） -->
       <div class="set-group glass">
@@ -12197,19 +12240,19 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         <div class="gs-row"><span>后台保活</span><label class="toggle"><input type="checkbox" id="bg-keepalive"><span class="tk"></span></label></div>
         <!-- v3.44.x：保活音频可选——默认内置静音音频 / 用户上传自定义音频（逻辑在 bg-keep.js） -->
         <div class="gs-row"><span>保活音频</span><button class="bg-notify-test" id="bg-keep-audio-btn" type="button">默认静音音频</button></div>
-        <!-- #1489：保活不抢其他 App 的声音（作者直派 华为 Mate80／自带浏览器「在后台放音乐，进 mochi 突然变响、
+        <!-- #1489：保活不抢其他 App 的声音（作者直派 华为 Mate80／自带浏览器「在后台放音乐，进 CiCi 突然变响、
              退出来又变轻」）——默认静音音频改走 WebAudio 通道，不再向系统声明「本站正在放媒体」＝不把别的
              App 的音量压低；关掉＝回到老路（媒体元素＋通知栏媒体条）。逻辑在 bg-keep.js 的 kaBuildTransducer -->
         <div class="gs-row"><span>保活不抢其他 App 的声音</span><label class="toggle"><input type="checkbox" id="bg-keep-noduck"><span class="tk"></span></label></div>
-        <div class="gs-sub" id="bg-keep-noduck-sub"><b>默认开启</b>：保活那段近无声音频改走「站内音效」那条通道，不再向手机声明「本站正在放媒体」——你在别的 App 听歌 / 看视频时不会被它压低音量，切进切出也不再忽响忽轻。代价：通知栏那条「Mochi 后台保活」不再出现（那条媒体横幅本身就是这次音频通道的占用）；个别只认这条媒体条豁免的浏览器后台收消息可能变差，把本开关关掉即回到老路（有媒体条、会压低别的 App）。上传了自定义保活音频时本开关不参与——那是你要出声放的东西，照旧占用音频通道。</div>
+        <div class="gs-sub" id="bg-keep-noduck-sub"><b>默认开启</b>：保活那段近无声音频改走「站内音效」那条通道，不再向手机声明「本站正在放媒体」——你在别的 App 听歌 / 看视频时不会被它压低音量，切进切出也不再忽响忽轻。代价：通知栏那条「CiCi 后台保活」不再出现（那条媒体横幅本身就是这次音频通道的占用）；个别只认这条媒体条豁免的浏览器后台收消息可能变差，把本开关关掉即回到老路（有媒体条、会压低别的 App）。上传了自定义保活音频时本开关不参与——那是你要出声放的东西，照旧占用音频通道。</div>
         <!-- #977：后台保活两条硬限制当面铺在行下（用户直派「两功能要提示用户：后台长时间挂着会失效，
              需重新关掉网页打开并重新打开功能；别的 App 刷视频/听音乐会占用音频截断保活，也要写清楚」）。
              红色视觉复用 #961 红条族；完整口径见本组「功能说明」胶囊与 使用说明 第 10 节 -->
-        <div class="gs-sub dict-lock-hint" id="bg-keep-sub">⚠️ <b>两条必知限制（手机/浏览器限制，不是故障）</b>：① <b>别的 App 刷视频、听音乐会把保活截断</b>——它们占用手机音频通道，保活音频被暂停＝保活失效，回到本页才自动恢复，截断期间后台消息收不到；② <b>后台挂久了会失效</b>——系统省电/内存策略会把挂久的页面冻结甚至丢弃重载（Edge「睡眠标签页」/Chrome「内存节省程序」约 30 分钟；手机内存紧张时更快——本页越重，几分钟也可能被丢），<b>失效后请彻底关闭网页重新打开，再把「后台保活」「后台弹窗」开关重新打开</b>。其实被回收后回到本页会自动重载：开关自动恢复、保活在你碰一下页面时就自动接上，数据不丢；<b>止住它最有效的一步＝去 系统设置 → 应用 → 本浏览器（或桌面上的 Mochi）→ 省电 / 电池策略 选「无限制 / 允许后台活动」，再在最近任务里把本站锁定、别横向划掉</b>；⚠ 只关 Edge「睡眠标签页」/ Chrome「内存节省程序」往往白忙活——那两个只管<b>浏览器里的标签页</b>，已添加到桌面的本站是独立应用，改那里管不到它。再把 设置→查看存储 里最占数据的两项清一清（页越轻越不容易被丢）。<br>另外：<b>开着「后台保活」或「后台通知」时，页面不会在后台自动换新版</b>——换新版要重载页面、会把后台运行打断；更新不再弹条提醒，想换新版就彻底关闭网页重开，或到 设置 → 关于 →「检查更新」手动刷（不刷也不影响使用）。</div>
+        <div class="gs-sub dict-lock-hint" id="bg-keep-sub">⚠️ <b>两条必知限制（手机/浏览器限制，不是故障）</b>：① <b>别的 App 刷视频、听音乐会把保活截断</b>——它们占用手机音频通道，保活音频被暂停＝保活失效，回到本页才自动恢复，截断期间后台消息收不到；② <b>后台挂久了会失效</b>——系统省电/内存策略会把挂久的页面冻结甚至丢弃重载（Edge「睡眠标签页」/Chrome「内存节省程序」约 30 分钟；手机内存紧张时更快——本页越重，几分钟也可能被丢），<b>失效后请彻底关闭网页重新打开，再把「后台保活」「后台弹窗」开关重新打开</b>。其实被回收后回到本页会自动重载：开关自动恢复、保活在你碰一下页面时就自动接上，数据不丢；<b>止住它最有效的一步＝去 系统设置 → 应用 → 本浏览器（或桌面上的 CiCi）→ 省电 / 电池策略 选「无限制 / 允许后台活动」，再在最近任务里把本站锁定、别横向划掉</b>；⚠ 只关 Edge「睡眠标签页」/ Chrome「内存节省程序」往往白忙活——那两个只管<b>浏览器里的标签页</b>，已添加到桌面的本站是独立应用，改那里管不到它。再把 设置→查看存储 里最占数据的两项清一清（页越轻越不容易被丢）。<br>另外：<b>开着「后台保活」或「后台通知」时，页面不会在后台自动换新版</b>——换新版要重载页面、会把后台运行打断；更新不再弹条提醒，想换新版就彻底关闭网页重开，或到 设置 → 关于 →「检查更新」手动刷（不刷也不影响使用）。</div>
         <div class="gs-row"><span>后台通知</span><label class="toggle"><input type="checkbox" id="bg-notify"><span class="tk"></span></label><button class="bg-notify-test" id="bg-notify-test">测试</button></div>
         <!-- v3.26.x：后台弹窗使用说明——要点直接铺在行下（用户直派「后台弹窗要有使用说明、详细说清楚」），
              完整步骤见本行「功能说明」胶囊（settings-help.js #bg-notify）与 使用说明 → 第 10 节 -->
-        <div class="gs-sub" id="bg-notify-sub"><b>后台弹窗＝页面切到后台（锁屏 / 切到别的应用）时，TA 发消息用系统通知弹横幅。</b>必备：① 本机得有网页通知能力——安卓或电脑上的 Chrome / Edge（Chromium 内核）且 https 打开，或 iPhone / iPad 用 Safari「添加到主屏幕」后从桌面图标打开本站（标签页形态没有这个能力）；小米 / vivo / OPPO 自带浏览器、UC、夸克这些没有通知能力，开不起来；② 允许通知权限（地址栏左侧图标 → 网站设置 → 通知）；③ 本开关（会自动开启「后台保活」——后台不产生消息就无从弹起）；④ 系统设置里给浏览器允许通知、且不限制其后台运行/省电（小米 / 红米还要开「在屏幕上方显示 / 悬浮通知」）。<b>iPhone / iPad：Safari 标签页里没有网页通知能力，要到 Safari「添加到主屏幕」后从桌面图标打开本站，这个开关才开得了</b>——那边能授权、能弹系统通知；但 iOS 不给网页推送服务端，应用被系统收回后不保证弹，所以「后台保活」要一起开着，并可用「桌面消息弹窗」的应用内横幅兜底。点本行「功能说明」看完整步骤与「收不到」的排查，点右侧「测试」＝后台弹窗自测：第一段当场体检（开关/权限/保活/后台服务）并真发一条；成功后再点「现在测（切后台）」按 Home 切后台，第二段会由页面在后台再发一条、回来给结论。<b>⚠ 后台弹窗跟着保活一起：保活被截断/页面被丢弃＝后台弹窗一起停摆</b>（别的 App 刷视频、听歌占用音频；挂后台太久被系统冻结——见上方红字）；失效后彻底关闭网页重新打开，再把两个开关重新打开。<b>还有一条最容易漏：手机开了勿扰 / 免打扰（iPhone 叫「专注模式」）时，通知被系统静默收进通知栏、屏幕上方不弹横幅</b>——网页读不到它，「测试」体检全绿你也可能什么都没看到；先下拉通知栏看那条测试通知在不在，在＝被系统压住（去系统设置关掉勿扰，或把本浏览器 / 桌面上的 Mochi 加进勿扰的允许例外）。</div>
+        <div class="gs-sub" id="bg-notify-sub"><b>后台弹窗＝页面切到后台（锁屏 / 切到别的应用）时，TA 发消息用系统通知弹横幅。</b>必备：① 本机得有网页通知能力——安卓或电脑上的 Chrome / Edge（Chromium 内核）且 https 打开，或 iPhone / iPad 用 Safari「添加到主屏幕」后从桌面图标打开本站（标签页形态没有这个能力）；小米 / vivo / OPPO 自带浏览器、UC、夸克这些没有通知能力，开不起来；② 允许通知权限（地址栏左侧图标 → 网站设置 → 通知）；③ 本开关（会自动开启「后台保活」——后台不产生消息就无从弹起）；④ 系统设置里给浏览器允许通知、且不限制其后台运行/省电（小米 / 红米还要开「在屏幕上方显示 / 悬浮通知」）。<b>iPhone / iPad：Safari 标签页里没有网页通知能力，要到 Safari「添加到主屏幕」后从桌面图标打开本站，这个开关才开得了</b>——那边能授权、能弹系统通知；但 iOS 不给网页推送服务端，应用被系统收回后不保证弹，所以「后台保活」要一起开着，并可用「桌面消息弹窗」的应用内横幅兜底。点本行「功能说明」看完整步骤与「收不到」的排查，点右侧「测试」＝后台弹窗自测：第一段当场体检（开关/权限/保活/后台服务）并真发一条；成功后再点「现在测（切后台）」按 Home 切后台，第二段会由页面在后台再发一条、回来给结论。<b>⚠ 后台弹窗跟着保活一起：保活被截断/页面被丢弃＝后台弹窗一起停摆</b>（别的 App 刷视频、听歌占用音频；挂后台太久被系统冻结——见上方红字）；失效后彻底关闭网页重新打开，再把两个开关重新打开。<b>还有一条最容易漏：手机开了勿扰 / 免打扰（iPhone 叫「专注模式」）时，通知被系统静默收进通知栏、屏幕上方不弹横幅</b>——网页读不到它，「测试」体检全绿你也可能什么都没看到；先下拉通知栏看那条测试通知在不在，在＝被系统压住（去系统设置关掉勿扰，或把本浏览器 / 桌面上的 CiCi 加进勿扰的允许例外）。</div>
         <!-- #1059：通知逐条弹（关闭内容去重）——用户直派「联系人发来的多条消息我都要看到弹窗」。
              默认关闭＝保持去重（同内容/近期弹过只弹一条）；打开后每条消息都单独弹系统通知。 -->
         <div class="gs-row"><span>通知逐条弹（关闭去重）</span><label class="toggle"><input type="checkbox" id="bg-notify-nodedup"><span class="tk"></span></label></div>
@@ -12266,7 +12309,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         </div>
         <!-- v3.26.x #185：顶部避让修正——「系统保留/覆盖」两形态 JS 无法区分（信号相同），
              不同机型各属其一：开启=声明本机为覆盖形态（恢复 env 顶部避让+全屏高度含 env），
-             修「Mochi 行与系统时间重叠」；默认关=系统保留形态（修「底部白带」）。
+             修「CiCi 行与系统时间重叠」；默认关=系统保留形态（修「底部白带」）。
              #978：本项真实门槛是「添加到主屏幕后的独立应用形态」（执行器 forceCover 的
              standalone 就是 ios-pwa-standalone 类），不是「iPhone」这个平台——iPhone 用
              Safari 直接打开时开关同样无效，故撤掉静态「仅 iPhone」胶囊，改由 JS 按形态提示。
@@ -12276,7 +12319,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
              夹在那里既藏又混类目。行 id／开关 id 一字未动＝settings-help 功能说明胶囊、
              personalize.js 的形态判定与「去调整」跳转、device.js 的读写与哨兵全部照旧。 -->
         <div class="set-row">
-          <div class="txt">顶部避让修正<span class="sub">只在「添加到主屏幕」后打开（iPhone / iPad 独立应用形态）才有意义；顶部 Mochi 行与手机时间重叠时建议开启，底部出现白带时关闭（改后自动刷新）。浏览器里直接打开时本开关无效果，安卓请用「屏幕适配微调」</span></div>
+          <div class="txt">顶部避让修正<span class="sub">只在「添加到主屏幕」后打开（iPhone / iPad 独立应用形态）才有意义；顶部 CiCi 行与手机时间重叠时建议开启，底部出现白带时关闭（改后自动刷新）。浏览器里直接打开时本开关无效果，安卓请用「屏幕适配微调」</span></div>
           <label class="toggle"><input type="checkbox" id="safe-top-force"><span class="tk"></span></label>
         </div>
       </div><!-- /set-group tools · safe-top-force -->
@@ -12312,12 +12355,12 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
           <div class="txt">修改摸鱼天数<span class="sub">摸鱼天数＝使用网站的累计天数（当天聊天/打卡等互动记 1 天）；数据丢失清零后在这里手动改回</span></div>
           <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
         </div>
-        <!-- v3.27.x：各功能数据单独管理（feature-data.js）——桌面上每个功能（花园/房间/记账/
+        <!-- v3.27.x：各功能数据单独管理（feature-data.js）——桌面上每个功能（花园/房间/旧记账数据/
              经期/占卜/音乐/小游戏…）各自分开导出/导入/清空，原来只有聊天/朋友圈/信箱三处有。
              整机备份（含全部功能）仍是上面的导出数据/导入数据；这里只针对单个功能。 -->
         <div class="set-row" id="row-feature-data">
           <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/><path d="M4 11.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg></div>
-          <div class="txt">各功能数据管理<span class="sub">花园/房间/记账/经期/占卜/音乐…每个功能单独导出、导入、清空，互不影响</span></div>
+          <div class="txt">各功能数据管理<span class="sub">花园/房间/旧记账数据/经期/占卜/音乐…每个功能单独导出、导入、清空，互不影响</span></div>
           <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
         </div>
         <!-- v3.26.x：查看存储——用户反馈「存储已用 1.x GB」时，能一眼看出各功能占多少空间，
@@ -12443,7 +12486,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
       <!-- #959（2026-09-21 用户直派「这个要写在关于里提醒 iOS 用户」）：iPhone/iPad Safari 7 天清空规则单列一条。
            仅 iOS 显示——pwa.js 载入时对非 iOS 置 hidden（JS 未跑＝保留，宁可多提醒一句，不误藏）。
            非 set-row＝设置搜索不受影响（同 #722/#792 口径）。 -->
-      <div class="set-alert" id="about-ios-pwa-note"><b>iPhone / iPad（Safari）用户必看：不装到桌面，数据会被「7 天规则」清空。</b>没把本站「添加到主屏幕」时，Apple 会在<b>连续 7 天没打开本站</b>后自动清空它的全部本地数据——这是 Safari 的隐私策略（ITP），任何网站都躲不过，网站也没法用代码阻止；<b>添加到主屏幕后从桌面图标打开就不受这条限制</b>（主屏应用不计入这 7 天）。<b>注意：主屏幕应用和 Safari 是两套独立存储</b>，所以请按顺序做：① 先导出一份完整备份（设置 → 通用 → 导出数据），存到「文件」App 或微信收藏；② 点 Safari 底部的分享按钮（方框加箭头）→「添加到主屏幕」→ 添加；③ 回手机桌面，点新出现的 Mochi 图标打开；④ 在打开的桌面应用里 设置 → 通用 → 导入数据，选第①步的备份文件恢复。之后平时都从桌面图标用，Safari 清不清都不影响你的数据。（安卓没有这条 7 天规则，但存储紧张时系统也会清网页数据，仍要定期导出备份。）</div>
+      <div class="set-alert" id="about-ios-pwa-note"><b>iPhone / iPad（Safari）用户必看：不装到桌面，数据会被「7 天规则」清空。</b>没把本站「添加到主屏幕」时，Apple 会在<b>连续 7 天没打开本站</b>后自动清空它的全部本地数据——这是 Safari 的隐私策略（ITP），任何网站都躲不过，网站也没法用代码阻止；<b>添加到主屏幕后从桌面图标打开就不受这条限制</b>（主屏应用不计入这 7 天）。<b>注意：主屏幕应用和 Safari 是两套独立存储</b>，所以请按顺序做：① 先导出一份完整备份（设置 → 通用 → 导出数据），存到「文件」App 或微信收藏；② 点 Safari 底部的分享按钮（方框加箭头）→「添加到主屏幕」→ 添加；③ 回手机桌面，点新出现的 CiCi 图标打开；④ 在打开的桌面应用里 设置 → 通用 → 导入数据，选第①步的备份文件恢复。之后平时都从桌面图标用，Safari 清不清都不影响你的数据。（安卓没有这条 7 天规则，但存储紧张时系统也会清网页数据，仍要定期导出备份。）</div>
       <!-- #1370（2026-09-28 用户直派「需要在使用说明和功能里说明 手机需要关省电模式之类的防止卡顿」）：这条警示条现在讲两件事——
            ①省电模式把整机调半速（#884 原口径）；②「另一种卡」＝系统省电/后台管控把网页收回（表现＝切回来白一下、页面自己重载）。
            同一套「回收」口径写在：使用说明第 10 节（前提 5＋挂久失效那两条）、第 11 节（新增三条）、第 12 节保活条、
@@ -12582,11 +12625,11 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         </div>
       </div>
       </div><!-- /them-sec about -->
-      <div class="ver">Mochi 字卡传讯 v8.66</div>
+      <div class="ver">CiCi传讯 v8.66</div>
       <div class="ver-credit">原版小红书@言序（1842523578）</div>
       <!-- v3.27.x：设置页底部防骗声明 -->
       <div class="set-alert">
-        <b>Mochi字卡网站免费。</b>作者只有两个账号：小红书@言序（1842523578）和抖音@言序（58334080131）；作者不玩抖音、不回消息，是看到有人想花钱求网站才开的号，仅用于发布本站链接。本站不收取任何费用，如有出现任何收费情况，均为诈骗，注意防止被骗。二传、分享本站链接必须标注作者署名：小红书 @言序（1842523578），禁止删除或修改；严禁收费倒卖本站链接、安装包——如果你是花钱买来的链接：你被骗了，请拒付退款并举报卖家。
+        <b>原版字卡网站免费。</b>原版作者只有两个账号：小红书@言序（1842523578）和抖音@言序（58334080131）；作者不玩抖音、不回消息，是看到有人想花钱求网站才开的号，仅用于发布本站链接。本站不收取任何费用，如有出现任何收费情况，均为诈骗，注意防止被骗。二传、分享本站链接必须标注作者署名：小红书 @言序（1842523578），禁止删除或修改；严禁收费倒卖本站链接、安装包——如果你是花钱买来的链接：你被骗了，请拒付退款并举报卖家。
       </div>
     </div>
 
@@ -12979,7 +13022,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         <div class="cal-card glass">
           <div class="lic-hero">
             <div class="lic-hero-top">
-              <div class="lic-title">Mochi 字卡传讯</div>
+              <div class="lic-title">CiCi传讯</div>
               <span class="lic-badge">原版</span>
               <span class="lic-ver">v8.66</span>
             </div>
@@ -13007,9 +13050,9 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
             <span class="lic-pill">需保留署名</span>
             <span class="lic-pill">注明灵感来源</span>
           </div>
-          <div class="lic-p">Mochi 字卡为<b>原创独立作品（即原版）</b>，代码已在 GitHub 完全公开，支持私人部署，与网站同步更新。</div>
+          <div class="lic-p">CiCi 是<b>基于言序原版字卡项目的个人修改版</b>；原版代码已在 GitHub 公开，支持私人部署。</div>
           <div class="lic-li" style="margin-top:6px">- 可自由二传、二改，支持私人部署，<b>禁止商用</b>，必须保留署名：<b>小红书 @言序（1842523578）</b>（禁止删除或修改）</div>
-          <div class="lic-li">- 借鉴功能或代码，必须标注灵感来源：Mochi 字卡 · 小红书 @言序（1842523578）</div>
+          <div class="lic-li">- 借鉴原版功能或代码，必须标注原版作者：小红书 @言序（1842523578）</div>
           <div class="lic-li">- <b>严禁以任何形式收费倒卖本站链接、安装包</b>——本站完全免费，如果你是花钱买来的链接：你被骗了，请拒付退款并举报卖家</div>
         </div>
 
@@ -13105,7 +13148,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
           <div class="lic-li">发出的红包约 80% 概率被领取并致谢，24 小时未领取自动退回；长按可退回待领红包；被领取后 TA 还有概率再捎一句（我领 TA 的、TA 领我的都算；默认开启、默认 60%，开关 / 概率 / 「捎什么内容」三档都在聊天页红包的「设置」里，按每个联系人单独保存）</div>
           <div class="lic-li">TA 平时也会主动发红包（每天最多 5 次），七夕更爱发大额</div>
           <div class="lic-li">余额不足也能照发照买：直接透支成负数不拦截，后续收红包 / 申请回正</div>
-          <div class="lic-li">「向 Mochi 申请心意币」：点击任意余额行弹出，可给我和 TA 双向充值入账；TA 也会随机向 Mochi 申请并在聊天留下申请记录——申请概率与每日上限在聊天页红包的「设置」里按每个联系人单独调整（默认 4%、不限次数）</div>
+          <div class="lic-li">「向 CiCi 申请心意币」：点击任意余额行弹出，可给我和 TA 双向充值入账；TA 也会随机向 CiCi 申请并在聊天留下申请记录——申请概率与每日上限在聊天页红包的「设置」里按每个联系人单独调整（默认 4%、不限次数）</div>
           <div class="lic-li">心意市集：340+ 件默认商品分 15 类（含药品医护：常备药 / 外伤处理 / 经期关怀，以及节日节令、美妆个护；节日有粽子汤圆月饼，家里有口红面膜暖宝宝），支持搜索、自建商品（名字 / 图片 / 价格 / 默认留言）、编辑与恢复默认商品；TA 逛市集时会把想要的加进自己的心愿单，并按概率把这份心愿发一张卡片到聊天——点卡片上的【送 TA】即可一键买下送出（默认开启、默认 60%，概率与开关在「心意集市和心意柜设置」里）</div>
           <div class="lic-li"><b>心意市集·上传我的商品</b>：市集顶部的【＋ 上传我的商品】——用自己的照片当礼物（不传图就用 emoji），填上名字、价格、分类和一句默认留言就能存进市集，自己送、TA 送、加心愿单都跟默认商品一样能用。同一块里还有【导出商品数据】和【导入商品数据】：导出是一份 json 文件（你上传的图片一起打包），换手机、换浏览器或搬到另一个桌面，选这个文件导入即可还原；同一件商品（名字/分类/价格/图片都一样）会自动跳过，反复导入也不会翻倍。导出只装你自己上传的商品——默认商品、对默认商品的修改与删除、心意币、心愿单、心意柜记录都不包含、也不会被改动；导入时可选「合并」（已有的保留、缺的补上）或「先清空我的商品再导入」，文件里格式不对的条目会被忽略并在提示里说明跳过了几件</div>
           <div class="lic-li">送礼给 TA：挑商品写心意留言送出，礼物卡片飞进聊天并同步存进心意柜；TA 每天 5% 概率主动从市集挑礼物回礼（最多 3 次）；反过来我送出的每一份礼物（含心愿卡上点【送 TA】）都有概率换 TA 回一句——默认开启、默认 60%，「TA 回什么」可切系统预设话术 / 像正常聊天一样回复 / 混合，开关与概率都在「心意集市和心意柜设置」里</div>
@@ -13172,7 +13215,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
           <div class="lic-li">和 TA 一起摸鱼打卡：摸鱼值 / 工作值双方随机增长，打卡横幅统计摸鱼天数，摸鱼抓包彩蛋涨值翻倍</div>
           <div class="lic-li">第一页图标：聊天、群聊（开启群聊模式后显示）、主页、信箱、朋友圈、日历、纪念、占卜（开启群聊模式期间收起，改用 设置 → 工具 → 占卜 打开）、收藏</div>
           <div class="lic-li">第二页：音乐播放器卡、本周日常、周末倒计时；图标——音乐、聊天统计、提问记录、寻踪、花园、此间、同频、伸手</div>
-          <div class="lic-li">第三页：经期倒计时大卡、今日备忘 / 今天的心情、备忘录状态横幅；图标——经期记录、记账、梦角档案、我的档案、房间、备忘录、喝水、吃什么、存钱罐、番茄钟</div>
+          <div class="lic-li">第三页：经期倒计时大卡、今日备忘 / 今天的心情、备忘录状态横幅；图标——经期记录、看电影、梦角档案、我的档案、房间、备忘录、喝水、吃什么、存钱罐、番茄钟</div>
           <div class="lic-li">心意市集 / 心意柜图标成组自动注入桌面</div>
           <div class="lic-li">装修模式：编辑布局、添加卡片、点图标换图、卡片设背景、长按拖拽跨页摆放、恢复图标</div>
           <div class="lic-li">手机桌面美化：主题色、桌面字号、卡片大小、组件圆角、内置壁纸预设、背景模糊遮罩、每页独立背景图</div>
@@ -13280,7 +13323,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
           <div class="lic-li">【吃什么】随机抽菜或转盘抽取，多菜单管理与批量编辑，「问 TA」把菜名发到聊天征求意见；饭点有吃饭提醒（概率可调）</div>
           <div class="lic-li">【存钱罐】存取 + 多个小心愿目标（可请 TA 当监督人），25% / 50% / 75% 进度里程碑庆祝，TA 碎碎念回应与偷偷塞硬币彩蛋</div>
           <div class="lic-li">【番茄钟】专注 / 小憩 / 长休三档计时（时长可调），🍅 今日与累计统计，铃声 / 本地通知，退回桌面有陪伴模式悬浮条</div>
-          <div class="lic-li">【记账】支出收入与自定义分类、月 / 周 / 年视角切换、月度预算进度条、收支柱状图、分类占比环形图与 TOP 排行、流水搜索过滤</div>
+          <div class="lic-li">【看电影】进入后可选「放映厅」或「影片库」。放映厅支持全屏、播放、暂停、调整进度和结束播放；首次进入需输入分享链接，无法识别片名时可手动补录。播放时 TA 可能在画面中以气泡评论；点停止键右侧的「评论」可输入自己的想法，TA 也可能回复。观影气泡会保留到确认结束播放，相关概率在右上角设置中调整。影片库按当前联系人记录每次观影的日期、从首次播放到确认停止的时长、片名和收到的观后感。结束播放后有 35% 概率在聊天中收到 TA 的观影提问；选择「去邀请TA」必定安排观后感，选择「下次再说」也有 35% 概率自动安排。信将在 1～12 小时后进入信箱的「观后感」页签；App 未运行时会在下次打开后补查。</div>
             </div>
           </details>
 
@@ -13377,7 +13420,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
           <div class="lic-li">聊天气泡：字体大小、行距（紧凑 / 标准 / 宽松）、我的 / 联系人气泡颜色与文字颜色、自定义气泡 CSS</div>
           <div class="lic-li">聊天颜色：时间轴、正在输入中、发送按钮颜色与文字颜色</div>
           <div class="lic-li">聊天记录导出 / 导入 / 删除</div>
-          <div class="lic-li">头像和昵称互动：定时随机更换联系人头像 / 昵称（1-8 小时）、我的头像池 / 昵称池定时主动给我换头像 / 昵称</div>
+          <div class="lic-li">头像和昵称互动：定时随机更换联系人头像 / 昵称（1-48 小时）、我的头像池 / 昵称池定时主动给我换头像 / 昵称</div>
           <div class="lic-li">通用设置：回复速度、概率、条数等参数可调</div>
           <div class="lic-li">后台保活与后台通知</div>
           <div class="lic-li">后台保活：开启后页面切到后台会用一段「静音音频」保持运行，联系人发送消息可触发浏览器弹窗（需同时打开【后台弹窗】并允许系统通知权限）</div>
@@ -13532,7 +13575,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
             <summary><span class="lg-num">1</span><span class="lg-name">快速开始</span><span class="lg-count">9</span></summary>
             <div class="lg-body">
               <div class="lic-li">全新环境首次打开会<b>自动弹一次「新手引导」3 步</b>：设置「我」和「TA」→ 添加字卡 → 开始聊天，每步可一键跳到对应位置；老用户想重看走 <b>设置 → 工具 → 新手引导</b>。</div>
-              <div class="lic-li">先在 <b>设置 → 通用 → 联系人 / 桌面</b> 新建联系人，并设置双方昵称、头像。<b>注意这是「桌面」那一套</b>：聊天里显示的名字 / 头像与它<b>互相独立、不会同步</b>，未设置时聊天里固定显示默认「我」「TA」，要去 <b>聊天页右上角 → 聊天设置 → 形象</b> 里的「我的昵称 / 联系人昵称 / 我的头像 / 联系人头像」单独再设一次。换聊天头像和聊天昵称还有一条路：聊天页「更多功能」（输入栏左边的 ⋯）→ 互动类 → <b>头像和昵称互动</b>——头像侧可上传多张头像库、点图即换，昵称侧可存多个文字昵称、点名字即换，两边都能开「TA 随机换头像 / 昵称」和「TA 主动给我换头像 / 昵称」（每 1-8 小时一次）。</div>
+              <div class="lic-li">先在 <b>设置 → 通用 → 联系人 / 桌面</b> 新建联系人，并设置双方昵称、头像。<b>注意这是「桌面」那一套</b>：聊天里显示的名字 / 头像与它<b>互相独立、不会同步</b>，未设置时聊天里固定显示默认「我」「TA」，要去 <b>聊天页右上角 → 聊天设置 → 形象</b> 里的「我的昵称 / 联系人昵称 / 我的头像 / 联系人头像」单独再设一次。换聊天头像和聊天昵称还有一条路：聊天页「更多功能」（输入栏左边的 ⋯）→ 互动类 → <b>头像和昵称互动</b>——头像侧可上传多张头像库、点图即换，昵称侧可存多个文字昵称、点名字即换，两边都能开「TA 随机换头像 / 昵称」和「TA 主动给我换头像 / 昵称」（每 1-48 小时一次）。</div>
               <div class="lic-li">添加字卡：底部导航「字卡库」→ 公用字卡 / 专属字卡 里添加；也可以导入 milk 字卡库的 json，或用「自定义字卡·全量导入」。</div>
               <div class="lic-li"><b>导入 milk 字卡库的 json</b>：公用字卡、专属字卡都支持。会一并导入 milk 的【主字卡】+【拍一拍】+【Emoji 库】+【字卡分组】（含分组结构），颜文字 / 表情包等分类也会按类型归位。milk 侧对应位置：<b>设置 → 高级功能 → 自定义回复 → 导入字卡</b>；把导出的 json 存到手机后，再到本站「字卡库 → 导入数据」选它。</div>
               <div class="lic-li"><b>只适配了 milk（传讯）字卡库导出的 json</b>：其他网站的字卡格式不支持，导入会提示格式错误；本站自己的备份 / 星言格式另有识别。</div>
@@ -13576,7 +13619,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
               <div class="lic-li">恢复 / 换机：新设备用 <b>设置 → 通用 → 导入数据</b> 选择之前导出的备份文件即可恢复（导入会覆盖当前数据）。</div>
               <div class="lic-li">顶部会有<b>备份提醒</b>（距上次成功导出超过 1 天提醒一次）；别只把备份留在下载列表里。</div>
               <div class="lic-li"><b>iPhone / iPad 必做</b>：把本站<b>「添加到主屏幕」</b>后从桌面图标长期使用——在 Safari 标签页里，Apple 会在<b>连续 7 天没打开本站</b>后自动清空它的全部本地数据（这是 Safari 的隐私策略，网站躲不过），这也是 iPhone 上「数据总是丢」最常见的原因。注意主屏幕应用与 Safari 是<b>两套独立存储</b>：切过去之前先在 设置 → 通用 →「导出数据」导一份，切过去后在桌面应用里走「导入数据」恢复；平时都从桌面图标打开，Safari 清不清都不影响你的数据。</div>
-              <div class="lic-li"><b>每个功能都能单独搬家</b>：<b>设置 → 工具 → 各功能数据管理</b> 里按功能列出<b>花园 / 房间 / 记账 / 经期 / 占卜 / 音乐 / 小游戏…</b>，每项都能单独<b>导出</b>成一个文件、单独<b>导入</b>回来（可选「合并」或「清空本功能后导入」）、单独<b>清空</b>——只动这一个功能的数据，别的功能和其他桌面都不受影响。</div>
+              <div class="lic-li"><b>每个功能都能单独搬家</b>：<b>设置 → 工具 → 各功能数据管理</b> 里按功能列出<b>花园 / 房间 / 旧记账数据 / 经期 / 占卜 / 音乐 / 小游戏…</b>，每项都能单独<b>导出</b>成一个文件、单独<b>导入</b>回来（可选「合并」或「清空本功能后导入」）、单独<b>清空</b>——只动这一个功能的数据，别的功能和其他桌面都不受影响。</div>
               <div class="lic-li">聊天记录可在 <b>聊天设置 → 数据</b> 里单独导出 / 导入 / 删除；字卡可在字卡库用「自定义字卡·全量导出 / 导入」单独迁移。</div>
               <div class="lic-li">各联系人是独立命名空间，专属字卡属于当前桌面联系人，换设备后请在对应联系人桌面导入。</div>
             </div>
@@ -13597,7 +13640,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
               <div class="lic-li">聊天：首页点联系人进入；右上角是<b>聊天设置</b>；输入框旁「+」展开更多功能面板，分 <b>互动 / 小游戏 / 工具 / TA的提问</b> 四类。</div>
               <div class="lic-li"><b>互动</b>类：邀请 TA、通话、拍一拍、红包、心意集市、心意柜、头像和昵称互动、漂流瓶等。</div>
               <div class="lic-li"><b>小游戏</b>类：猜拳、Pong、贪吃蛇、打砖块、钓鱼、四子棋、扫雷、记忆翻牌等；<b>工具</b>类：帮我决定、多人决定、问问 TA、搜索记录、占卜、寻踪、此间、房间、心情日记等。</div>
-               <div class="lic-li">桌面图标：日历、信箱、朋友圈、音乐、占卜、花园、房间、漂流瓶、记账、经期、备忘录、纪念等；左右滑动桌面临换页。</div>
+               <div class="lic-li">桌面图标：日历、信箱、朋友圈、音乐、占卜、花园、房间、漂流瓶、看电影、经期、备忘录、纪念等；左右滑动桌面临换页。</div>
                <div class="lic-li">注意：<b>开启群聊模式期间，桌面占卜图标会收起</b>（第一页留给「群聊」入口），占卜改从 <b>设置 → 工具 → 占卜</b> 打开，效果与点桌面图标一样（含历史记录）；关掉群聊模式图标自动回来。</div>
               <div class="lic-li">完整索引：<b>设置 → 聊天 → 功能大全</b>（可搜索、点条目直达）；群聊在 <b>设置 → 通用 → 开启群聊</b>。</div>
             </div>
@@ -13665,7 +13708,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
               <div class="lic-li"><b>收不到 ① iPhone / iPad</b>：<b>Safari 标签页里没有网页通知能力</b>，所以这个开关在浏览器里开不起来（不是网站坏了）。要 <b>Safari 分享菜单 →「添加到主屏幕」</b>，之后从桌面图标打开本站——那边能授权、能弹系统通知（本机读「通知=已允许」就是这个形态）。装在 iPhone 上也仍要靠「后台保活」把页面撑住：iOS 不给网页推送服务端，应用被系统收回后不保证弹。兜底：<b>设置 → 系统 →「桌面消息弹窗」</b>，不在聊天页时新消息弹应用内横幅，切回应用时还会提示「你不在的时候收到 N 条新消息」。</div>
               <div class="lic-li"><b>收不到 ② 后台本来就没消息</b>：TA 的聊天消息是按 <b>回复设置 → 主动发送</b> 的「间隔 + 概率」随机产生的。关掉「主动发送」、概率调成 0、或开着<b>「免打扰」</b>（那是本应用自己的档位，把主动发送弱化到最长 3 小时一次），后台就没有东西可弹（这与通知权限无关）；开着<b>「夜间免打扰模式」</b>（原「夜间模式」）时 22:00–7:00 整段不主动发消息，<b>后半夜本来就没有可弹的东西</b>——这些都属设定，不是坏了。</div>
               <div class="lic-li"><b>收不到 ③ 被去重闸门拦了</b>：刚切到后台的 <b>15 秒内</b>不发通知（多半是你刚看完的消息在补触发）；内容上也会去重——与最近 5 分钟聊过、最近 2 分钟弹过、或你刚在前台看过的同一条内容不再重复弹。TA 的字卡池重复率高，同一句被吞掉属正常，不是坏了。</div>
-              <div class="lic-li"><b>收不到 ④ 手机开了「勿扰 / 免打扰」</b>（系统把横幅压住了）：这是最容易漏、也最常命中的一条。手机的<b>勿扰模式</b>（安卓叫「勿扰 / 免打扰」，iPhone / iPad 是<b>「专注模式」</b>里的勿扰·睡眠·驾驶·工作）会把<b>所有应用</b>的通知<b>静默收进通知栏</b>——屏幕上方不弹横幅、不亮屏、不响铃。它整个发生在系统那一层，<b>网页读不到它的状态</b>，所以会出现「测试体检全绿、通知确实发出去了，你屏幕上却什么都没有」——<b>体检绿 + 你没看到，先查这条</b>。两种情形：自己手动开的，或<b>定时 / 自动开着</b>（夜里到早上那一段自动开、白天忘了关）。<b>一步自查</b>：下拉通知栏，看刚才那条测试通知<b>在不在里面</b>——<b>躺在通知栏、只是没在屏幕上方弹</b>＝被系统压住了，不是链路坏了：去 系统设置 → 通知 → 勿扰 / 免打扰 关掉（iPhone：控制中心 → 点掉当前专注模式），或在勿扰设置里把本浏览器（或桌面上的 Mochi）加进<b>「允许的应用 / 例外」</b>。<b>同一族还有三处会压住横幅</b>：① 通知<b>按类别被静音过</b>——长按某条通知选过「静默 / 减少干扰」，部分新系统还会把不常用的应用自动折进「静默通知」，浏览器那一类里的<b>「网站通知」</b>单独关掉＝总开关开着也不弹；② <b>锁屏显示</b>设成「隐藏通知内容 / 不显示」，于是锁屏上看不见、只有解锁后通知栏里才有；③ iPhone 开过<b>「定时推送摘要」</b>，通知会攒到你指定的时间点才一起出现。电脑端同理：Windows 的<b>「请勿打扰 / 专注助手」</b>、macOS 的<b>「专注模式」</b>开着时也不弹横幅。<b>别和本站自己的两个档搞混</b>：回复设置里的「免打扰」与「夜间免打扰模式」管的是<b>有没有消息可弹</b>，本条说的手机系统勿扰管的是<b>有消息也弹不出来</b>——它在手机系统设置里，网页读不到它的状态、也替你关不掉。</div>
+              <div class="lic-li"><b>收不到 ④ 手机开了「勿扰 / 免打扰」</b>（系统把横幅压住了）：这是最容易漏、也最常命中的一条。手机的<b>勿扰模式</b>（安卓叫「勿扰 / 免打扰」，iPhone / iPad 是<b>「专注模式」</b>里的勿扰·睡眠·驾驶·工作）会把<b>所有应用</b>的通知<b>静默收进通知栏</b>——屏幕上方不弹横幅、不亮屏、不响铃。它整个发生在系统那一层，<b>网页读不到它的状态</b>，所以会出现「测试体检全绿、通知确实发出去了，你屏幕上却什么都没有」——<b>体检绿 + 你没看到，先查这条</b>。两种情形：自己手动开的，或<b>定时 / 自动开着</b>（夜里到早上那一段自动开、白天忘了关）。<b>一步自查</b>：下拉通知栏，看刚才那条测试通知<b>在不在里面</b>——<b>躺在通知栏、只是没在屏幕上方弹</b>＝被系统压住了，不是链路坏了：去 系统设置 → 通知 → 勿扰 / 免打扰 关掉（iPhone：控制中心 → 点掉当前专注模式），或在勿扰设置里把本浏览器（或桌面上的 CiCi）加进<b>「允许的应用 / 例外」</b>。<b>同一族还有三处会压住横幅</b>：① 通知<b>按类别被静音过</b>——长按某条通知选过「静默 / 减少干扰」，部分新系统还会把不常用的应用自动折进「静默通知」，浏览器那一类里的<b>「网站通知」</b>单独关掉＝总开关开着也不弹；② <b>锁屏显示</b>设成「隐藏通知内容 / 不显示」，于是锁屏上看不见、只有解锁后通知栏里才有；③ iPhone 开过<b>「定时推送摘要」</b>，通知会攒到你指定的时间点才一起出现。电脑端同理：Windows 的<b>「请勿打扰 / 专注助手」</b>、macOS 的<b>「专注模式」</b>开着时也不弹横幅。<b>别和本站自己的两个档搞混</b>：回复设置里的「免打扰」与「夜间免打扰模式」管的是<b>有没有消息可弹</b>，本条说的手机系统勿扰管的是<b>有消息也弹不出来</b>——它在手机系统设置里，网页读不到它的状态、也替你关不掉。</div>
               <div class="lic-li"><b>和「离线消息提醒」的区别</b>：两者完全独立、互不影响。后台弹窗＝<b>页面还在后台运行时</b> TA 发消息弹通知（本开关 + 后台保活 + 通知权限）；离线消息提醒＝<b>页面全部关掉后</b>浏览器隔几小时唤醒一次、随机抽一条想念文案弹通知（仅安卓 / 电脑上的 Chrome、Edge 且添加到主屏幕）。哪个不开都不影响另一个。</div>
               <div class="lic-li"><b>代价</b>：开着后台保活＝页面在后台持续运行，比较耗电、也可能发热，不需要时到 设置 → 系统 关掉；通知会在锁屏 / 通知栏显示消息内容，介意就在系统设置里关掉本应用的通知。</div>
               <div class="lic-li"><b>一句话路径</b>：安卓或电脑上的 Chrome / Edge 打开本站 → 允许通知 → 设置 → 系统 打开「后台通知」（自动带上「后台保活」）→ 去系统设置给浏览器开通知、且不限制后台 → 点「测试」看到横幅即成功。</div>
@@ -13696,7 +13739,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
               <div class="lic-li"><b>优化 ⑧ 安卓用法</b>：同样的东西，安卓一般不会被系统关掉页面，但数据还是会一直涨，<b>长期用也要定期清</b>（照 ①② 做）。另外别用「桌面版网站」模式，手机版更流畅；识别失手时用 设置 → 系统 →「<b>手机布局（强制）</b>」掰回来（也可用地址栏 <b>?mobile=1 / ?pc=1</b>）。</div>
               <div class="lic-li"><b>优化 ⑨ 保持最新版</b>：更新会自动进行（切后台/重开时生效），也可到 设置 → 关于 →「检查更新」手动刷。</div>
               <div class="lic-li"><b>不是让你少存图</b>：现在上传的字卡图会自动压到<b>最长边 720px</b>（表情包 480、头像 256），比以前的旧图小得多——<b>正常存、正常用完全不用担心</b>。真正拖慢手机的是两类老东西：以前没有压缩标准时存下的<b>老图</b>，和只进不出的<b>历史数据</b>（聊天记录、本地音乐、用不上的大图卡）。把这两类清掉就够了。要铺满屏幕的壁纸会保留大尺寸（最长边 2880px），但一台桌面也就一两张，不会堆起来。</div>
-              <div class="lic-li"><b>还有一类「卡」不是数据多，是手机把网页收回了</b>：表现＝切回来先白一下、「刚才的页面自己重新加载了」、TA 的消息和后台弹窗有一截没收到、页面越用越容易被丢。这是系统的<b>省电与后台管控</b>在做主（任何网页都拦不住它），而且<b>这一页越重它越爱收</b>。安卓／鸿蒙照这四步勾：① <b>系统设置 → 应用 →（你用的浏览器，或已加到桌面的「Mochi」图标）→ 省电 / 电池策略 → 选「无限制 / 允许后台活动」</b>，别让它「优化」这个应用；② 在<b>最近任务</b>里把本站<b>上滑锁定 / 点锁头</b>，<b>不要横向划掉它</b>（划掉＝你亲手关掉，回来必然重新加载）；③ 有「<b>自启动 / 后台活动</b>」开关的一并允许；④ 荣耀·华为、小米、OPPO·一加、vivo 的菜单<b>叫法各不相同</b>（省电策略 / 电池优化 / 后台管理 / 关联启动），找不到就在系统设置里直接搜「电池」「省电」「后台」。</div>
+              <div class="lic-li"><b>还有一类「卡」不是数据多，是手机把网页收回了</b>：表现＝切回来先白一下、「刚才的页面自己重新加载了」、TA 的消息和后台弹窗有一截没收到、页面越用越容易被丢。这是系统的<b>省电与后台管控</b>在做主（任何网页都拦不住它），而且<b>这一页越重它越爱收</b>。安卓／鸿蒙照这四步勾：① <b>系统设置 → 应用 →（你用的浏览器，或已加到桌面的「CiCi」图标）→ 省电 / 电池策略 → 选「无限制 / 允许后台活动」</b>，别让它「优化」这个应用；② 在<b>最近任务</b>里把本站<b>上滑锁定 / 点锁头</b>，<b>不要横向划掉它</b>（划掉＝你亲手关掉，回来必然重新加载）；③ 有「<b>自启动 / 后台活动</b>」开关的一并允许；④ 荣耀·华为、小米、OPPO·一加、vivo 的菜单<b>叫法各不相同</b>（省电策略 / 电池优化 / 后台管理 / 关联启动），找不到就在系统设置里直接搜「电池」「省电」「后台」。</div>
               <div class="lic-li"><b>一个容易白忙活的地方</b>：Edge 的「睡眠标签页」、Chrome 的「内存节省程序」管的是<b>浏览器里的标签页</b>。把本站「添加到主屏幕 / 桌面」之后，它是一个<b>独立应用</b>——<b>去改那两处没有用</b>，该被收回还是被收回。真正管用的是上面那条里的<b>系统省电 / 允许后台活动</b>。</div>
               <div class="lic-li"><b>iPhone 侧对应做两件事</b>：① 用 Safari 把本站「添加到主屏幕」，并<b>从桌面图标打开</b>（不装的话 Apple 的「<b>7 天规则</b>」会把整个站的数据清空，见关于页那条）；② <b>别开「低电量模式」</b>（它把整机帧率锁到一半，滑动、切页、打字全都卡，关掉立刻恢复）。另外<b>页面越轻越不容易被收回</b>：按上面的顺序清掉最大的一项；<b>设置 → 信息诊断</b>里的「被系统回收过 N 次」就是这件事的计数，它一直涨就去勾上面那几条。</div>
               <div class="lic-li"><b>千万别做</b>：<b>不要用「清除本地数据」来治卡顿</b>——它不会修好任何东西，只会把数据全删光（聊天 / 字卡 / 头像 / 壁纸 / 音乐）。真要清，先到「导出数据」备份。</div>
@@ -13727,7 +13770,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
               <div class="lic-li"><b>「数据怎么丢了」其实开的是另一个入口</b>：浏览器标签页 与「添加到主屏幕 / 安装」后的独立应用<b>可能各用一套存储</b>（安卓 Edge 尤其如此），两边数据看起来不一样。安装前先「导出数据」、装好后再「导入数据」；两边<b>不要同时打开</b>使用。</div>
               <div class="lic-li"><b>页面变形 / 布局不对</b>：浏览器的「桌面版网站」模式会把设备伪装成电脑（UA、屏幕尺寸、触摸能力全变），识别可能失手。用 设置 → 系统 →「<b>手机布局（强制）</b>」掰回来（或地址栏加 <b>?mobile=1</b> 强开手机布局、<b>?pc=1</b> 强开电脑布局）。</div>
               <div class="lic-li"><b>保活 / 通知被系统悄悄杀掉</b>：系统省电、后台清理、长时间不用都会杀掉后台页面，表现为「以前好好的，现在不弹了」。到<b>系统设置 → 应用 → 该浏览器 → 省电 / 电池策略</b>里选「<b>无限制 / 允许后台活动</b>」，在<b>最近任务</b>里把本站<b>锁定</b>、别横向划掉，然后回本页把开关重新打开一次。<b>关 Edge「睡眠标签页」/ Chrome「内存节省程序」对已加到桌面的本站没有用</b>——那两个只管浏览器标签页（详见第 11 节）。</div>
-              <div class="lic-li"><b>顶部空白 / 底部白带</b>：iOS 安全区（刘海、底部横条）与全屏模拟状态栏的高度在不同机型上会打架。iOS 上出现顶部「Mochi」行与系统时间重叠时，开「<b>顶部避让修正</b>」（设置 → 工具，就在「屏幕适配微调」下面）；底部出现白带则把它关回。</div>
+              <div class="lic-li"><b>顶部空白 / 底部白带</b>：iOS 安全区（刘海、底部横条）与全屏模拟状态栏的高度在不同机型上会打架。iOS 上出现顶部「CiCi」行与系统时间重叠时，开「<b>顶部避让修正</b>」（设置 → 工具，就在「屏幕适配微调」下面）；底部出现白带则把它关回。</div>
             </div>
           </details>
           <details class="lic-grp">
@@ -13758,7 +13801,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
           <details class="lic-grp">
             <summary><span class="lg-num">15</span><span class="lg-name">许可与免责</span><span class="lg-count">5</span></summary>
             <div class="lg-body">
-              <div class="lic-li">本站<b>完全免费</b>：作者只有两个账号——小红书 @言序（1842523578）、抖音 @言序（58334080131）。如有任何收费情况，均为诈骗，注意防止被骗。</div>
+              <div class="lic-li">本站<b>完全免费</b>：原版作者只有两个账号——小红书 @言序（1842523578）、抖音 @言序（58334080131）。如有任何收费情况，均为诈骗，注意防止被骗。</div>
               <div class="lic-li">开放<b>二传二改</b>，但必须保留作者署名（小红书 @言序（1842523578），禁止删除或修改）并注明原作者；<b>禁止商用、禁止以盈利为目的</b>（详见 设置 → 关于 →「功能介绍与可二传二改许可」）。</div>
               <div class="lic-li">请不要转发<b>二级验证密码（暗号）</b>；公开二改版本时，请不要把系统内置字卡一起打包公开。</div>
               <!-- #1453：原第 4、5 条（18 岁红线＋心理热线）合并为一条「免责摘要」并指路权威落点——
@@ -13788,7 +13831,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         </div>
         <div class="fhub-tabs" id="fhub-tags"></div>
         <div id="fhub-body" style="padding:4px 14px 20px"></div>
-        <div class="lic-p" id="fhub-empty" hidden style="text-align:center;color:#999;padding:18px 0">没找到对应功能，换个词试试（如「红包」「壁纸」「记账」）</div>
+        <div class="lic-p" id="fhub-empty" hidden style="text-align:center;color:#999;padding:18px 0">没找到对应功能，换个词试试（如「红包」「壁纸」「看电影」）</div>
       </div>
     </div>
     <!-- 回复设置（单页：聊天 / 信箱 / 朋友圈 直接切换） -->
@@ -13833,6 +13876,8 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
             <div class="gs-row"><span>拍一拍概率</span><div class="stepper" data-k="touch-prob" data-min="0" data-max="100" data-step="5"><button class="stp-min">−</button><input class="stp-val" id="touch-prob-val" readonly><button class="stp-max">+</button></div></div>
             <div class="gs-row"><span>表情包概率</span><div class="stepper" data-k="sticker-prob" data-min="0" data-max="100" data-step="5"><button class="stp-min">−</button><input class="stp-val" id="sticker-prob-val" readonly><button class="stp-max">+</button></div></div>
             <div class="gs-row"><span>emoji 概率</span><div class="stepper" data-k="emoji-prob" data-min="0" data-max="100" data-step="5"><button class="stp-min">−</button><input class="stp-val" id="emoji-prob-val" readonly><button class="stp-max">+</button></div></div>
+            <div class="gs-row"><span>表情混入消息</span><label class="toggle"><input type="checkbox" id="emoji-mix-en"><span class="tk"></span></label></div>
+            <div class="gs-sub">参考 milk：每条文字回复固定 20% 概率抽取一枚自定义 Emoji。开启时随机放在文字前或后；关闭时命中的 Emoji 会在文字后约 0.3～0.7 秒单独发送。上方“emoji 概率”是 CiCi 原有的独立回复机制。</div>
             <div class="gs-row"><span>图片概率</span><div class="stepper" data-k="image-prob" data-min="0" data-max="100" data-step="5"><button class="stp-min">−</button><input class="stp-val" id="image-prob-val" readonly><button class="stp-max">+</button></div></div>
             <div class="gs-row"><span>语音概率</span><div class="stepper" data-k="voice-prob" data-min="0" data-max="100" data-step="5"><button class="stp-min">−</button><input class="stp-val" id="voice-prob-val" readonly><button class="stp-max">+</button></div></div>
             <div class="gs-row"><span>颜文字附加概率</span><div class="stepper" data-k="kaomoji-prob" data-min="0" data-max="100" data-step="5"><button class="stp-min">−</button><input class="stp-val" id="kaomoji-prob-val" readonly><button class="stp-max">+</button></div></div>
@@ -13842,7 +13887,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
             <div class="gs-row"><span>撤回补发概率</span><div class="stepper" data-k="rc-refix" data-min="0" data-max="100" data-step="5"><button class="stp-min">−</button><input class="stp-val" id="rc-refix-val" readonly><button class="stp-max">+</button></div></div>
             <div class="gs-sub">撤回后补发总开关（默认开）。效果举例：TA 发「今晚一起去吃火锅好不好」→ 撤回了一半 → 按「撤回补发概率」再发一条新的（如「明天去逛街吧」）。把本开关关闭＝TA 撤回后什么都不再发；开着＝TA 撤回后有「撤回补发概率」的机会补一条新消息（这条不计入「回复条数」上限）</div>
           </div>
-          <div class="gs-title">回复机制（默认＝mochi 原机制）</div>
+          <div class="gs-title">回复机制（默认＝原版机制）</div>
           <div class="set-group glass">
             <div class="gs-row"><span>连发的算一轮（nova 式回复）</span><label class="toggle"><input type="checkbox" id="turn-en"><span class="tk"></span></label></div>
             <div class="gs-sub"><b>默认关闭＝一切照旧</b>：你每发一条消息，TA 各排一批回你几条，并照常受下方「总量限流」计数。打开后换成<b>另一条路</b>：你连着说的那几句并成<b>一轮</b>，一轮只排一次队、骰子只掷一次（已读不回／拍一拍／回几条／引用都掷在这一轮上），回几条不再按你发了几句放大；你每多补一句，把到点往后推 1.5 秒、最多替你多等 8 秒。<b>每个联系人各排各的轮</b>，切去别的联系人发消息不会顶掉这一轮的定时器。已读不回那枚小字在起手 1~4 秒内就出现，不会等满「回复速度最长」才报。开着这一路时，下方「总量限流」<b>整条不再计数也不再拦——不只被动回复，TA 主动发送、心情分享、红包／心意币／礼物这些收件一并放行</b>（两条机制各管各的，不叠加）。<b>群聊另有一枚开关</b>：在下方「群聊回复」组里的「连发的算一轮（群聊）」，那一枚是全局的、对所有群聊生效——本开关只管单聊，按联系人各自存。改动即时保存、按联系人独立生效。</div>
@@ -14051,6 +14096,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
             <div class="gs-row"><span>拍一拍概率</span><div class="stepper" data-k="gc-touch-prob" data-min="0" data-max="100" data-step="5"><button class="stp-min">−</button><input class="stp-val" id="gc-touch-prob-val" readonly><button class="stp-max">+</button></div></div>
             <div class="gs-row"><span>表情包概率</span><div class="stepper" data-k="gc-sticker-prob" data-min="0" data-max="100" data-step="5"><button class="stp-min">−</button><input class="stp-val" id="gc-sticker-prob-val" readonly><button class="stp-max">+</button></div></div>
             <div class="gs-row"><span>emoji 概率</span><div class="stepper" data-k="gc-emoji-prob" data-min="0" data-max="100" data-step="5"><button class="stp-min">−</button><input class="stp-val" id="gc-emoji-prob-val" readonly><button class="stp-max">+</button></div></div>
+            <div class="gs-row"><span>表情混入消息</span><label class="toggle"><input type="checkbox" id="gc-emoji-mix-en"><span class="tk"></span></label></div>
             <div class="gs-row"><span>图片概率</span><div class="stepper" data-k="gc-image-prob" data-min="0" data-max="100" data-step="5"><button class="stp-min">−</button><input class="stp-val" id="gc-image-prob-val" readonly><button class="stp-max">+</button></div></div>
             <div class="gs-row"><span>语音概率</span><div class="stepper" data-k="gc-voice-prob" data-min="0" data-max="100" data-step="5"><button class="stp-min">−</button><input class="stp-val" id="gc-voice-prob-val" readonly><button class="stp-max">+</button></div></div>
             <div class="gs-row"><span>颜文字附加概率</span><div class="stepper" data-k="gc-kaomoji-prob" data-min="0" data-max="100" data-step="5"><button class="stp-min">−</button><input class="stp-val" id="gc-kaomoji-prob-val" readonly><button class="stp-max">+</button></div></div>
@@ -14522,6 +14568,9 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         <div class="gs-row"><span>漂流瓶字卡概率</span><div class="stepper" id="dcf-prob-drift" data-min="0" data-max="100" data-step="5"><button class="stp-min">−</button><input class="stp-val" id="dcf-prob-drift-val" readonly><button class="stp-max">+</button></div></div>
         <div class="gs-row"><span>互动回应字卡概率</span><div class="stepper" id="dcf-prob-interact" data-min="0" data-max="100" data-step="5"><button class="stp-min">−</button><input class="stp-val" id="dcf-prob-interact-val" readonly><button class="stp-max">+</button></div></div>
         <div class="gs-row"><span>音乐字卡概率</span><div class="stepper" id="dcf-prob-music" data-min="0" data-max="100" data-step="5"><button class="stp-min">−</button><input class="stp-val" id="dcf-prob-music-val" readonly><button class="stp-max">+</button></div></div>
+        <div class="gs-row"><span>陪听评论·普通聊天字卡占比</span><div class="stepper" id="dcf-music-chat-share" data-min="0" data-max="100" data-step="1"><button class="stp-min">−</button><input class="stp-val" id="dcf-music-chat-share-val" readonly><button class="stp-max">+</button></div></div>
+        <div class="gs-row"><span>陪听评论·音乐字卡占比</span><div class="stepper" id="dcf-music-card-share" data-min="0" data-max="100" data-step="1"><button class="stp-min">−</button><input class="stp-val" id="dcf-music-card-share-val" readonly><button class="stp-max">+</button></div></div>
+        <div class="gs-sub">两项合计 100%；只决定陪听评论命中后的取卡来源，不改变评论出现的 20% 概率。</div>
         <!-- v3.42.x #422：寻踪日常推送 / 番茄钟完成消息——只读式「发到聊天」概率门控，无独立字卡池，
              不参与上方案引卡管理；0%=不进聊天，100%=原行为。功能说明标签由 default-cards.js 注入。 -->
         <div class="gs-row"><span>寻踪日常发送到聊天</span><div class="stepper" id="dcf-prob-checkin" data-min="0" data-max="100" data-step="5"><button class="stp-min">−</button><input class="stp-val" id="dcf-prob-checkin-val" readonly><button class="stp-max">+</button></div></div>
@@ -14549,6 +14598,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         <button class="cc-tab" data-type="drift">漂流瓶</button>
         <button class="cc-tab" data-type="interact">互动回应</button>
         <button class="cc-tab" data-type="music">音乐</button>
+        <button class="cc-tab" data-type="movie">电影</button>
       </div>
       <div class="cc-groups-bar" id="fc-groups-bar"></div>
       <div class="card-search glass">
@@ -14894,86 +14944,47 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
       </div>
     </div>
 
-    <!-- 记账页（桌面第三页点「记账」进入） -->
-    <div class="page" id="page-accounting" hidden>
+    <!-- 放映厅与影片库：播放器只模拟时间和进度，不加载视频。 -->
+    <div class="page" id="page-movie" hidden>
       <div class="chat-head">
-        <span class="ch-back" id="acc-back">
+        <span class="ch-back" id="movie-back" role="button" aria-label="返回桌面">
           <svg viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
         </span>
-        <span class="ch-name">记账</span>
-        <span class="acc-cog" id="acc-cog" title="分类管理"><svg viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+        <span class="ch-name">看电影</span>
+        <button class="ch-more" id="movie-settings" type="button" title="看电影设置" aria-label="看电影设置">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </button>
       </div>
-      <div class="acc-scroll">
-        <!-- 视图模式 + 月份切换 + 概览 -->
-        <div class="acc-overview glass">
-          <div class="acc-view-tabs" id="acc-view-tabs">
-            <button class="acc-view-tab sel" data-view="month">月</button>
-            <button class="acc-view-tab" data-view="week">周</button>
-            <button class="acc-view-tab" data-view="year">年</button>
+      <div class="fav-tabs movie-tabs" role="tablist" aria-label="看电影分支">
+        <button class="fav-tab" id="movie-tab-hall" type="button" role="tab" aria-selected="false">放映厅</button>
+        <button class="fav-tab" id="movie-tab-library" type="button" role="tab" aria-selected="false">影片库</button>
+      </div>
+      <div class="movie-choice" id="movie-choice">选择放映厅开始观看，或打开影片库查看观影记录。</div>
+      <div class="movie-player" id="movie-player" aria-label="电影播放器" hidden>
+        <div class="movie-screen">
+          <button id="movie-fullscreen" class="movie-fullscreen" type="button" aria-label="全屏播放" title="全屏播放">⛶</button>
+          <span class="movie-companion" id="movie-companion" hidden>TA在一起看电影</span>
+          <div class="movie-title" id="movie-title" hidden></div>
+          <div class="movie-comment" id="movie-comment" role="log" aria-label="观影评论" hidden><div class="movie-comment-inner" id="movie-comment-inner"></div></div>
+        </div>
+        <div class="movie-controls">
+          <input id="movie-progress" class="movie-progress" type="range" min="0" max="900" value="0" aria-label="播放进度">
+          <div class="movie-time"><span id="movie-elapsed">00:00</span><span id="movie-duration" hidden></span></div>
+          <div class="movie-actions">
+            <button id="movie-toggle" class="movie-toggle" type="button" aria-label="播放" aria-pressed="false">▶</button>
+            <button id="movie-stop" class="movie-stop" type="button" aria-label="停止播放" disabled>■</button>
+            <button id="movie-write" class="movie-write" type="button" aria-label="写评论" disabled>评论</button>
           </div>
-          <div class="acc-month-head">
-            <button class="acc-month-btn" id="acc-prev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-            <span class="acc-month-txt" id="acc-month-txt">—</span>
-            <button class="acc-month-btn" id="acc-next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
-          </div>
-          <div class="acc-ov-row">
-            <div class="acc-ov-item"><div class="acc-ov-label">支出</div><div class="acc-ov-val expense" id="acc-ov-expense">¥0</div></div>
-            <div class="acc-ov-item"><div class="acc-ov-label">收入</div><div class="acc-ov-val income" id="acc-ov-income">¥0</div></div>
-            <div class="acc-ov-item"><div class="acc-ov-label">结余</div><div class="acc-ov-val" id="acc-ov-balance">¥0</div></div>
-          </div>
-          <div class="acc-budget-wrap" id="acc-budget-wrap" hidden>
-            <div class="acc-budget-head"><span id="acc-budget-txt">本月预算 ¥0 / 已支 ¥0</span><button class="acc-budget-set" id="acc-budget-set">设置</button></div>
-            <div class="acc-budget-track"><div class="acc-budget-bar" id="acc-budget-bar"></div></div>
+          <div class="movie-composer" id="movie-composer" hidden>
+            <textarea id="movie-comment-input" rows="2" maxlength="500" placeholder="说说你对这部电影的想法…" aria-label="输入观影评论"></textarea>
+            <button id="movie-comment-send" type="button">发送</button>
           </div>
         </div>
-
-        <!-- 图表：月度柱状图 + 分类环形图 -->
-        <div class="acc-chart-card glass" id="acc-chart-card">
-          <div class="acc-chart-title">收支分布</div>
-          <div class="acc-chart-body">
-            <div class="acc-chart-bar-wrap"><svg id="acc-chart-bar" viewBox="0 0 300 120" preserveAspectRatio="none"></svg></div>
-            <div class="acc-chart-ring-wrap"><svg id="acc-chart-ring" viewBox="0 0 120 120"></svg><div class="acc-chart-ring-center" id="acc-chart-ring-center"></div></div>
-          </div>
-        </div>
-
-        <!-- 分类排行 -->
-        <div class="acc-rank-card glass" id="acc-rank-card">
-          <div class="acc-rank-title">分类排行（本月支出）</div>
-          <div class="acc-rank-list" id="acc-rank-list"></div>
-        </div>
-
-        <!-- 记一笔 / 编辑表单 -->
-        <div class="acc-form-card glass" id="acc-form-card">
-          <div class="acc-form-head">
-            <span class="acc-form-title" id="acc-form-title">记一笔</span>
-            <button class="acc-cancel" id="acc-cancel" hidden>取消</button>
-          </div>
-          <div class="acc-type-tabs" id="acc-type-tabs">
-            <button class="acc-type-tab sel" data-type="expense">支出</button>
-            <button class="acc-type-tab" data-type="income">收入</button>
-          </div>
-          <input class="acc-amount" id="acc-amount" type="text" inputmode="decimal" placeholder="金额">
-          <div class="acc-cat-grid" id="acc-cat-grid"></div>
-          <input class="acc-note" id="acc-note" type="text" placeholder="备注（可选）">
-          <div class="acc-form-row">
-            <input class="acc-date" id="acc-date" type="date">
-            <button class="acc-save" id="acc-save">记一笔</button>
-          </div>
-        </div>
-
-        <!-- 搜索 + 筛选 -->
-        <div class="acc-filter-card glass">
-          <input class="acc-search" id="acc-search" type="search" placeholder="搜索备注/分类/金额">
-          <div class="acc-filter-tabs" id="acc-filter-tabs">
-            <button class="acc-filter-tab sel" data-filter="all">全部</button>
-            <button class="acc-filter-tab" data-filter="expense">支出</button>
-            <button class="acc-filter-tab" data-filter="income">收入</button>
-          </div>
-        </div>
-
-        <!-- 记录列表 -->
-        <div class="acc-list-card glass">
-          <div class="acc-list" id="acc-list"></div>
+      </div>
+      <div class="cal-scroll movie-library" id="movie-library" hidden>
+        <div class="cal-card glass">
+          <div class="cal-card-title">影片库</div>
+          <div id="movie-library-list"></div>
         </div>
       </div>
     </div>
@@ -15097,6 +15108,37 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         <span>悬浮播放小框</span>
         <label class="toggle"><input type="checkbox" id="music-float-en"><span class="tk"></span></label>
       </div>
+      <!-- Android 安装包内显示：控制已在网易云音乐 App 播放的歌单。 -->
+      <section class="netease-remote glass" id="netease-remote" hidden aria-label="网易云音乐遥控">
+        <div class="netease-remote-head">
+          <strong>网易云音乐遥控</strong>
+          <span id="netease-remote-status">正在连接…</span>
+        </div>
+        <p class="netease-remote-help" id="netease-remote-help">先在网易云音乐中打开歌单并播放，然后返回 CiCi。</p>
+        <button class="netease-remote-access" id="netease-remote-access" type="button" hidden>开启通知使用权</button>
+        <div class="netease-remote-track" id="netease-remote-track" hidden>
+          <img id="netease-remote-cover" alt="专辑封面" hidden>
+          <div class="netease-remote-meta">
+            <div id="netease-remote-title">未在播放</div>
+            <div id="netease-remote-artist"></div>
+          </div>
+        </div>
+        <div class="netease-remote-progress" id="netease-remote-progress" hidden>
+          <span id="netease-remote-current">0:00</span>
+          <input id="netease-remote-seek" type="range" min="0" max="1000" value="0" aria-label="播放进度">
+          <span id="netease-remote-duration">0:00</span>
+        </div>
+        <div class="netease-remote-actions">
+          <button type="button" id="netease-remote-refresh">刷新</button>
+          <button type="button" id="netease-remote-prev" disabled>上一首</button>
+          <button type="button" id="netease-remote-play" disabled>播放</button>
+          <button type="button" id="netease-remote-next" disabled>下一首</button>
+        </div>
+        <div class="netease-remote-actions">
+          <button type="button" id="netease-remote-favorite" disabled>收藏当前歌曲</button>
+          <button type="button" id="netease-remote-queue" disabled>查看播放列表</button>
+        </div>
+      </section>
       <div class="fav-tabs">
         <button class="fav-tab sel" data-mtab="lib">我的音乐库</button>
         <button class="fav-tab" data-mtab="pl">歌单</button>
@@ -15135,6 +15177,10 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         </div>
         <div class="cal-card glass" data-mpanel="fav" hidden>
           <div id="music-fav-list"></div>
+          <section class="netease-favorites" id="netease-favorites" hidden>
+            <div class="netease-favorites-head">网易云收藏 <span>保存在 CiCi，需到网易云播放</span></div>
+            <div id="netease-favorites-list"></div>
+          </section>
         </div>
         <!-- v3.14.x：联系人的收藏列表 -->
         <div class="cal-card glass" data-mpanel="favta" hidden>
@@ -15379,6 +15425,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         <button class="fav-tab" data-mtab="out">寄出的信</button>
         <button class="fav-tab" data-mtab="write">写封信</button>
         <button class="fav-tab" data-mtab="data">信件数据</button>
+        <button class="fav-tab" data-mtab="movie">观后感</button>
       </div>
       <div class="cal-scroll">
         <div class="cal-card glass" data-mpanel="in">
@@ -15404,6 +15451,9 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
             <button class="cc-tool cc-tool-danger" id="mail-clear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:-2px;margin-right:3px"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>清空所有信件</button>
           </div>
           <div class="mail-write-hint">信没显示全时点「从本地库找回信件」：直接读本机存储（IndexedDB）里的那一份，与屏上逐封合并后重画；只合并不覆盖、不删除，读不出来会如实告诉你。</div>
+        </div>
+        <div class="cal-card glass" data-mpanel="movie" hidden>
+          <div id="mail-movie-list"></div>
         </div>
       </div>
     </div>
@@ -16535,7 +16585,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
           </div>
           <div class="rp-settings-title">TA 申请心意币</div>
           <div class="set-row" id="cs-rp-ask-prob">
-            <div class="txt">TA 申请心意币概率<span class="sub">联系人有概率向 Mochi 申请一笔心意币（记进聊天申请记录），每个联系人可单独设置</span></div>
+            <div class="txt">TA 申请心意币概率<span class="sub">联系人有概率向 CiCi 申请一笔心意币（记进聊天申请记录），每个联系人可单独设置</span></div>
             <div class="val" id="cs-rp-ask-prob-val">4%</div>
           </div>
           <div class="set-row" id="cs-rp-ask-daily-max">
@@ -16717,7 +16767,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
           <div class="avlib-toggle">
             <div class="avlib-toggle-txt">
               <div class="avlib-toggle-name">开启随机更换</div>
-              <div class="avlib-toggle-sub">TA 会每隔 1-8 小时随机更换一次头像</div>
+              <div class="avlib-toggle-sub">TA 会每隔 1-48 小时随机更换一次头像</div>
             </div>
             <label class="toggle"><input type="checkbox" id="avlib-enabled"><span class="tk"></span></label>
           </div>
@@ -16737,7 +16787,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
           <div class="avlib-toggle">
             <div class="avlib-toggle-txt">
               <div class="avlib-toggle-name">TA 主动给我换头像</div>
-              <div class="avlib-toggle-sub">TA 会每隔 1-8 小时主动给你换头像，直接换或弹窗征求你同意</div>
+              <div class="avlib-toggle-sub">TA 会每隔 1-48 小时主动给你换头像，直接换或弹窗征求你同意</div>
             </div>
             <label class="toggle"><input type="checkbox" id="avlib-me-enabled"><span class="tk"></span></label>
           </div>
@@ -16757,7 +16807,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
           <div class="avlib-toggle">
             <div class="avlib-toggle-txt">
               <div class="avlib-toggle-name">开启随机更换</div>
-              <div class="avlib-toggle-sub">TA 会每隔 1-8 小时随机更换一次昵称</div>
+              <div class="avlib-toggle-sub">TA 会每隔 1-48 小时随机更换一次昵称</div>
             </div>
             <label class="toggle"><input type="checkbox" id="avlib-nick-enabled"><span class="tk"></span></label>
           </div>
@@ -16777,7 +16827,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
           <div class="avlib-toggle">
             <div class="avlib-toggle-txt">
               <div class="avlib-toggle-name">TA 主动给我换昵称</div>
-              <div class="avlib-toggle-sub">TA 会每隔 1-8 小时主动给你换昵称，直接换或弹窗征求你同意</div>
+              <div class="avlib-toggle-sub">TA 会每隔 1-48 小时主动给你换昵称，直接换或弹窗征求你同意</div>
             </div>
             <label class="toggle"><input type="checkbox" id="avlib-me-nick-enabled"><span class="tk"></span></label>
           </div>
@@ -17638,6 +17688,16 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         </div>
       </div>
       <!-- v3.29.x：全屏模式行已提到功能页顶部常显（#927），本组留「显示」类显隐开关 -->
+      <div class="gs-title" data-tag="ui">聊天气泡词条</div>
+      <div class="set-group glass" data-tag="ui">
+        <div class="set-row" id="cs-chat-tags-row">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16M4 11h11M4 17h7"/><path d="M17 15l2 2 3-3"/></svg></div>
+          <div class="txt">显示气泡下方词条<span class="sub">控制“情绪”“多字卡回复”等词条的显示；关闭后不留空位，聊天内容和触发概率不变</span></div>
+          <label class="toggle"><input type="checkbox" id="cs-chat-tags"><span class="tk"></span></label>
+        </div>
+        <div id="cs-chat-tag-items" class="cs-chat-tag-items"></div>
+        <div class="gs-sub">每个小开关只控制对应词条的显示，不影响聊天内容与触发概率；总开关关闭时统一隐藏，重新开启会保留各项选择。原功能关闭时，这里的显示开关不会重新触发该功能。</div>
+      </div>
       <div class="gs-title" data-tag="ui">边缘防误触 / 悬浮窗</div>
       <div class="set-group glass" data-tag="ui">
         <!-- v3.9.x：全屏边缘防误触（镜像设置页 #sf-edge-guard，同一状态双向同步） -->
@@ -17766,6 +17826,15 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
     </button>
   </div>
 </div>
+<!-- 离开放映厅后继续计时的观影小窗。 -->
+<div class="movie-float" id="movie-float" hidden>
+  <div class="movie-float-top">
+    <div class="movie-float-title" id="movie-float-title">看电影</div>
+    <button id="movie-float-return" type="button" aria-label="返回放映厅">返回放映厅</button>
+  </div>
+  <div class="movie-float-track"><div id="movie-float-progress"></div></div>
+  <div class="movie-float-bottom"><span id="movie-float-time">00:00</span><button id="movie-float-toggle" type="button" aria-label="暂停">Ⅱ</button></div>
+</div>
   <!-- 底部 tab（必须在 .phone 内、所有 .page 之外；嵌在 page-chat 内时 hidden 联动消失） -->
   <!-- FIX 2026-09-14 #477：位置不变量——本块必须整体保持在下方 .phone 闭合（2 空格缩进的 </div>）之前。
        810ab22 补 #474 第 3 个闭合后本块被留在 .phone 闭合之外＝body 直子；body 是 flex 横排居中
@@ -17819,7 +17888,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
   // v3.5.123：readonly 起手（防 Chrome 密码弹条破坏表单签名）——这里立即解除，
   // 早于所有功能模块，任何设备都不会出现输入框不可用的情况
   (function () { var _ci = document.getElementById('chat-input'); if (_ci) _ci.readOnly = false; })();
-window.__jsErrors = window.__jsErrors || []; window.__mochiLoaded = window.__mochiLoaded || []; window.__mochiErrLoaded = window.__mochiErrLoaded || []; window.__mochiBootAt = Date.now(); window.__mochiJsFiles = ["device.js","idb.js","contacts.js","applock.js","card-lock.js","dcp-master.js","media-pool.js","storage-slim.js","perf-check.js","energy-check.js","flash-check.js","img-compress.js","img-ingest.js","clock.js","tabs.js","desktop-slider.js","quote-cards.js","personalize.js","chat.js","group-chat.js","chatcard.js","chat-settings.js","reply-settings.js","fav-settings.js","default-cards-data.js","dict-ext-data.js","default-cards.js","quote-spell.js","dream-free.js","mood-followup-data.js","mood-reply-cards.js","ta-mood-data.js","ta-mood.js","music-player.js","calendar.js","divination.js","avatar-lib.js","ta-ask.js","ck-question.js","incoming-requests.js","ta-invite.js","bg-keep.js","records.js","call.js","mail.js","feed.js","loc-lib.js","p2-features.js","gift-shop.js","memo-app.js","memo-arc.js","my-arc.js","period.js","accounting.js","garden.js","room.js","drift-bottle.js","decision.js","group-decision.js","pong.js","snake-game.js","breakout.js","connect-four.js","coop-mine.js","fishing.js","memory-game.js","gomoku.js","linkup.js","match3.js","auction.js","arcade.js","mood-diary.js","sfx.js","fullscreen.js","data-backup.js","feature-data.js","pwa.js","cjian.js","feature-hub.js","settings-help.js","onboarding.js","page-coach.js","card-audit.js","storage-guide.js","mobile-adapt.js"]; window.__mochiExtFiles = ["idb.js","contacts.js","applock.js","card-lock.js","dcp-master.js","media-pool.js","storage-slim.js","perf-check.js","energy-check.js","flash-check.js","img-compress.js","img-ingest.js","clock.js","tabs.js","desktop-slider.js","quote-cards.js","personalize.js","chat.js","group-chat.js","chatcard.js","chat-settings.js","reply-settings.js","fav-settings.js","default-cards-data.js","dict-ext-data.js","default-cards.js","quote-spell.js","dream-free.js","mood-followup-data.js","mood-reply-cards.js","ta-mood-data.js","ta-mood.js","music-player.js","calendar.js","divination.js","avatar-lib.js","ta-ask.js","ck-question.js","incoming-requests.js","ta-invite.js","bg-keep.js","records.js","call.js","mail.js","feed.js","loc-lib.js","p2-features.js","gift-shop.js","memo-app.js","memo-arc.js","my-arc.js","period.js","accounting.js","garden.js","room.js","drift-bottle.js","decision.js","group-decision.js","pong.js","snake-game.js","breakout.js","connect-four.js","coop-mine.js","fishing.js","memory-game.js","gomoku.js","linkup.js","match3.js","auction.js","arcade.js","mood-diary.js","sfx.js","fullscreen.js","data-backup.js","feature-data.js","cjian.js","feature-hub.js","settings-help.js","onboarding.js","page-coach.js","card-audit.js","storage-guide.js","mobile-adapt.js"];
+window.__jsErrors = window.__jsErrors || []; window.__mochiLoaded = window.__mochiLoaded || []; window.__mochiErrLoaded = window.__mochiErrLoaded || []; window.__mochiBootAt = Date.now(); window.__mochiJsFiles = ["device.js","idb.js","contacts.js","applock.js","card-lock.js","dcp-master.js","media-pool.js","storage-slim.js","perf-check.js","energy-check.js","flash-check.js","img-compress.js","img-ingest.js","clock.js","tabs.js","desktop-slider.js","quote-cards.js","personalize.js","chat.js","group-chat.js","chatcard.js","chat-settings.js","reply-settings.js","fav-settings.js","default-cards-data.js","dict-ext-data.js","default-cards.js","quote-spell.js","dream-free.js","mood-followup-data.js","mood-reply-cards.js","ta-mood-data.js","ta-mood.js","music-player.js","netease-remote.js","calendar.js","divination.js","avatar-lib.js","ta-ask.js","ck-question.js","incoming-requests.js","ta-invite.js","bg-keep.js","records.js","call.js","mail.js","feed.js","loc-lib.js","p2-features.js","gift-shop.js","memo-app.js","memo-arc.js","my-arc.js","period.js","movie.js","garden.js","room.js","drift-bottle.js","decision.js","group-decision.js","pong.js","snake-game.js","breakout.js","connect-four.js","coop-mine.js","fishing.js","memory-game.js","gomoku.js","linkup.js","match3.js","auction.js","arcade.js","mood-diary.js","sfx.js","fullscreen.js","data-backup.js","feature-data.js","pwa.js","cjian.js","feature-hub.js","settings-help.js","onboarding.js","page-coach.js","card-audit.js","storage-guide.js","mobile-adapt.js"]; window.__mochiExtFiles = ["idb.js","contacts.js","applock.js","card-lock.js","dcp-master.js","media-pool.js","storage-slim.js","perf-check.js","energy-check.js","flash-check.js","img-compress.js","img-ingest.js","clock.js","tabs.js","desktop-slider.js","quote-cards.js","personalize.js","chat.js","group-chat.js","chatcard.js","chat-settings.js","reply-settings.js","fav-settings.js","default-cards-data.js","dict-ext-data.js","default-cards.js","quote-spell.js","dream-free.js","mood-followup-data.js","mood-reply-cards.js","ta-mood-data.js","ta-mood.js","music-player.js","netease-remote.js","calendar.js","divination.js","avatar-lib.js","ta-ask.js","ck-question.js","incoming-requests.js","ta-invite.js","bg-keep.js","records.js","call.js","mail.js","feed.js","loc-lib.js","p2-features.js","gift-shop.js","memo-app.js","memo-arc.js","my-arc.js","period.js","movie.js","garden.js","room.js","drift-bottle.js","decision.js","group-decision.js","pong.js","snake-game.js","breakout.js","connect-four.js","coop-mine.js","fishing.js","memory-game.js","gomoku.js","linkup.js","match3.js","auction.js","arcade.js","mood-diary.js","sfx.js","fullscreen.js","data-backup.js","feature-data.js","cjian.js","feature-hub.js","settings-help.js","onboarding.js","page-coach.js","card-audit.js","storage-guide.js","mobile-adapt.js"];
 (function () { try {
 (function () {
 try { window.__jsErrors = window.__jsErrors || []; } catch (e0) {}
@@ -18737,7 +18806,7 @@ const L = [];
 const jobs = []; // 所有异步采集（配额/persisted/远端版本/SW 状态）进这里，最后 Promise.all
 let ver = verCache || '', localTs = localTsCache || 0;
 if (!ver) { try { ver = window.APP_VERSION || ''; } catch (e) {} }
-L.push('Mochi 诊断信息（' + ver + '）');
+L.push('CiCi 诊断信息（' + ver + '）');
 L.push('时间：' + new Date().toLocaleString() + '（本次启动 ' + BOOT_ID + '#' + BOOT_N + '）');
 L.push('');
 L.push('【结论】');
@@ -20291,7 +20360,7 @@ else if (envTop >= 20) mode = '覆盖形态（页面顶到屏幕最顶，系统�
 else if (diff >= 20) mode = '已避让形态（系统已把网页起点放在状态栏下方，页面不应再加顶部 padding）';
 else mode = '无安全区/常规视口';
 add(true, '顶部形态判定：' + mode, 'env=' + envTop + 'px  var(--mochi-safe-top)=' + varTop + 'px  diff(screen−inner)=' + diff + 'px  判定器=' + Fm.form + '/safeTop=' + Fm.safeTop + '/期望底=' + Fm.expBase + (Fm.iosCover ? '/独立覆盖=1' : ''));
-if (Fm.resStand && !Fm.forceCover) add(true, '歧义形态提示：若顶部 Mochi 行与灵动岛/时间重叠或点不动 → 到 设置→工具 开启【顶部避让修正】开关（自动刷新即修）；若底部白带则保持关闭'); // #1408：该开关自「信息诊断」段搬回「工具」段（作者点名放错位置），本句原写「上方」＝报告在诊断段时把人指去同一屏的上一行，搬走后这句会指空
+if (Fm.resStand && !Fm.forceCover) add(true, '歧义形态提示：若顶部 CiCi 行与灵动岛/时间重叠或点不动 → 到 设置→工具 开启【顶部避让修正】开关（自动刷新即修）；若底部白带则保持关闭'); // #1408：该开关自「信息诊断」段搬回「工具」段（作者点名放错位置），本句原写「上方」＝报告在诊断段时把人指去同一屏的上一行，搬走后这句会指空
 if (inp.sbTop == null) add(true, '状态栏隐藏（聊天等全屏页），跳过顶位判定');
 if (inp.sbTop != null) {
 const expect = Fm.expTop;
@@ -20861,7 +20930,7 @@ out.push(same ? '✗ 日历格填色与空白格同色(' + getComputedStyle(cell
 } catch (eA0) { out.push('日历填色-读取异常(不计失败)'); }
 return out;
 } },
-{ n: '记账', app: 'accounting', page: 'page-accounting', open: true },
+{ n: '看电影', app: 'movie', page: 'page-movie', open: true },
 { n: '梦角档案', app: 'memo-arc', page: 'page-memo-arc', open: true },
 { n: '我的档案', app: 'my-arc', page: 'page-my-arc', open: true },
 { n: '音乐', app: 'music', page: 'page-music', open: true },
@@ -22185,7 +22254,7 @@ staticText: '原因：在 Safari 标签页里，Apple 会在连续 7 天没打�
 + '① 先导出一份完整备份（点下方「先导出备份」，存到「文件」App 或微信收藏都行）——主屏幕应用和 Safari 是两套独立存储，不先导出，切过去会看到空数据。\n'
 + '② 点 Safari 底部的「分享」按钮（方框加向上箭头）。\n'
 + '③ 在弹出的菜单里选「添加到主屏幕」→ 右上角「添加」。\n'
-+ '④ 回到手机桌面，点新出现的 Mochi 图标打开。\n'
++ '④ 回到手机桌面，点新出现的 CiCi 图标打开。\n'
 + '⑤ 在打开的桌面应用里：设置 → 导入数据，选第①步的备份文件恢复。\n\n'
 + '此后平时都从桌面图标打开，Safari 清不清都不影响你的数据。',
 copyBtn: { label: '先导出备份', fn: function (c) { try { if (window.runBackupExport) window.runBackupExport(); } catch (e) {} try { if (c && c.close) c.close(); } catch (e2) {} } }
@@ -22349,7 +22418,7 @@ const isAndroid = !!d.isAndroid;
 let guide = isIOS
 ? 'iPhone 安装：点底部「分享」按钮 → 「添加到主屏幕」。'
 : isAndroid
-? '安卓安装：点右上角「⋮」菜单 → 「安装应用」。\n若没有该选项：① 确认打开的是最新版 https 页面；② 到手机设置里删除已安装的旧版「Mochi」后重试。'
+? '安卓安装：点右上角「⋮」菜单 → 「安装应用」。\n若没有该选项：① 确认打开的是最新版 https 页面；② 到手机设置里删除已安装的旧版「CiCi」后重试。'
 : '电脑安装：点地址栏右侧「安装」图标，或菜单 → 保存并分享 → 安装应用。';
 if (window.openModal) {
 window.openModal('安装到桌面', '', () => {}, { noInput: true, staticText: guide });
@@ -22457,7 +22526,7 @@ if (row) row.click();
 }, 120);
 };
 const iosTab = !!(window.mochiIosTabRisk && window.mochiIosTabRisk());
-window.openModal('欢迎使用 Mochi', '', go, {
+window.openModal('欢迎使用 CiCi', '', go, {
 noInput: true,
 staticText: '检测到当前是全新环境，还没有任何数据。\n\n· 如果之前在浏览器标签页里设置过昵称/打卡：点「确定」会打开设置页的数据导入，选择之前导出的备份文件即可全部恢复。'
 + (iosTab ? '\n\n· 如果你之前明明在用、数据却突然不见了：多半是 Safari 清空了本地数据——没添加到主屏幕时，Safari 会在连续 7 天没打开后自动清空。以后请点「分享」→「添加到主屏幕」安装，并从桌面图标打开（安装前先导出备份；主屏幕应用与 Safari 是两套独立存储，需在桌面应用里导入）。' : '')
@@ -22475,7 +22544,7 @@ setTimeout(maybeShow, 300); // 留一点开屏退出动画缓冲
 }, 300);
 })();
 (function () {
-const W = '本站完全免费，没有收过任何人一分钱，个人出资和花费时间搭建的。开放二传二改但禁止以盈利为目的。Mochi字卡网站完全免费，作者只有小红书这一个账号：小红书@言序（1842523578）。如有出现任何收费情况，均为诈骗，注意防止被骗。二传、分享本站链接必须标注作者署名：小红书 @言序（1842523578），禁止删除或修改。严禁冒为自己制作、删除篡改署名，或以任何形式收费倒卖本站链接、安装包——本站完全免费，收费即诈骗。如果你是花钱买来的链接：你被骗了，请拒付退款并举报卖家。';
+const W = '本站完全免费，没有收过任何人一分钱，个人出资和花费时间搭建的。开放二传二改但禁止以盈利为目的。原版字卡网站完全免费，原版作者只有小红书这一个账号：小红书@言序（1842523578）。如有出现任何收费情况，均为诈骗，注意防止被骗。二传、分享本站链接必须标注作者署名：小红书 @言序（1842523578），禁止删除或修改。严禁冒为自己制作、删除篡改署名，或以任何形式收费倒卖本站链接、安装包——本站完全免费，收费即诈骗。如果你是花钱买来的链接：你被骗了，请拒付退款并举报卖家。';
 function mkWatchBar(tag, title, text) {
 const b = document.createElement('div');
 b.className = 'splash-alert';
@@ -22667,6 +22736,7 @@ window.__mochiBootRetry = function () { try { location.reload(); } catch (e) {} 
 <script defer src="js/ta-mood-data.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('ta-mood-data.js')"></script>
 <script defer src="js/ta-mood.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('ta-mood.js')"></script>
 <script defer src="js/music-player.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('music-player.js')"></script>
+<script defer src="js/netease-remote.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('netease-remote.js')"></script>
 <script defer src="js/calendar.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('calendar.js')"></script>
 <script defer src="js/divination.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('divination.js')"></script>
 <script defer src="js/avatar-lib.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('avatar-lib.js')"></script>
@@ -22686,7 +22756,7 @@ window.__mochiBootRetry = function () { try { location.reload(); } catch (e) {} 
 <script defer src="js/memo-arc.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('memo-arc.js')"></script>
 <script defer src="js/my-arc.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('my-arc.js')"></script>
 <script defer src="js/period.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('period.js')"></script>
-<script defer src="js/accounting.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('accounting.js')"></script>
+<script defer src="js/movie.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('movie.js')"></script>
 <script defer src="js/garden.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('garden.js')"></script>
 <script defer src="js/room.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('room.js')"></script>
 <script defer src="js/drift-bottle.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('drift-bottle.js')"></script>
@@ -22739,4 +22809,4 @@ window.__mochiBootRetry = function () { try { location.reload(); } catch (e) {} 
 </body>
 </html>
 
-<!-- __MOCHI_EOF__ muw8o0ec -->
+<!-- __MOCHI_EOF__ muzc7r3i -->

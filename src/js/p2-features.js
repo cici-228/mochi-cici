@@ -386,7 +386,7 @@
               main: '+¥' + (Number(m.askFen || 0) / 100).toFixed(2),
               sub: fmtMDHM(m.askTs || m.ts)
             })),
-            escH(name) + ' 还没有向 Mochi 申请过', 'askcoin') +
+            escH(name) + ' 还没有向 CiCi 申请过', 'askcoin') +
           // v3.16.x：小游戏记录（更多功能→小游戏 7 款对局 + 联系人主动邀请玩游戏，全部汇总）
           (function () {
             const GAME_SPECIAL = { brick: '双人打砖块', pong: '乒乓', snake: '贪吃蛇', memory: '记忆翻牌', rps: '猜拳', c4: '四子棋', ms: '合作扫雷' };

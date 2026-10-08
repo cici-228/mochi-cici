@@ -854,7 +854,7 @@ html.ios-pwa-standalone body { background: var(--bg-b); }
    根因：覆盖形态下判定器期望底边 expBase=envTop+inner=整屏 956，#179 起非全屏
    standalone 也写 --mochi-ios-h=956，但 html/body 高度停在 100dvh(894)——子元素比容器
    高 62px，而 html/body 是 display:flex + align-items:center，把 .phone 整块上移
-   (956−894)/2=31px：顶部 Mochi 行钻进系统状态栏（✗顶部重叠）、.phone 底边停在 925
+   (956−894)/2=31px：顶部 CiCi 行钻进系统状态栏（✗顶部重叠）、.phone 底边停在 925
    露出 31px 底色白带、tabbar 随之上移不贴底。
    修法同 ios-fs-active（#114 v3.28.x，同一父类 bug）：html/body 钉到与 .phone 同高
    （var(--mochi-ios-h)）+ 顶对齐 → 容器永不比 .phone 矮，居中位移消失。
@@ -1026,9 +1026,9 @@ html.ios-fs-active .phone .statusbar { padding-top:14px; }
 html.tablet.ios-pwa-standalone.ios-fs-active .phone .statusbar { display:none; }
 
 /* v3.6.x→v3.28.x：iOS 独立应用「全屏模式」（ios-fs-active 类，由 fullscreen.js 控制）——
-   iOS 无 Fullscreen API、系统状态栏永远无法隐藏，应用内模拟状态栏（Mochi/时间/电量那行）
+   iOS 无 Fullscreen API、系统状态栏永远无法隐藏，应用内模拟状态栏（CiCi/时间/电量那行）
    原设计在全屏时隐藏以免与系统栏重复。但桌面顶部那一行是全站品牌信息，隐藏后用户反馈
-   「桌面顶部 Mochi/时间/电量不见了」→ 改为全屏时也保留状态栏。状态栏自身已带
+   「桌面顶部 CiCi/时间/电量不见了」→ 改为全屏时也保留状态栏。状态栏自身已带
    env(safe-area-inset-top) 安全区留白（见上方手机端 .statusbar 规则），故不再给 .phone
    额外加顶部 padding（否则安全区双倍、顶部多一条白带）。
    只影响真实手机窄屏，桌面模拟器外壳不受影响 */
@@ -1226,7 +1226,7 @@ html.mochi-cover-top .phone .statusbar {
    屏幕最顶（系统状态栏悬浮其上，env-top=62），模拟状态栏必须自身抬升到系统状态栏下方：
    此前只有 ios-fs-active（全屏模式）链有 .phone padding 兜底，普通态既无 .phone 顶部
    padding、窄屏 @media 的安全区留白（0,1,0）又被后加载的同特异性全局
-   .statusbar{padding:4px…} 压死（#114 同根因）→ Mochi/时间/电量那一行常驻钻在系统
+   .statusbar{padding:4px…} 压死（#114 同根因）→ CiCi/时间/电量那一行常驻钻在系统
    栏里、聊天返回键被吞点（用户报「整页上移」时诊断同步报 ✗顶部重叠）。
    留白只加在状态栏自身（同 #199/#236 浏览器覆盖壳手法，不动 .phone）：full 页
    （聊天等）本就把状态栏 display:none，其头部各自用 var(--mochi-safe-top) 避让，不双倍。

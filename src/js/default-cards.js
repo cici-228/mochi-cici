@@ -339,7 +339,7 @@
   // 「其他互动功能字卡」入口角标统计全部功能分类（fish/eat/period/water/garden/
   // sync/reach/cjian/room/piggy/drift/interact）。
   // deskcheck（联系人跨桌面查岗）独立成系统预设字卡里的单独入口，见 page-deskcheck。
-  const FUNC_KEYS = ['fish', 'eat', 'period', 'water', 'garden', 'sync', 'reach', 'cjian', 'room', 'piggy', 'drift', 'interact', 'music'];
+  const FUNC_KEYS = ['fish', 'eat', 'period', 'water', 'garden', 'sync', 'reach', 'cjian', 'room', 'piggy', 'drift', 'interact', 'music', 'movie'];
   // 词典（dict）已独立成大分类（page-dict-cards，见 dictView），不再并入默认聊天字卡——
   // BASE_KEYS 只含默认字卡四大分类；词典数据仅由词典独立页与词典拼字（quote-spell.js）消费。
   const BASE_KEYS = ['main', 'kaomoji', 'emoji', 'touch'];
@@ -635,6 +635,41 @@
     });
   }
   bindDcfProb();
+  // 陪听评论的两类取卡比例独立于 dcf-music；后者原本只控制音乐互动字卡。
+  const MUSIC_CHAT_SHARE_KEY = 'dcf-music-chat-share';
+  function musicChatShare() {
+    try {
+      const raw = window.activeStore().get(MUSIC_CHAT_SHARE_KEY);
+      if (raw !== null && raw !== undefined && raw !== '') {
+        const n = Number(raw);
+        if (Number.isFinite(n)) return Math.max(0, Math.min(100, Math.round(n)));
+      }
+    } catch (e) {}
+    return 20;
+  }
+  window.dcfMusicChatShare = musicChatShare;
+  function refreshMusicCommentShares() {
+    const chat = musicChatShare();
+    const chatVal = document.getElementById('dcf-music-chat-share-val');
+    const musicVal = document.getElementById('dcf-music-card-share-val');
+    if (chatVal) chatVal.value = String(chat);
+    if (musicVal) musicVal.value = String(100 - chat);
+  }
+  function setMusicCommentChatShare(value) {
+    const chat = Math.max(0, Math.min(100, Math.round(value)));
+    try { window.activeStore().set(MUSIC_CHAT_SHARE_KEY, String(chat)); } catch (e) {}
+    refreshMusicCommentShares();
+    toast('陪听评论取卡：普通聊天 ' + chat + '%，音乐 ' + (100 - chat) + '%');
+  }
+  [['dcf-music-chat-share', 1], ['dcf-music-card-share', -1]].forEach(function (pair) {
+    const row = document.getElementById(pair[0]);
+    if (!row) return;
+    const minus = row.querySelector('.stp-min');
+    const plus = row.querySelector('.stp-max');
+    if (minus) minus.addEventListener('click', () => setMusicCommentChatShare(musicChatShare() - pair[1]));
+    if (plus) plus.addEventListener('click', () => setMusicCommentChatShare(musicChatShare() + pair[1]));
+  });
+  refreshMusicCommentShares();
   // v3.42.x #422：每个功能分类的【功能说明】标签（template 里 .gs-row .tag[data-fdesc]）——
   //   点击弹 openModal 静态说明，讲清该功能何时触发、概率控制什么、如何彻底关。用事件委托避免
   //   为每个分类单独绑监听。
@@ -736,6 +771,7 @@
     Object.keys(DCF_DEF).forEach(function (k) {
       dcfRefreshUI(k);
     });
+    refreshMusicCommentShares();
     // v3.33.x：功能字卡总开关同样重同步
     const deEl = document.getElementById('dcf-enabled');
     if (deEl) deEl.checked = dcfEnabled();

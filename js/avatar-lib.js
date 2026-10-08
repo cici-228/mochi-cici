@@ -750,7 +750,7 @@ function switchAvatarFromLib(data) {
 const lib = getLib();
 if (!data || lib.indexOf(data) === -1) return;
 const before = store.get('cs-avatar-partner');
-const nextHours = String(1 + Math.random() * 7);
+const nextHours = String(1 + Math.random() * 47);
 const inviteHit = Math.random() * 100 < INVITE_PROB;
 const agreeHit = Math.random() * 100 < AGREE_PROB;
 normalizeAvSize(data, function (fit) {
@@ -866,7 +866,7 @@ const mask = document.getElementById('modal-mask');
 if (mask && !mask.hidden) return;
 }
 store.set('avatar-me-lib-last', String(now));
-store.set('avatar-me-lib-next', String(1 + Math.random() * 7));
+store.set('avatar-me-lib-next', String(1 + Math.random() * 47));
 if (!avClaimCycle('avatar-me-lib-last', now)) return;
 if (invite) {
 showMeAvatarInvite(data);
@@ -910,7 +910,7 @@ if (data === (store.get('cs-avatar-partner') || store.get('avatar-partner'))) re
 const curHash = store.get('avatar-lib-cur-hash');
 if (curHash && strHash(data) === curHash) return;
 store.set('avatar-lib-last', String(now));
-store.set('avatar-lib-next', String(1 + Math.random() * 7));
+store.set('avatar-lib-next', String(1 + Math.random() * 47));
 if (!avClaimCycle('avatar-lib-last', now)) return;
 const trigHash = strHash(data);
 store.set('avatar-lib-cur-hash', trigHash);
@@ -975,7 +975,7 @@ function switchNickFromLib(name) {
 const lib = getNickLib();
 if (!name || lib.indexOf(name) === -1) return;
 const before = store.get('cs-lbl-partner');
-const nextHours = String(1 + Math.random() * 7);
+const nextHours = String(1 + Math.random() * 47);
 const inviteHit = Math.random() * 100 < INVITE_PROB;
 const agreeHit = Math.random() * 100 < AGREE_PROB;
 store.set('nick-lib-last', String(Date.now()));
@@ -1054,7 +1054,7 @@ const mask = document.getElementById('modal-mask');
 if (mask && !mask.hidden) return;
 }
 store.set('nick-me-lib-last', String(now));
-store.set('nick-me-lib-next', String(1 + Math.random() * 7));
+store.set('nick-me-lib-next', String(1 + Math.random() * 47));
 if (!avClaimCycle('nick-me-lib-last', now)) return; // FIX #882：同头像池口径，双开上下文只留先认领的一方
 if (invite) {
 showMeNickInvite(name);
@@ -1091,7 +1091,7 @@ if (name === curPartnerNick()) return;
 const curHash = store.get('nick-lib-cur-hash');
 if (curHash && strHash(name) === curHash) return;
 store.set('nick-lib-last', String(now));
-store.set('nick-lib-next', String(1 + Math.random() * 7));
+store.set('nick-lib-next', String(1 + Math.random() * 47));
 if (!avClaimCycle('nick-lib-last', now)) return; // FIX #882：同头像池口径，双开上下文只留先认领的一方
 applyPartnerNick(name);
 store.set('nick-lib-cur-hash', strHash(name));

@@ -1,18 +1,18 @@
 // ===== 功能：TA的邀请（联系人主动邀请字卡库） v3.14.x =====
 // 把 chat.js 里硬编码的「联系人主动邀请」话术升级为字卡库「TA的邀请」：
-// 预设邀请卡入库（猜拳/Pong/贪吃蛇/贴贴 四类，逐条开关、不可删、「使用系统预设」总开关），
+  // 预设邀请卡入库（猜拳/Pong/贪吃蛇/贴贴/听歌/看电影，逐条开关、不可删、「使用系统预设」总开关），
 // 支持自定义新增、分组管理、批量导入、跨分类搜索、字卡库双入口、IndexedDB 权威恢复。
 // 触发链路不变：tryAutoSend → tryActiveInvite（chat.js）按 联系人回复设置→其他 的
 // ai-rps-en/prob、ai-game-en/prob 判定后从本库抽一张；本文件只负责题库存储与抽取。
 // 手动触发入口：聊天「更多功能 → TA的提问 → 邀请 / 贴贴」（triggerTaInviteNow / triggerTaCuddleNow
-// 定义在 chat.js，因为发送/弹确认/开半框依赖聊天页内部函数）；本库提供 taInvitePickAny（全类型）
+// 定义在 chat.js，因为发送/弹确认/开半框依赖聊天页内部函数）；本库提供 taInvitePickAny（游戏与贴贴）
 // 与 taInvitePickKind（按类型，v8.29 #1003 起供「贴贴」那枚用）供其抽卡。
 (function () {
   const store = window.activeStore();
   const KEY = 'ta-invite';
 
   // ---------- 系统预设邀请卡 ----------
-  // kind: rps=猜拳 / pong=Pong / snake=双人贪吃蛇 / cuddle=贴贴；text=TA 发出的邀请消息正文
+  // kind: rps=猜拳 / pong=Pong / snake=双人贪吃蛇 / cuddle=贴贴 / music=听歌 / movie=看电影；text=TA 发出的邀请消息正文
   //（发送时自动带联系人昵称前缀）。前三条与原硬编码文案一致。
   // v3.14.x：新增 cuddle 贴贴邀请——正常情侣的贴贴互动（贴/抱/牵手/靠着/蹭蹭），
   // 措辞甜而安稳，贴合两个世界设定（平时看不见但偶尔能碰到、有体感），无游戏半框，
@@ -37,9 +37,17 @@
     { id: 'iv_c7', cat: 'cuddle', kind: 'cuddle', text: '隔着世界也想贴贴你，感觉到了就不要躲', enabled: true },
     { id: 'iv_c8', cat: 'cuddle', kind: 'cuddle', text: '今天很想你，想到想蹭蹭你', enabled: true },
     { id: 'iv_c9', cat: 'cuddle', kind: 'cuddle', text: '晚上早点休息，我来抱着你睡', enabled: true },
-    { id: 'iv_c10', cat: 'cuddle', kind: 'cuddle', text: '心情很好，这种时候最适合亲亲了', enabled: true }
+    { id: 'iv_c10', cat: 'cuddle', kind: 'cuddle', text: '心情很好，这种时候最适合亲亲了', enabled: true },
+    { id: 'iv_m1', cat: 'music', kind: 'music', text: '想和你一起听{歌名}，来吗？', enabled: true },
+    { id: 'iv_m2', cat: 'music', kind: 'music', text: '陪我听{歌名}，好不好？', enabled: true },
+    { id: 'iv_m3', cat: 'music', kind: 'music', text: '找到{歌名}，想和你一起听', enabled: true },
+    { id: 'iv_m4', cat: 'music', kind: 'music', text: '戴上耳机，和我一起听{歌名}吧？', enabled: true },
+    { id: 'iv_v1', cat: 'movie', kind: 'movie', text: '想邀请你一起看电影，来吗？', enabled: true },
+    { id: 'iv_v2', cat: 'movie', kind: 'movie', text: '今晚一起看场电影，好不好？', enabled: true },
+    { id: 'iv_v3', cat: 'movie', kind: 'movie', text: '留点时间给我，陪我看部电影吧？', enabled: true },
+    { id: 'iv_v4', cat: 'movie', kind: 'movie', text: '放映厅已经准备好了，要不要一起看？', enabled: true }
   ];
-  const CATS_TI = [['rps', '猜拳邀请'], ['pong', 'Pong 邀请'], ['snake', '贪吃蛇邀请'], ['cuddle', '贴贴邀请']];
+  const CATS_TI = [['rps', '猜拳邀请'], ['pong', 'Pong 邀请'], ['snake', '贪吃蛇邀请'], ['cuddle', '贴贴邀请'], ['music', '听歌邀请'], ['movie', '看电影邀请']];
   const KIND_OF = {};
   CATS_TI.forEach(([k]) => { KIND_OF[k] = k; });
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
@@ -51,6 +59,12 @@
 
   // ---------- 数据读写（增量合并 + 持久化，与 ta-ask.js 同款策略） ----------
   function tiMerge(d) {
+    const oldMusicLines = {
+      iv_m1: '想和你一起听歌，来吗？',
+      iv_m2: '陪我听一会儿歌，好不好？',
+      iv_m3: '找到一首歌，想和你一起听',
+      iv_m4: '戴上耳机，和我一起听这首歌吧？'
+    };
     const ids = {};
     (d.questions || []).forEach(q => { if (q && q.id) ids[q.id] = true; });
     const merged = Array.isArray(d.mergedIds) ? d.mergedIds.slice() : [];
@@ -73,6 +87,11 @@
         d.questions.forEach(x => { if (x && x.id === q.id) x.isPreset = true; });
         changed = true;
       }
+    });
+    d.questions.forEach(q => {
+      if (!q || q.isPreset !== true || oldMusicLines[q.id] !== q.text) return;
+      const replacement = DEFAULT_QUESTIONS.find(item => item.id === q.id);
+      if (replacement) { q.text = replacement.text; changed = true; }
     });
     if (changed) d.mergedIds = merged;
     return changed;
@@ -168,7 +187,7 @@
       return null;
     } catch (e) { return null; }
   };
-  // 手动触发抽取（更多功能→TA的提问→邀请）：不看开关/概率，全部启用池里抽
+  // 手动触发抽取（更多功能→TA的提问→邀请）：不看开关/概率，在游戏与贴贴池里抽；听歌和看电影走各自面板。
   window.taInvitePickAny = function () {
     try {
       const d = tiLoad();
@@ -265,10 +284,7 @@
   function tiAddFormHtml(blockKey, grp, kind) {
     return '<div class="ta-add">' +
       '<select class="ti-type tc-input" data-key="' + blockKey + '">' +
-      '<option value="rps">猜拳邀请</option>' +
-      '<option value="pong">Pong 邀请</option>' +
-      '<option value="snake">贪吃蛇邀请</option>' +
-      '<option value="cuddle">贴贴邀请</option>' +
+      CATS_TI.map(([k, label]) => '<option value="' + k + '"' + (k === kind ? ' selected' : '') + '>' + esc(label) + '</option>').join('') +
       '</select>' +
       '<input id="ti-new-' + blockKey + '" type="text" placeholder="添加邀请话术…（发送时自动带昵称）">' +
       '<button class="ta-add-btn" data-key="' + blockKey + '" data-cat="' + (kind || 'rps') + '" data-grp="' + (grp || '') + '">添加</button>' +
@@ -287,11 +303,7 @@
       '<button class="cc-tool" id="ti-batch-toggle" style="margin-left:6px' + (tiBatchMode ? ';background:#111;color:#fff;border-color:#111' : '') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;vertical-align:-2px;margin-right:4px"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 12l2 2 4-4"/></svg>批量管理</button>' +
       '</div>';
     if (!mineQs.length && !groups.length) {
-      html += '<div class="ta-empty" style="padding:14px">暂未添加自定义邀请，可在上方批量导入或下方添加</div>';
-      container.innerHTML = html;
-      bindTiGroupOps();
-      bindTiBatchToggle();
-      return;
+      html += '<div class="ta-empty" style="padding:14px">暂未添加自定义邀请，可在上方批量导入或下方分类添加</div>';
     }
     groups.forEach(g => {
       const arr = mineQs.filter(q => q.grp === g.id);
@@ -308,7 +320,7 @@
     if (!ungrouped.length) html += '<div class="ta-empty">暂无未分组内容，可在上方批量导入或下方添加</div>';
     CATS_TI.forEach(([k, label]) => {
       const arr = ungrouped.filter(q => (q.kind || 'rps') === k && (search === '' || q.text.indexOf(search) >= 0));
-      if (!arr.length) return;
+      if (!arr.length && search) return;
       html += '<div class="mg-subcat">' + esc(label) + ' <span style="font-size:11px;color:var(--muted);font-weight:400">(' + arr.length + ')</span></div>';
       arr.forEach(q => { html += tiItemHtml(q, d.questions.indexOf(q), tiBatchMode); });
       html += tiAddFormHtml('c' + k, '', k);

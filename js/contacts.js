@@ -610,7 +610,7 @@ const txt =
 '<li>桌面布局与美化（壁纸 / 气泡 / 字号等）</li>' +
 '<li>称呼性别（TA / 他 / 她）</li>' +
 '<li>日历、信箱、备忘录</li>' +
-'<li>占卜、记录、收藏、统计、记账</li>' +
+'<li>占卜、记录、收藏、统计</li>' +
 '</ul>' +
 '<div style="font-size:12px;color:var(--muted,#999);margin-top:12px;line-height:1.7">「共用」指切换桌面后数据仍延续；「独立」指各桌面各留一份、互不影响。</div>';
 box.appendChild(el('div', '', txt));

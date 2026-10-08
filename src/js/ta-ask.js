@@ -957,6 +957,13 @@
       }
     }
   }
+  // A movie ending creates an ordinary text inquiry card; its trigger chance is
+  // decided by the movie flow, independently of the scheduled inquiry settings.
+  window.triggerMovieAsk = function () {
+    if (!window.chatAddSystem) return false;
+    pushAsk({ text: '刚才的电影怎么样？想不想聊一聊', type: 'text' }, { popup: false });
+    return true;
+  };
   // ---- 触发调度（v3.5.34：启用开关 + 触发概率滑块 + 自动弹窗概率滑块） ----
   function maybeTriggerTAAsk() {
     try {

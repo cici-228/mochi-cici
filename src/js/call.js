@@ -721,7 +721,7 @@
   // v3.31.x：后台来电通知——页面在后台时无法弹来电 UI（也无法接听），改为发系统通知
   //（走 bg-keep 的 showSysNotification 链路：SW 通知页面隐藏也能显示）。
   // force=true：来电是「错过就没了」的单发事件，绕过 bgNotifyCheck 的 15s 过渡期/去重闸门。
-  // avFixed=true：来电归属当前桌面，头像用 partnerAv() 权威值，空则走中立 mochi 图标。
+  // avFixed=true：来电归属当前桌面，头像用 partnerAv() 权威值，空则走中立 CiCi 图标。
   // #161：加 hint 尾缀——通知文案变为「XX 来电了，快回来接听，对方会等你几分钟」
   // #1456：callAlert/callTag——让后台来电通知带「振铃感」（振动＋常驻＋重提醒，见
   //   bg-keep.js bgNotifyCheck 的 extra.callAlert 分支）。后台放不出铃声是移动端内核

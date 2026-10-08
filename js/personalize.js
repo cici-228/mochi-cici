@@ -324,6 +324,7 @@ _openedAt = Date.now();
 if (modalBox) modalBox.classList.toggle('modal--big', !!opts.big);
 if (modalBox) modalBox.classList.toggle('modal--warn', !!opts.warn);
 if (okBtn) okBtn.textContent = '确定';
+if (cancelBtn) cancelBtn.textContent = opts.cancelText || '取消';
 stayOnce = false;
 pillsOnOk = opts.pillsOnOk || null;
 pillSubmit = !!(opts.pillSubmit);
@@ -660,7 +661,11 @@ okBtn.addEventListener('click', () => {
 const _s = _openSeq;
 try { fire(); } finally { if (_openSeq === _s) close(); }
 });
-cancelBtn.addEventListener('click', close);
+cancelBtn.addEventListener('click', () => {
+const onCancel = _modalOpts && _modalOpts.onCancel;
+close();
+if (typeof onCancel === 'function') onCancel();
+});
 mask.addEventListener('click', (e) => {
 if (e.target !== mask || lock) return;
 if (Date.now() - _openedAt < 350) return;
@@ -3260,7 +3265,7 @@ const blob = new Blob([json], { type: 'application/json' });
 const url = URL.createObjectURL(blob);
 const a = document.createElement('a');
 a.href = url;
-a.download = 'mochi美化方案-' + new Date().toISOString().slice(0, 10) + '.json';
+a.download = 'CiCi美化方案-' + new Date().toISOString().slice(0, 10) + '.json';
 document.body.appendChild(a);
 a.click();
 setTimeout(() => { try { document.body.removeChild(a); URL.revokeObjectURL(url); } catch (e) {} }, 1000);
@@ -3274,9 +3279,9 @@ return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
 const startBeautyExport = (data) => {
 const json = JSON.stringify(data);
 if (json.length > 64 * 1024 * 1024) { toast('方案过大，导出失败'); return; }
-const fname = 'mochi美化方案-' + beautyFileLocalDate() + '.json';
+const fname = 'CiCi美化方案-' + beautyFileLocalDate() + '.json';
 const doExportFile = () => {
-if (window.mochiExportFile) { window.mochiExportFile(json, fname, 'mochi美化方案'); return; }
+if (window.mochiExportFile) { window.mochiExportFile(json, fname, 'CiCi美化方案'); return; }
 downloadBeautyFile(json);
 };
 const doCopy = () => {
@@ -5126,6 +5131,15 @@ const v = store.get('desk-layout');
 if (v) { const p = JSON.parse(v); if (Array.isArray(p)) a = p; }
 } catch (e) {}
 if (!a) return null;
+let movieMoved = false;
+a = a.map(function (page) {
+if (!Array.isArray(page)) return page;
+return page.map(function (wid) {
+if (wid === 'app-accounting') { movieMoved = true; return 'app-movie'; }
+return wid;
+});
+});
+if (movieMoved) { try { store.set('desk-layout', JSON.stringify(a)); } catch (e) {} }
 const seen = {};
 const ok = a.length >= DESK_PAGE_MIN && a.length <= DESK_PAGE_MAX &&
 a.some(function (page) { return Array.isArray(page) && page.length > 0; }) &&
@@ -5414,7 +5428,7 @@ setupDeskCountdownClick();
 document.addEventListener('contact-switched', renderDeskTexts);
 document.addEventListener('contact-switched', renderDeskCountdowns);
 const WIDGET_IDS = ['deco', 'quote-row', 'checkin', 'apps', 'music', 'p2apps', 'memo-row', 'week', 'weekend', 'desk-clock', 'desk-calendar', 'desk-timer', 'desk-anniv', 'desk-period',
-'app-chat', 'app-group-chat', 'app-home', 'app-mail', 'app-feed', 'app-calendar', 'app-memory', 'app-divination', 'app-note', 'app-music', 'app-stats', 'app-interact', 'app-checkin', 'p3apps', 'app-period', 'app-accounting', 'app-garden',     'app-tongpin', 'app-shenshou', 'app-water', 'app-eat', 'app-pomo', 'app-cjian', 'app-memo-arc', 'app-my-arc', 'app-room', 'app-piggy', 'app-memo'];
+'app-chat', 'app-group-chat', 'app-home', 'app-mail', 'app-feed', 'app-calendar', 'app-memory', 'app-divination', 'app-note', 'app-music', 'app-stats', 'app-interact', 'app-checkin', 'p3apps', 'app-period', 'app-movie', 'app-garden',     'app-tongpin', 'app-shenshou', 'app-water', 'app-eat', 'app-pomo', 'app-cjian', 'app-memo-arc', 'app-my-arc', 'app-room', 'app-piggy', 'app-memo'];
 const WIDGET_NAMES = {
 deco: '纪念日卡', 'quote-row': '今日情话 / 已摸鱼', checkin: '打卡横幅', apps: '功能图标(整组)',
 music: '音乐播放器', p2apps: '第二页功能图标(整组)', 'memo-row': '今日备忘 / 心情', week: '本周日常', weekend: '摸鱼倒计时（周末）',
@@ -5422,7 +5436,7 @@ music: '音乐播放器', p2apps: '第二页功能图标(整组)', 'memo-row': '
 'app-chat': '聊天图标', 'app-group-chat': '群聊图标', 'app-home': '主页图标', 'app-mail': '信箱图标', 'app-feed': '朋友圈图标',
 'app-calendar': '日历图标', 'app-memory': '纪念图标', 'app-divination': '占卜图标', 'app-note': '收藏图标',
 'app-music': '音乐图标', 'app-stats': '聊天统计图标', 'app-interact': '提问记录图标', 'app-checkin': '寻踪图标',
-'p3apps': '第三页功能图标(整组)', 'app-period': '经期记录图标', 'app-accounting': '记账图标', 'app-garden': '花园图标',     'app-tongpin': '同频图标', 'app-shenshou': '伸手图标', 'app-water': '喝水图标', 'app-eat': '吃什么图标', 'app-pomo': '番茄钟图标',
+'p3apps': '第三页功能图标(整组)', 'app-period': '经期记录图标', 'app-movie': '看电影图标', 'app-garden': '花园图标',     'app-tongpin': '同频图标', 'app-shenshou': '伸手图标', 'app-water': '喝水图标', 'app-eat': '吃什么图标', 'app-pomo': '番茄钟图标',
 'app-cjian': '此间图标', 'app-memo-arc': '梦角档案图标', 'app-my-arc': '我的档案图标', 'app-room': '房间图标', 'app-piggy': '存钱罐图标', 'app-memo': '备忘录图标',
 };
 const PREV_BOX = 'display:flex;align-items:center;justify-content:center;width:78px;height:58px;border-radius:10px;background:linear-gradient(135deg,#fff,#f6f6f6);border:1px solid rgba(0,0,0,.07);box-shadow:0 1px 3px rgba(0,0,0,.06);flex-shrink:0;overflow:hidden;padding:4px;box-sizing:border-box';
@@ -5459,7 +5473,7 @@ weekend: '<span style="display:flex;flex-direction:column;align-items:center;jus
 'app-chat': _appIcoPrev('聊天'), 'app-group-chat': _appIcoPrev('群聊'), 'app-home': _appIcoPrev('主页'), 'app-mail': _appIcoPrev('信箱'), 'app-feed': _appIcoPrev('朋友圈'),
 'app-calendar': _appIcoPrev('日历'), 'app-memory': _appIcoPrev('纪念'), 'app-divination': _appIcoPrev('占卜'), 'app-note': _appIcoPrev('收藏'),
 'app-music': _appIcoPrev('音乐'), 'app-stats': _appIcoPrev('统计'), 'app-interact': _appIcoPrev('提问'), 'app-checkin': _appIcoPrev('寻踪'),
-'app-period': _appIcoPrev('经期'), 'app-accounting': _appIcoPrev('记账'), 'app-garden': _appIcoPrev('花园'),     'app-tongpin': _appIcoPrev('同频'), 'app-shenshou': _appIcoPrev('伸手'), 'app-water': _appIcoPrev('喝水'), 'app-eat': _appIcoPrev('吃什么'), 'app-pomo': _appIcoPrev('番茄钟'), 'p3apps': _appIcoPrev('经期'),
+'app-period': _appIcoPrev('经期'), 'app-movie': _appIcoPrev('看电影'), 'app-garden': _appIcoPrev('花园'),     'app-tongpin': _appIcoPrev('同频'), 'app-shenshou': _appIcoPrev('伸手'), 'app-water': _appIcoPrev('喝水'), 'app-eat': _appIcoPrev('吃什么'), 'app-pomo': _appIcoPrev('番茄钟'), 'p3apps': _appIcoPrev('经期'),
 'app-cjian': _appIcoPrev('此间'), 'app-memo-arc': _appIcoPrev('梦角档案'), 'app-my-arc': _appIcoPrev('我的档案'), 'app-room': _appIcoPrev('房间'), 'app-piggy': _appIcoPrev('存钱罐'), 'app-memo': _appIcoPrev('备忘录'),
 };
 function ensureWidgetPool() {
@@ -8205,7 +8219,7 @@ open('隐私与数据安全',
 });
 bind('row-contact', () => {
 open('联系作者 / 反馈',
-'作者只有两个账号：小红书 @言序（1842523578）、抖音 @言序（58334080131）。\n\n作者不玩抖音、不回消息，账号仅用于发布本站链接。本站完全免费，任何收费均为诈骗。\n\n作者已决定月底停更：之后不再答疑、不再帮看 bug；网站仍开源免费，代码可自行下载修改。\n\n遇到问题建议先看「使用说明」，并用 信息诊断 →「设备兼容诊断」一键复制本机环境信息再反馈。');
+'原版作者只有两个账号：小红书 @言序（1842523578）、抖音 @言序（58334080131）。\n\n作者不玩抖音、不回消息，账号仅用于发布本站链接。本站完全免费，任何收费均为诈骗。\n\n作者已决定月底停更：之后不再答疑、不再帮看 bug；网站仍开源免费，代码可自行下载修改。\n\n遇到问题建议先看「使用说明」，并用 信息诊断 →「设备兼容诊断」一键复制本机环境信息再反馈。');
 });
 bind('row-faq-app', () => {
 open('关于“会不会做成 App”',

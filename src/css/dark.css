@@ -680,7 +680,7 @@
 [data-theme="dark"] .period-day-pop .dp-del { border-color:#444; background:var(--dark-card); color:#999; }
 [data-theme="dark"] .period-day-pop .st-btn { border-color:var(--dark-border-12); background:var(--dark-card); }
 [data-theme="dark"] .period-day-pop .st-btn:active { background:var(--dark-hover); }
-/* ---- chat-pages.css 补齐：TA的小问题/问答/记录/记账/决策/统计 ---- */
+/* ---- chat-pages.css 补齐：TA的小问题/问答/记录/决策/统计 ---- */
 [data-theme="dark"] .tc-panel { background:var(--dark-card-97); border-color:var(--dark-border); }
 [data-theme="dark"] .tc-res-mine { background:var(--static-bg); }
 [data-theme="dark"] .tc-res-line { border-top-color:rgba(255,255,255,.1); }
@@ -694,7 +694,6 @@
 [data-theme="dark"] .qa-close { border-color:var(--dark-border-12); }
 [data-theme="dark"] .qa-mine { background:var(--static-bg); }
 [data-theme="dark"] .qa-send { color:#111; }
-[data-theme="dark"] .acc-month-btn:active { background:var(--dark-hover); }
 [data-theme="dark"] .dec-inp-clear { background:var(--dark-hover); color:#aaa; }
 [data-theme="dark"] .dec-inp-clear:active { background:rgba(255,255,255,.15); }
 [data-theme="dark"] .dc-result { background:var(--static-bg); }

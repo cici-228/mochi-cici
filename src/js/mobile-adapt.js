@@ -1283,7 +1283,7 @@
           // 原差值法（screen.height - 可视高）在 iOS 26.x「系统不把网页垫到状态栏
           // 下方」的形态上失真：该形态系统已把网页起点放在状态栏下方（innerHeight
           // = screen - 状态栏高），差值却还是量出状态栏高度并写进 --mochi-safe-top
-          // → .phone padding-top 与系统避让双重叠加，Mochi 行上方 ~76px 空白、
+          // → .phone padding-top 与系统避让双重叠加，CiCi 行上方 ~76px 空白、
           // 整页下坠（iPhone 16 Pro + Safari 26.1 主屏幕全屏实测）。
           // env(safe-area-inset-top) 语义恰好区分两种形态：「内容已避让」时返回 0
           // （系统已处理，页面不再加），「内容覆盖到状态栏下」时返回真实高度。
@@ -1402,7 +1402,7 @@
           }
           // v3.26.x #537：iOS 独立应用覆盖形态（判定器 iosCover，单一事实源；与上面浏览器
           // 形态互斥）同款挂类——该形态 .phone 铺满整块物理屏、模拟状态栏须自身抬升到系统
-          // 状态栏下方（base.css html.ios-cover-top 规则消费；此前普通态无人避让，Mochi 行
+          // 状态栏下方（base.css html.ios-cover-top 规则消费；此前普通态无人避让，CiCi 行
           // 常驻钻系统状态栏=诊断 ✗顶部重叠）。保留/已避让/iPad 形态判定器一律不给
           // iosCover → 不挂类、零变化。全屏态恒不挂——那形态已有 .phone padding-top +
           // .statusbar{padding-top:14px} 整条避让链，再叠一次=双倍白带。

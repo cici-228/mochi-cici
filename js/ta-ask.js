@@ -720,6 +720,11 @@ if (idx >= 0 && window.openAskReply && !cardPopupBusy()) window.openAskReply(idx
 }
 }
 }
+window.triggerMovieAsk = function () {
+if (!window.chatAddSystem) return false;
+pushAsk({ text: '刚才的电影怎么样？想不想聊一聊', type: 'text' }, { popup: false });
+return true;
+};
 function maybeTriggerTAAsk() {
 try {
 const d = taAskLoad();

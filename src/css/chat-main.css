@@ -1298,6 +1298,9 @@ html.tablet #page-chat.cs-bg-on > #cs-bg-layer { min-height:100vh; min-height:ma
   gap:4px 10px; margin-top:5px; padding-top:5px;
   border-top:1px dashed rgba(0,0,0,.12);
 }
+/* 仅隐藏词条区域；它的边线、间距一起退出布局，气泡仍按正文自然收缩。 */
+#page-chat.cs-hide-tags .msg-moods { display:none !important; }
+#page-chat .msg-moods[hidden], #page-chat .msg-mood[hidden] { display:none !important; }
 .msg-mood {
   display:inline-flex; align-items:center;
   font-size:11px; color:inherit; opacity:.75;
@@ -1921,5 +1924,3 @@ html.tablet #page-chat.cs-bg-on > #cs-bg-layer { min-height:100vh; min-height:ma
 [data-theme="dark"] .voice-card.recording .voice-wave i { opacity:.9; }
 [data-theme="dark"] .msg-voice-play.voice-play-btn { background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.16); }
 [data-theme="dark"] .voice-rec-btn { border-color:rgba(255,255,255,.28); color:#fff; }
-
-

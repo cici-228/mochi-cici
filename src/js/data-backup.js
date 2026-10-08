@@ -962,6 +962,11 @@
   // FIX 2026-09-11 #333：参数化分享标题/文件 MIME/保存框类型——诊断 docx 导出复用本链路
   // （设备.js buildDocxBlob 产物），不再只能分享「JSON 备份」。默认值保持原行为零变化。
   async function saveBackupFile(blob, fname, shareTitle, saveTypes) {
+    // 安卓安装包：使用系统保存框写文件，WebView 自身不可靠处理 blob: 下载。
+    if (window.mochiNativeSaveFile) {
+      try { return await window.mochiNativeSaveFile(blob, fname) ? 'ok' : 'cancel'; }
+      catch (e) { /* 回退原有网页保存链 */ }
+    }
     const file = new File([blob], fname, { type: blob.type || 'application/json;charset=utf-8' });
     // ① 系统分享面板
     // v3.9.x：华为（Mate20 默认浏览器）与夸克对 navigator.share({files}) 支持不稳定——

@@ -108,7 +108,7 @@
   // 供 chat.js 红包侧委托同一本全局账（避免两套实现漂移）
   window.giftWalletGet = walletGet;
   window.giftWalletSet = walletSet;
-  function walletText() { const w = walletGet(); return '心意币 ¥' + fenToYuan(w.myBalance) + ' · ' + partnerName() + ' ¥' + fenToYuan(w.systemBalance) + ' · 向 Mochi 申请心意币'; }
+  function walletText() { const w = walletGet(); return '心意币 ¥' + fenToYuan(w.myBalance) + ' · ' + partnerName() + ' ¥' + fenToYuan(w.systemBalance) + ' · 向 CiCi 申请心意币'; }
   function renderGiftBalances() {
     ['gift-balance', 'market-balance'].forEach(function (id) {
       const el = document.getElementById(id);
@@ -135,7 +135,7 @@
     return { myBalance: w.myBalance, systemBalance: w.systemBalance };
   };
   // v3.16.x：心意币流水账（按联系人桌面前缀隔离，主页「心意币赚钱/申请记录」读取）。
-  // kind='earn' 写 records-coin-earn（游戏/花园赚钱），kind='ask' 写 records-coin-ask（向 Mochi 申请）。
+  // kind='earn' 写 records-coin-earn（游戏/花园赚钱），kind='ask' 写 records-coin-ask（向 CiCi 申请）。
   // myFen/taFen = 我和 TA 各自入账分值（可一方为 0）；src 为来源/渠道中文标签。
   function coinLedgerLoad(kind) {
     try {
@@ -163,8 +163,8 @@
   }
   window.giftCoinLedgerAdd = coinLedgerAdd;
   window.giftCoinLedgerLoad = coinLedgerLoad;
-  // 心意币申请（向 Mochi 打款入账，非直接改数值）：点余额行出单个多阶段弹窗——
-  // 胶囊选收款方「我的 / TA」，输入申请金额确定后模拟 Mochi 打款累加进账；
+  // 心意币申请（向 CiCi 打款入账，非直接改数值）：点余额行出单个多阶段弹窗——
+  // 胶囊选收款方「我的 / TA」，输入申请金额确定后模拟 CiCi 打款累加进账；
   // 弹窗不关（ctl.stay）自动切到另一侧继续申请；留空点【完成】/取消随时结束。
   // v3.15.x：与 chat.js rpEditWallet 同款申请制口径（原为直接设置金额）。
   function giftEditWallet() {
@@ -177,10 +177,10 @@
     function hintTxt() {
       var w = walletGet();
       return '当前：心意币 ¥' + fenToYuan(w.myBalance) + ' · ' + pn + ' ¥' + fenToYuan(w.systemBalance) +
-        (doneAny ? '\n已到账，可继续为' + LBL[side] + '申请；留空点【完成】结束' : '\n选择收款方，输入申请金额点【申请】，Mochi 打款后自动入账；留空点【完成】结束');
+        (doneAny ? '\n已到账，可继续为' + LBL[side] + '申请；留空点【完成】结束' : '\n选择收款方，输入申请金额点【申请】，CiCi 打款后自动入账；留空点【完成】结束');
     }
     var ctl = null;
-    ctl = window.openModal('向 Mochi 申请心意币', '', function (arg) {
+    ctl = window.openModal('向 CiCi 申请心意币', '', function (arg) {
       var picked = (arg === 'my' || arg === 'ta');
       var el = document.getElementById('modal-input');
       var raw = String(picked ? ((el && el.value) || '') : (arg == null ? '' : arg)).trim();
@@ -194,7 +194,7 @@
       else w.systemBalance += fen;
       walletSet(w); renderGiftBalances();
       coinLedgerAdd('ask', target === 'my' ? fen : 0, target === 'ta' ? fen : 0, '市集申请');
-      toast('Mochi 已打款，' + LBL[target] + ' +¥' + fmtYuan(fen / 100));
+      toast('CiCi 已打款，' + LBL[target] + ' +¥' + fmtYuan(fen / 100));
       doneAny = true;
       side = target === 'my' ? 'ta' : 'my';
       if (ctl) {
@@ -2169,7 +2169,7 @@
   // 曾用 <6 在满 5 页桌面新建第 6 页 → mochi-restore-done 后 buildDeskPages 钳回 5 页
   // 删尾页把图标扫进隐藏池，且 app-market 不在 WIDGET_IDS 白名单永远无法找回（刷新也消失）。
   // 兜底走 memo-app 同款模式：无条件 append 进 .app-grid.p3-grid 当前所在位置
-  // （哪怕整组暂在隐藏池，冷启动收缩后由 accounting.js ensureP3 找回归位）。
+  // （哪怕整组暂在隐藏池，冷启动收缩后由 movie.js ensureP3 找回归位）。
   function injectDeskApps(pairs) {
     const st = store();
     let layArr = null;

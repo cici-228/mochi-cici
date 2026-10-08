@@ -75,7 +75,7 @@
   // #301 mystery:1 = 蒙面拍品（开拍只给描述猜是什么，落槌/拍走才揭晓）
   const POOL = [
     { ico: '🌹', name: '永生玫瑰', desc: '不会枯的那种', base: 520, wish: '花会谢，心意不会。' },
-    { ico: '🧸', name: 'Mochi 玩偶', desc: '捏起来很解压', base: 900, wish: '想我的时候就捏捏它。' },
+    { ico: '🧸', name: 'CiCi 玩偶', desc: '捏起来很解压', base: 900, wish: '想我的时候就捏捏它。' },
     { ico: '🧋', name: '奶茶年卡', desc: '每天一杯半糖去冰', base: 1314, wish: '第一杯请你喝。' },
     { ico: '🎧', name: '降噪耳机', desc: '世界的开关', base: 1990, wish: '戴上就是我的世界。' },
     { ico: '🎮', name: '复古掌机', desc: '内置 520 个小游戏，猜猜是什么', base: 2600, wish: '双人游戏留给你。', mystery: 1 },

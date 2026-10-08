@@ -3196,6 +3196,7 @@ b.dataset.showing = '0';
 } else {
 b.innerHTML = b.dataset.orig;
 b.dataset.showing = '1';
+refreshChatTagVisibilityIn(b);
 }
 chatRetractToggleAfter('toggle'); // #871：展开/收起＝滚动区内容高突变，按钉住/解钉两态做贴底或落定重落
 };
@@ -3262,7 +3263,7 @@ try { return chatPartnerName() + '\u0001' + chatUserName(); } catch (e) { return
 }
 let windowRenderedSrcTags = '';
 function srcTagSig() {
-try { return store.get('reply-py-en') + '\u0001' + store.get('reply-qs-en') + '\u0001' + store.get('reply-mjf-en'); } catch (e) { return windowRenderedSrcTags; }
+try { return store.get('reply-py-en') + '\u0001' + store.get('reply-qs-en') + '\u0001' + store.get('reply-mjf-en') + '\u0001' + store.get('cs-chat-tags-off'); } catch (e) { return windowRenderedSrcTags; }
 }
 let normChangedIdxs = null;
 let normChangedRecs = [];
@@ -4486,7 +4487,7 @@ return m;
 }
 if (rec.special === 'askcoin') {
 m.className = 'msg-poke';
-m.innerHTML = '<span>🪙 ' + escTxt(chatPartnerName()) + ' 向 Mochi 申请了心意币 ¥' + (Number(rec.askFen || 0) / 100).toFixed(2) + '</span>';
+m.innerHTML = '<span>🪙 ' + escTxt(chatPartnerName()) + ' 向 CiCi 申请了心意币 ¥' + (Number(rec.askFen || 0) / 100).toFixed(2) + '</span>';
 appendMsg(m);
 maybeScrollChatBottom(rec.side);
 return m;
@@ -4869,6 +4870,7 @@ if (Date.now() - ts < 6000 && chatVisible()) maybeScrollChatBottom(rec.side);
 });
 });
 } catch (e) {}
+refreshChatTagVisibilityIn(m);
 appendMsg(m);
 maybeScrollChatBottom(rec.side);
 return m;
@@ -6104,6 +6106,16 @@ if (probe.parentNode === page) page.removeChild(probe);
 }
 }
 window.chatKaoJoinSep = chatKaoJoinSep; // group-chat.js 同源共用
+function chatMilkEmojiReply(text, emojiPool, enabled) {
+const unchanged = { text: text, separateEmoji: null };
+if (typeof text !== 'string' || !text.trim() || chatHasMediaPayload(text) || !Array.isArray(emojiPool)) return unchanged;
+const cards = emojiPool.filter(card => typeof card === 'string' && card.trim() && !chatHasMediaPayload(card));
+if (!cards.length || !hit(20)) return unchanged;
+const emoji = cards[Math.floor(Math.random() * cards.length)].trim();
+if (enabled === 0) return { text: text, separateEmoji: emoji };
+return { text: Math.random() < 0.5 ? emoji + ' ' + text : text + ' ' + emoji, separateEmoji: null };
+}
+window.chatMilkEmojiReply = chatMilkEmojiReply;
 function genReplyText(c) {
 const pool = getPool();
 let reply = '', type = 'text';
@@ -6213,7 +6225,7 @@ if (q) lastQuotedText = quoteKey;
 replyOnce(c, q, i > 0, q ? quoteSrcIdx : -1);
 if (i < count - 1) showTyping();
 if (i === count - 1) {
-setTimeout(() => { if (!sameCid()) return; if (window.maybeMusicRequest) window.maybeMusicRequest(); }, 2000);
+setTimeout(() => { if (!sameCid()) return; if (window.maybeMovieRequest && window.maybeMovieRequest()) return; if (window.maybeMusicRequest) window.maybeMusicRequest(); }, 2000);
 }
 }, i * randInt(1200, 2800));
 }
@@ -6278,6 +6290,23 @@ let m = null;
 const dictTag = (rep.spell && rep.spell.every(t => (t || '').length > 4)) ? '词典拼句' : '词典拼词';
 const pyMultiExtra = (pyMultiHit || (rep.spell && rep.spellOne)) ? [{ tag: '多字卡回复', label: '' }] : null;
 const willRetractR = hit(c['rc-prob']);
+const milkEmojiPool = (window.getCustomEmojiCards && window.getCustomEmojiCards()) || [];
+let milkSeparateEmoji = null;
+function milkSendSeparate(emoji, delivered) {
+if (!emoji || !delivered) return;
+setTimeout(() => {
+if (!sameCid()) return;
+addIn(emoji, { type: 'emoji', silent: true, sfx: true });
+}, 300 + Math.random() * 400);
+}
+if (rep.type === 'text' && !(rep.spell && !rep.spellOne)) {
+const mixed = chatMilkEmojiReply(rep.text, milkEmojiPool, c['emoji-mix-en']);
+if (mixed.text !== rep.text) {
+rep.text = mixed.text;
+rep.parts = spellPartsSync(rep.text, rep.parts);
+}
+milkSeparateEmoji = mixed.separateEmoji;
+}
 if (rep.spell && rep.spellOne) {
 m = addIn(rep.text, {
 quote: quote,
@@ -6298,18 +6327,20 @@ await new Promise(r => setTimeout(r, randInt(900, 1800)));
 if (!sameCid()) { hideTyping(); return; }
 hideTyping();
 }
-m = addIn(rep.spell[si], {
+const milkStep = chatMilkEmojiReply(rep.spell[si], milkEmojiPool, c['emoji-mix-en']);
+m = addIn(milkStep.text, {
 quote: si === 0 ? quote : null,
 qside: 'out',
 qidx: (si === 0 && quote) ? quoteIdx : undefined,
 type: 'text',
-parts: si === rep.spell.length - 1 ? spellPartsSync(rep.spell[si], spellImgParts) : null,
+parts: si === rep.spell.length - 1 ? spellPartsSync(milkStep.text, spellImgParts) : null,
 silent: si > 0 ? true : (silent || willRetractR),
 sfx: !willRetractR,
 tag: '词典',
 tagExtra: [{ tag: '词典逐卡连发', label: '' }],
 tagNoDup: true
 });
+milkSendSeparate(milkStep.separateEmoji, m);
 }
 } else if (rep.mjFree) {
 m = addIn(rep.text, {
@@ -6326,6 +6357,7 @@ tagNoDup: true
 } else {
 m = addIn(rep.text, { quote: quote, qside: 'out', qidx: quote ? quoteIdx : undefined, type: rep.type, parts: rep.parts, silent: silent || willRetractR, tag: pyMultiHit ? '多字卡回复' : undefined, tagNoDup: true });
 }
+if (!(rep.spell && !rep.spellOne)) milkSendSeparate(milkSeparateEmoji, m);
 const _favProbMsg = (window.favCfg ? window.favCfg().taMsg : 30);
 if (lastMineText && Math.random() * 100 < _favProbMsg) {
 const fav = getFav();
@@ -6374,6 +6406,7 @@ chain.forEach(it => {
 const tag = typeName[it.type] || '情绪';
 mm.innerHTML += '<div class="msg-mood' + (it.type === 'intent' ? ' msg-intent' : '') + '"><span class="msg-mood-tag">' + tag + '</span><span>' + it.content + '</span></div>';
 });
+refreshChatTagVisibilityIn(mm);
 const idx2 = Number(m.dataset.idx);
 if (!isNaN(idx2) && msgs[idx2]) {
 msgs[idx2].mood = msgs[idx2].mood || [];
@@ -6427,7 +6460,7 @@ hideTyping();
 chatUserFollowScroll = true; // #1023 用户主动要的回应：本条落地即贴底（上翻态也滑过来）
 replyOnce(c, null, i > 0);
 if (i < count - 1) showTyping();
-if (i === count - 1) setTimeout(() => { if (!sameCid()) return; if (window.maybeMusicRequest) window.maybeMusicRequest(); }, 2000);
+if (i === count - 1) setTimeout(() => { if (!sameCid()) return; if (window.maybeMovieRequest && window.maybeMovieRequest()) return; if (window.maybeMusicRequest) window.maybeMusicRequest(); }, 2000);
 }, i * randInt(1200, 2800));
 }
 }, delay);
@@ -6594,6 +6627,38 @@ if (tag === '多字卡回复') return !pyOn;
 return !qsOn || !pyOn;
 } catch (e) { return false; }
 }
+function chatTagOffSet() {
+try {
+const saved = JSON.parse(store.get('cs-chat-tags-off') || '[]');
+return new Set(Array.isArray(saved) ? saved.filter(tag => typeof tag === 'string') : []);
+} catch (e) { return new Set(); }
+}
+function refreshChatTagVisibilityIn(rootNode) {
+if (!rootNode || !rootNode.querySelectorAll) return;
+const off = chatTagOffSet();
+const groups = rootNode.matches && rootNode.matches('.msg-moods') ? [rootNode] : rootNode.querySelectorAll('.msg-moods');
+groups.forEach(group => {
+let visible = false;
+group.querySelectorAll('.msg-mood').forEach(item => {
+const label = item.querySelector('.msg-mood-tag');
+const tag = item.getAttribute('data-chat-tag') || (label && label.textContent) || '';
+if (tag && !item.getAttribute('data-chat-tag')) item.setAttribute('data-chat-tag', tag);
+item.hidden = off.has(tag);
+if (!item.hidden) visible = true;
+});
+group.hidden = !visible && !group.querySelector('.msg-poke-seg[data-rcm]');
+});
+}
+window.chatRefreshTagVisibility = function () { refreshChatTagVisibilityIn(chatPage); };
+window.chatKnownTagTypes = function () {
+const tags = new Set();
+msgs.forEach(rec => { if (rec && Array.isArray(rec.mood)) rec.mood.forEach(item => {
+const tag = item && typeof item.tag === 'string' ? item.tag.trim() : '';
+if (tag && tag.length <= 80) tags.add(tag);
+}); });
+return Array.from(tags);
+};
+document.addEventListener('chat-tag-display-changed', window.chatRefreshTagVisibility);
 let pyMultiDrawn = false;
 let __genLastCid = null, __genLastSig = '';
 function chatGenRepSig(r) {
@@ -6732,6 +6797,8 @@ document.addEventListener('mochi-fg-resume', asForegroundCatchup); // bg-keep �
 if (typeof document.wasDiscarded !== 'undefined' && document.wasDiscarded === true) setTimeout(asForegroundCatchup, 4000); // 被丢弃后重载＝长离场回场（手动刷新不走这里）
 window.__asCatchupProbe = { fire: asForegroundCatchup, state: function () { return { hiddenAt: asHiddenAt, lastTry: asLastTryAt, catchupAt: asCatchupAt }; } }; // 供 verify 脚本/诊断只读探测
 const INVITE_DECLINE = ['下次吧，现在不太想玩~', '等会儿再陪你玩好不好', '先不玩啦，待会儿再说', '现在没状态，下次一定'];
+const MUSIC_INVITE_DECLINE = ['下次再一起听，好不好？', '我现在想安静一会儿，晚点陪你听', '这首先记着，我们一会儿再听吧', '今天先不听啦，下次一定陪你'];
+const MOVIE_INVITE_DECLINE = ['这次先不看啦，改天一起看好不好？', '我现在还不想看电影，晚点再约你', '先欠你一场电影，下次一定陪你看', '今天先不进放映厅啦，过会儿再说'];
 const CUDDLE_DECLINE = ['下次再贴吧，先记着这笔~', '等会儿补给你，说话算数', '先欠着，攒到晚上一起还~', '今天想先自己待会儿，明天加倍还你'];
 const CUDDLE_REPLIES = ['嗯……蹭到了。暖暖的，很喜欢。', '那我要贴很久哦，不许偷偷跑掉。', '手被握住了，就这样待一会儿。', '感觉到了，你在旁边。很安心。', '贴贴充电中……好，满格了。'];
 function presetReplyPick(group, fallback) {
@@ -6743,6 +6810,13 @@ return l.length ? pick(l) : '';
 } catch (e) {}
 return fallback.length ? pick(fallback) : '';
 }
+window.chatInviteDecline = function (kind) {
+const group = kind === 'movie' ? '看电影邀请·婉拒' : '听歌邀请·婉拒';
+const fallback = kind === 'movie' ? MOVIE_INVITE_DECLINE : MUSIC_INVITE_DECLINE;
+const line = presetReplyPick(group, fallback);
+if (line) addOut(line);
+return line;
+};
 window.__cardSearchFns = window.__cardSearchFns || [];
 window.__cardSearchFns.push({ name: '聊天系统回应', fn: function (kw) {
 const out = [];
@@ -8282,7 +8356,7 @@ function rpRenderBalance() {
 const el = document.getElementById('rp-balance');
 if (!el) return;
 const w = rpWalletGet();
-el.textContent = '心意币 ¥' + (w.myBalance / 100).toFixed(2) + ' · ' + chatPartnerName() + ' ¥' + (w.systemBalance / 100).toFixed(2) + ' · 向 Mochi 申请心意币';
+el.textContent = '心意币 ¥' + (w.myBalance / 100).toFixed(2) + ' · ' + chatPartnerName() + ' ¥' + (w.systemBalance / 100).toFixed(2) + ' · 向 CiCi 申请心意币';
 }
 function rpEditWallet() {
 if (!window.openModal) return;
@@ -8294,10 +8368,10 @@ const fmtYuan = (n) => (Math.round(n * 100) / 100).toFixed(2);
 const hintTxt = () => {
 const w = rpWalletGet();
 return '当前：心意币 ¥' + (w.myBalance / 100).toFixed(2) + ' · ' + taName + ' ¥' + (w.systemBalance / 100).toFixed(2) +
-(doneAny ? '\n已到账，可继续为' + LBL[side] + '申请；留空点【完成】结束' : '\n选择收款方，输入申请金额点【申请】，Mochi 打款后自动入账；留空点【完成】结束');
+(doneAny ? '\n已到账，可继续为' + LBL[side] + '申请；留空点【完成】结束' : '\n选择收款方，输入申请金额点【申请】，CiCi 打款后自动入账；留空点【完成】结束');
 };
 let ctl = null;
-ctl = window.openModal('向 Mochi 申请心意币', '', (arg) => {
+ctl = window.openModal('向 CiCi 申请心意币', '', (arg) => {
 const picked = (arg === 'my' || arg === 'ta');
 const el = document.getElementById('modal-input');
 const raw = String(picked ? ((el && el.value) || '') : (arg == null ? '' : arg)).trim();
@@ -8311,7 +8385,7 @@ if (target === 'my') w.myBalance += fen;
 else w.systemBalance += fen;
 rpWalletSet(w); rpRenderBalance();
 try { if (window.giftCoinLedgerAdd) window.giftCoinLedgerAdd('ask', target === 'my' ? fen : 0, target === 'ta' ? fen : 0, '聊天申请'); } catch (e) {}
-toast('Mochi 已打款，' + LBL[target] + ' +¥' + fmtYuan(fen / 100));
+toast('CiCi 已打款，' + LBL[target] + ' +¥' + fmtYuan(fen / 100));
 doneAny = true;
 side = target === 'my' ? 'ta' : 'my';
 if (ctl) {
@@ -9111,6 +9185,8 @@ applyAskAnswer();
 }
 }
 function sendInviteContent(content) {
+const movieInvite = String(content || '').trim() === '想和你一起看电影';
+const musicInvite = String(content || '').trim() === '想和你一起听歌';
 closeChatAskPanel();
 addRec({ side: 'out', text: '邀请：' + content, special: 'invite', inviteContent: content, inviteStatus: 'pending' });
 const inviteIdx = msgs.length - 1;
@@ -9137,6 +9213,10 @@ const pool = window.getInteractPool
 ? window.getInteractPool('邀请TA·接受', ['好，我答应你。', '可以呀。', '我陪你。', '走吧。', '嗯，陪你。'])
 : ['好，我答应你。', '可以呀。', '我陪你。', '走吧。', '嗯，陪你。'];
 reply = (window.pickAskCardReply ? window.pickAskCardReply(pool) : pool[Math.floor(Math.random() * pool.length)]);
+} else if (movieInvite) {
+status = '下次再说';
+answer = myName + ' 说下次再说';
+reply = '下次再说，过一会儿再看好吗？';
 } else if (roll < 0.85) {
 status = '拒绝';
 answer = myName + ' 拒绝了你的邀请';
@@ -9149,6 +9229,8 @@ status = '未回应';
 answer = myName + ' 暂时没有回应';
 }
 setTimeout(() => {
+if (movieInvite && status === '接受' && window.movieInviteAcceptedFor) window.movieInviteAcceptedFor(myCid);
+if (musicInvite && status === '接受' && sameCid() && window.mochiMusicMyInviteAccepted) window.mochiMusicMyInviteAccepted(myCid);
 if (!sameCid()) {
 window.chatDeskCardReply(myCid, 'invite', inviteRecTs, 'inviteStatus', function (rec) { rec.inviteStatus = 'answered'; rec.inviteAnswer = answer; }, reply ? [{ side: 'in', text: reply }] : [], applyInviteResult);
 try { window.chatDeskHistPush(myCid, { type: 'invite', q: content, a: reply || status, st: status, ts: recTs }); } catch (err) {}
@@ -9292,7 +9374,7 @@ if (window.renderAskRecords) window.renderAskRecords(); // #625 汇总页同口�
 toast('邀请记录已清空');
 }, { noInput: true });
 });
-const MY_INVITE_PRESETS = ['想和你猜拳，来一局？', '想和你玩一局 Pong，来吗？', '想和你玩双人贪吃蛇，来吗？', '想和你一起听歌'];
+const MY_INVITE_PRESETS = ['想和你猜拳，来一局？', '想和你玩一局 Pong，来吗？', '想和你玩双人贪吃蛇，来吗？', '想和你一起听歌', '想和你一起看电影'];
 let myInviteDirty = false;
 let myInviteCurGroup = '__preset';
 let myInviteGroups = null;
@@ -9311,6 +9393,14 @@ if (!myInviteGroups.some(g => g[0] === '我的新增')) myInviteGroups.push(['�
 }
 if (!myInviteGroups.some(g => g[0] === '__preset')) {
 myInviteGroups.unshift(['__preset', MY_INVITE_PRESETS.slice()]);
+myInviteGroupsSave();
+}
+let addMoviePreset = false;
+try { addMoviePreset = store.get('my-invite-movie-preset-added') !== '1'; } catch (e) {}
+if (addMoviePreset) {
+const preset = myInviteGroups.find(g => g[0] === '__preset');
+if (preset && !preset[1].includes('想和你一起看电影')) preset[1].push('想和你一起看电影');
+try { store.set('my-invite-movie-preset-added', '1'); } catch (e) {}
 myInviteGroupsSave();
 }
 return myInviteGroups;
@@ -9332,7 +9422,13 @@ let arr = null;
 try { arr = JSON.parse(v); } catch (e) { return false; }
 if (!Array.isArray(arr)) return false;
 if (myInviteCount(arr) > myInviteCount(myInviteG())) {
+const currentPreset = myInviteGroups.find(g => g[0] === '__preset');
+const restoredPreset = arr.find(g => Array.isArray(g) && g[0] === '__preset' && Array.isArray(g[1]));
+if (currentPreset && currentPreset[1].includes('想和你一起看电影') && restoredPreset && !restoredPreset[1].includes('想和你一起看电影')) {
+restoredPreset[1].push('想和你一起看电影');
+}
 myInviteGroups = arr.filter(g => Array.isArray(g) && Array.isArray(g[1]));
+myInviteGroupsSave();
 return true;
 }
 return false;

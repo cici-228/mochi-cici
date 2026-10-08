@@ -1,4 +1,4 @@
-// ===== Mochi Service Worker：离线缓存 + 网络优先 =====
+// ===== CiCi Service Worker：离线缓存 + 网络优先 =====
 // v3.5.54：CACHE 名由 build.mjs 每次构建自动更新（mochi-<时间戳>），
 // 新版本部署后旧缓存自动失效 → 强制更新到最新版
 // v3.6.x：网络优先 + 超时兜底。GitHub Pages 在国内网络经常慢/卡，原实现

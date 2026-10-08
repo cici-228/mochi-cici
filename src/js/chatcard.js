@@ -212,7 +212,7 @@
   // 管理页（page-custom-cards）功能分类 tab 可查看/编辑/删除，各功能经 default-cards.js
   // getLibPool 并入对应功能池抽取；CC_FUNC_KEYS 不进聊天通用回复池（getCustomCards*
   // 遍历全部分类时排除，防止功能字卡被聊天自动回复误抽）。
-  const CC_FUNC_KEYS = ['fish', 'eat', 'period', 'water', 'garden', 'sync', 'reach', 'cjian', 'room', 'piggy', 'drift', 'interact', 'music',
+  const CC_FUNC_KEYS = ['fish', 'eat', 'period', 'water', 'garden', 'sync', 'reach', 'cjian', 'room', 'piggy', 'drift', 'interact', 'music', 'musicKeyword', 'movie',
     'mjfree']; // #317 梦角自由造句：程序生成的重造句卡（dream-free.js），管理页可查看/删除，不进聊天通用池
   const CC_ALL_TYPES = CC_TYPES.concat(CC_FUNC_KEYS);
   const CC_FUN_COUNT_KEYS = CC_FUNC_KEYS.filter(k => k !== 'mjfree');
@@ -2599,8 +2599,8 @@
   }
   const CC_COPY_MAX = 3 * 1024 * 1024;
   function ccExportOffer(json, extra) {
-  const fname = 'mochi字卡库数据.json';
-  const doFile = function () { ccSaveExportJson(json, fname, 'mochi 字卡库数据', '已导出字卡数据' + extra); };
+  const fname = 'CiCi字卡库数据.json';
+  const doFile = function () { ccSaveExportJson(json, fname, 'CiCi 字卡库数据', '已导出字卡数据' + extra); };
   const doCopy = function () {
   const okTip = '字卡数据已复制——发给对方后用 字卡库 →「导入数据 → 粘贴文本导入」贴进去即可';
   try {
@@ -2629,7 +2629,7 @@
       ['sticker', '表情包'], ['image', '图片'], ['poke', '拍一拍'], ['voice', '语音'],
       ['fish', '摸鱼'], ['eat', '吃饭'], ['period', '经期'], ['water', '喝水'], ['garden', '花园'],
       ['sync', '同频'], ['reach', '伸手'], ['cjian', '此间'], ['room', '房间'], ['piggy', '存钱罐'],
-      ['drift', '漂流瓶'], ['interact', '互动回应'], ['music', '音乐'],
+      ['drift', '漂流瓶'], ['interact', '互动回应'], ['music', '音乐'], ['musicKeyword', '音乐关键词'], ['movie', '电影'],
       // FIX 2026-09-30 #1483：补「梦角自由造句」分类——#353 起 mjfree 卡就存公用/专属两库
       // （管理页有 tab、dream-free 自动入库），导出弹窗却没有这一栏＝造句卡永远导不出去
       ['mjfree', '梦角自由造句']
@@ -2757,7 +2757,7 @@
   // 文件先完整解析、确认含有效字卡后才写入：格式错误/空文件不会改动现有字卡库
   const ccImportData = document.getElementById('cc-import-data');
   if (ccImportData) {
-    const CAT_NAMES = { text: '主字卡', kaomoji: '颜文字', emoji: 'emoji', sticker: '表情包', image: '图片', poke: '拍一拍', voice: '语音', fish: '摸鱼', eat: '吃饭', period: '经期', water: '喝水', garden: '花园', sync: '同频', reach: '伸手', cjian: '此间', room: '房间', piggy: '存钱罐', drift: '漂流瓶', interact: '互动回应', music: '音乐', mjfree: '梦角自由造句' };
+    const CAT_NAMES = { text: '主字卡', kaomoji: '颜文字', emoji: 'emoji', sticker: '表情包', image: '图片', poke: '拍一拍', voice: '语音', fish: '摸鱼', eat: '吃饭', period: '经期', water: '喝水', garden: '花园', sync: '同频', reach: '伸手', cjian: '此间', room: '房间', piggy: '存钱罐', drift: '漂流瓶', interact: '互动回应', music: '音乐', musicKeyword: '音乐关键词', movie: '电影', mjfree: '梦角自由造句' };
     ccImportData.addEventListener('click', () => {
       if (window.openModal) {
         const curName = CAT_NAMES[cur] || '当前分类';
@@ -2953,7 +2953,7 @@
       let fromBackup = false; // 全量备份提取标记：字卡计数由下方本应用格式分支统一做，计数后再补标签
       // v3.5.72：识别星言简约版聊天字卡库导出 json（globalCards + cardGroups 结构）
       //   v3.5.73 修正：专属字卡的字卡内容+分组也正常导入，仅不导入其绑定的联系人
-      //   （Mochi 无专属联系人概念，天然忽略联系人；不跳过任何字卡）
+      //   （CiCi 无专属联系人概念，天然忽略联系人；不跳过任何字卡）
       if (Array.isArray(data.globalCards)) {
         fmt = '（星言格式）';
         const starToMochiCat = { custom: 'text', kaomoji: 'kaomoji', emojis: 'emoji', stickers: 'sticker', image: 'image', touch: 'poke', voices: 'voice' };
@@ -3082,7 +3082,7 @@
           if (hasCards) { data = parsed; fromBackup = true; }
         } catch (e) {}
       }
-      // 本应用格式（mochi 字卡库导出 json）
+      // 本应用格式（CiCi 字卡库导出 json）
       if (!fmt) {
         // FIX 2026-09-30 #1483：解析面从 7 聊天分类扩成 CC_ALL_TYPES 全 21 分类——导出弹窗
         //（EXPORT_CATS）v3.32.x 起就含 13 功能分类、#1483 起含「梦角自由造句」，导入侧却只认
@@ -3296,7 +3296,7 @@
   // （摸鱼/吃饭 等 13 类）再拆一个独立导出档——很多人不用这些功能，聊天字卡导出不再夹带，
   // 只在「互动功能字卡」档导出它们；全量档仍含全部（老文件兼容）。
   // 13 类互动功能分类 key（与分类 tab / EXPORT_CATS 一致）；辅助函数放公共区（导入侧 ccFullApply 也用）
-  const CC_FULL_FUN_TYPES = ['fish', 'eat', 'period', 'water', 'garden', 'sync', 'reach', 'cjian', 'room', 'piggy', 'drift', 'interact', 'music'];
+  const CC_FULL_FUN_TYPES = ['fish', 'eat', 'period', 'water', 'garden', 'sync', 'reach', 'cjian', 'room', 'piggy', 'drift', 'interact', 'music', 'musicKeyword', 'movie'];
   // 从 cc 对象里挑出指定分类（挑互动=只留 13 类；挑聊天=剔掉 13 类），分组停用开关同口径过滤
   function ccFullPickCc(o, keepFun) {
     const out = {};
@@ -3324,7 +3324,7 @@
       if (!window.openModal) { ccFullDoExport('all'); return; }
       window.openModal('导出自定义字卡', '', (mode) => { if (mode) ccFullDoExport(mode); }, {
         noInput: true,
-        staticText: '选择导出范围（四档）：\n· 公用聊天字卡：全桌面共享（不含互动功能字卡），含分组与停用开关\n· 专属聊天字卡：只含当前桌面联系人的字卡（不含互动功能字卡），含分组与停用开关；寻踪日常 / 今日情话 / TA 六类题库（询问 / 小问题 / 好奇 / 吐槽 / 查岗 / 邀请）随本档导出\n· 互动功能字卡（单独）：摸鱼 / 吃饭 / 经期 / 喝水 / 花园 / 同频 / 伸手 / 此间 / 房间 / 存钱罐 / 漂流瓶 / 互动回应 / 音乐——公用与专属两个库都导，含停用开关；不用这些功能可忽略本档\n· 全量导出：以上全部\n注意：「专属」「互动功能字卡（专属库部分）」换机恢复时，请切到对应联系人桌面再导入；导出文件不代替 设置→数据备份 的整包备份',
+        staticText: '选择导出范围（四档）：\n· 公用聊天字卡：全桌面共享（不含互动功能字卡），含分组与停用开关\n· 专属聊天字卡：只含当前桌面联系人的字卡（不含互动功能字卡），含分组与停用开关；寻踪日常 / 今日情话 / TA 六类题库（询问 / 小问题 / 好奇 / 吐槽 / 查岗 / 邀请）随本档导出\n· 互动功能字卡（单独）：摸鱼 / 吃饭 / 经期 / 喝水 / 花园 / 同频 / 伸手 / 此间 / 房间 / 存钱罐 / 漂流瓶 / 互动回应 / 音乐 / 电影——公用与专属两个库都导，含停用开关；不用这些功能可忽略本档\n· 全量导出：以上全部\n注意：「专属」「互动功能字卡（专属库部分）」换机恢复时，请切到对应联系人桌面再导入；导出文件不代替 设置→数据备份 的整包备份',
         pills: [
           { label: '公用聊天字卡', value: 'pub' },
           { label: '专属聊天字卡', value: 'own' },
@@ -4168,6 +4168,15 @@
     });
     return out;
   };
+  // milk 的表情混入只从用户自己添加的 Emoji 库取，不抽系统预设 Emoji。
+  window.getCustomEmojiCards = function () {
+    maybeHydrateReplyPool();
+    const out = [];
+    (replyPoolGroups().emoji || []).forEach(([name, arr]) => (arr || []).forEach(c => {
+      if (typeof c === 'string' && c.trim()) out.push(c.trim());
+    }));
+    return out;
+  };
   // 拍一拍字卡（自定义字卡里【拍一拍】分类）
   // FIX 2026-09-17 #648f 同款媒体守卫——拍一拍池语义＝纯文字短语，#554/#632 全库令牌化后
   // 落进【拍一拍】分类的令牌/图链/||| 卡不剔出的话，TA 抽中即拼进「TA 拍了拍你 …」直出乱码
@@ -4543,6 +4552,14 @@
     });
     return out;
   };
+  window.getCustomEmojiCardsFor = function (cid) {
+    try { if (window.hydrateLibForCid) window.hydrateLibForCid(cid); } catch (e) {}
+    const out = [];
+    (replyPoolGroupsFor(cid).emoji || []).forEach(([name, arr]) => (arr || []).forEach(c => {
+      if (typeof c === 'string' && c.trim()) out.push(c.trim());
+    }));
+    return out;
+  };
   window.getPokeCardsFor = function (cid) {
     try { if (window.hydrateLibForCid) window.hydrateLibForCid(cid); } catch (e) {}
     const g = replyPoolGroupsFor(cid);
@@ -4853,7 +4870,7 @@
           let data = '';
           try { data = JSON.stringify(payload, null, 2); }
           catch (e) { toast('导出失败：字卡数据过大，请到字卡库分分类导出'); finish(); return; }
-          ccSaveExportJson(data, 'mochi字卡库备份.json', 'mochi 字卡库备份',
+          ccSaveExportJson(data, 'CiCi字卡库备份.json', 'CiCi 字卡库备份',
           '字卡备份已导出' + (exp.miss ? '；' + exp.miss + ' 张图片数据缺失无法还原' : ''));
           } catch (e) { toast('导出失败'); }
           finish();

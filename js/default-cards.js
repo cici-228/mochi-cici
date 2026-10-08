@@ -259,7 +259,7 @@ try { if (window.quoteSpellResetDict) window.quoteSpellResetDict(); } catch (e) 
 }
 return n > 0;
 }
-const FUNC_KEYS = ['fish', 'eat', 'period', 'water', 'garden', 'sync', 'reach', 'cjian', 'room', 'piggy', 'drift', 'interact', 'music'];
+const FUNC_KEYS = ['fish', 'eat', 'period', 'water', 'garden', 'sync', 'reach', 'cjian', 'room', 'piggy', 'drift', 'interact', 'music', 'movie'];
 const BASE_KEYS = ['main', 'kaomoji', 'emoji', 'touch'];
 const ALL_KEYS = BASE_KEYS.concat(FUNC_KEYS);
 const TAB_LABELS = (function () {
@@ -499,6 +499,40 @@ dcfRefreshUI(k);
 });
 }
 bindDcfProb();
+const MUSIC_CHAT_SHARE_KEY = 'dcf-music-chat-share';
+function musicChatShare() {
+try {
+const raw = window.activeStore().get(MUSIC_CHAT_SHARE_KEY);
+if (raw !== null && raw !== undefined && raw !== '') {
+const n = Number(raw);
+if (Number.isFinite(n)) return Math.max(0, Math.min(100, Math.round(n)));
+}
+} catch (e) {}
+return 20;
+}
+window.dcfMusicChatShare = musicChatShare;
+function refreshMusicCommentShares() {
+const chat = musicChatShare();
+const chatVal = document.getElementById('dcf-music-chat-share-val');
+const musicVal = document.getElementById('dcf-music-card-share-val');
+if (chatVal) chatVal.value = String(chat);
+if (musicVal) musicVal.value = String(100 - chat);
+}
+function setMusicCommentChatShare(value) {
+const chat = Math.max(0, Math.min(100, Math.round(value)));
+try { window.activeStore().set(MUSIC_CHAT_SHARE_KEY, String(chat)); } catch (e) {}
+refreshMusicCommentShares();
+toast('陪听评论取卡：普通聊天 ' + chat + '%，音乐 ' + (100 - chat) + '%');
+}
+[['dcf-music-chat-share', 1], ['dcf-music-card-share', -1]].forEach(function (pair) {
+const row = document.getElementById(pair[0]);
+if (!row) return;
+const minus = row.querySelector('.stp-min');
+const plus = row.querySelector('.stp-max');
+if (minus) minus.addEventListener('click', () => setMusicCommentChatShare(musicChatShare() - pair[1]));
+if (plus) plus.addEventListener('click', () => setMusicCommentChatShare(musicChatShare() + pair[1]));
+});
+refreshMusicCommentShares();
 const DCF_DESC = {
 fish: '【摸鱼】联系人按你摸鱼/钓鱼的进度，在桌面上飘出「摸鱼浮字」打趣你；点击浮字可抓包，抓包会结算 TA 自上次被抓以来涨的全部摸鱼值（TA 补一份总账、你得同额），并在聊天里回应。\n触发时机：页面在前台时每 60 秒检查一次摸鱼值变化，仅在摸鱼值上涨、距上次 ≥45 分钟、当天不超过 12 次时判定；后台不触发。\n概率 = 每次判定出现浮字的概率（默认 35%），0% = 不出现浮字（本页字卡也可逐张关闭）。',
 eat: '【吃饭】到饭点（早 06:30–09:30、午 11:00–13:30、晚 17:00–19:30、夜宵 21:30–23:30）时，联系人主动来聊天提醒你吃饭，并按概率补一句「追问关心」（夜宵时段用夜宵关心话术）。\n触发时机：每 4 分钟判定一次，每个饭点每天只提醒一次，23:00–06:00 静默。主提醒由本功能自带的概率（默认 2%）控制；本项概率只控制提醒之后是否补发追问。\n概率 = 补发追问的概率（默认 35%），0% = 只提醒、不追问。',
@@ -579,6 +613,7 @@ if (valEl) valEl.value = String(getProb(k));
 Object.keys(DCF_DEF).forEach(function (k) {
 dcfRefreshUI(k);
 });
+refreshMusicCommentShares();
 const deEl = document.getElementById('dcf-enabled');
 if (deEl) deEl.checked = dcfEnabled();
 }

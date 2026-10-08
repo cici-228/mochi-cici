@@ -330,6 +330,7 @@ Object.keys(labels).forEach(id => { const el = document.getElementById(id); if (
 }
 function applySettings() {
 const set = (id, v) => { const el = document.getElementById(id); const s = String(v); if (el && el.textContent !== s) el.textContent = s; };
+if (chatPage) chatPage.classList.toggle('cs-hide-tags', store.get('cs-chat-tags') === '0');
 const DEF = themeDefaults();
 const inBg = store.get('cs-in-bg') || DEF.inBg;
 const inInk = store.get('cs-in-ink') || DEF.inInk;
@@ -1106,6 +1107,52 @@ bindBubbleColorRow('cs-in-bg', 'cs-in-bg', '#ffffff', '联系人气泡颜色', B
 bindBubbleColorRow('cs-in-ink', 'cs-in-ink', '#111111', '联系人消息文字颜色', BUBBLE_INK_COLORS);
 bindBubbleColorRow('cs-send-bg', 'cs-send-bg', '#111111', '发送按钮颜色', SEND_BG_COLORS);
 bindBubbleColorRow('cs-send-ink', 'cs-send-ink', '#ffffff', '发送文字颜色', BUBBLE_INK_COLORS);
+const csChatTags = document.getElementById('cs-chat-tags');
+if (csChatTags) {
+const tagsShown = () => store.get('cs-chat-tags') !== '0';
+const items = document.getElementById('cs-chat-tag-items');
+const basicTags = ['情绪', '心意', '交流意图', '多字卡回复', '词典', '词典拼字', '词典拼句', '词典拼词', '词典逐卡连发', '梦角自由造句', 'TA的心情', '你的心情', '漂流瓶', '备忘', '备忘提醒', '喝水提醒', '吃饭提醒', '摸鱼抓包', '用了你建的字卡'];
+const readOff = () => {
+try {
+const saved = JSON.parse(store.get('cs-chat-tags-off') || '[]');
+return new Set(Array.isArray(saved) ? saved.filter(tag => typeof tag === 'string' && tag.length <= 80) : []);
+} catch (e) { return new Set(); }
+};
+const renderTagItems = () => {
+if (!items) return;
+const off = readOff();
+const known = window.chatKnownTagTypes ? window.chatKnownTagTypes() : [];
+const tags = Array.from(new Set(basicTags.concat(known, Array.from(off))));
+items.replaceChildren();
+tags.forEach(tag => {
+if (typeof tag !== 'string' || !tag.trim() || tag.length > 80) return;
+const option = document.createElement('label'); option.className = 'cs-chat-tag-option';
+const name = document.createElement('span'); name.textContent = tag; name.title = tag === '情绪' ? '包含开心等情绪内容' : tag;
+const toggle = document.createElement('span'); toggle.className = 'toggle';
+const input = document.createElement('input'); input.type = 'checkbox'; input.checked = !off.has(tag); input.disabled = !tagsShown(); input.setAttribute('aria-label', '显示' + tag + '词条');
+const knob = document.createElement('span'); knob.className = 'tk';
+input.addEventListener('change', () => {
+const next = readOff();
+if (input.checked) next.delete(tag); else next.add(tag);
+store.set('cs-chat-tags-off', JSON.stringify(Array.from(next)));
+document.dispatchEvent(new Event('chat-tag-display-changed'));
+});
+toggle.appendChild(input); toggle.appendChild(knob);
+option.appendChild(name); option.appendChild(toggle); items.appendChild(option);
+});
+items.classList.toggle('is-disabled', !tagsShown());
+};
+const syncChatTags = () => { csChatTags.checked = tagsShown(); renderTagItems(); applySettings(); };
+syncChatTags();
+csChatTags.addEventListener('change', () => {
+store.set('cs-chat-tags', csChatTags.checked ? '1' : '0');
+renderTagItems();
+applySettings();
+});
+document.addEventListener('contact-switched', syncChatTags);
+const open = document.getElementById('chat-settings-btn');
+if (open) open.addEventListener('click', renderTagItems);
+}
 const csSendShow = document.getElementById('cs-send-show');
 if (csSendShow) {
 const showGet = () => { try { return store.get('cs-send-show') === 'hide'; } catch (e) { return false; } };

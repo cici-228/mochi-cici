@@ -253,6 +253,10 @@ html.desk-zoom-card .week-card, html.desk-zoom-card .desk-period, html.desk-zoom
   opacity:var(--widget-opacity);
   border:1px solid var(--widget-border);
 }
+.weekend-box.music-comment-active > .we-left,
+.weekend-box.music-comment-active > .we-btn { display:none; }
+.we-music-comment { width:100%; color:var(--ink); font-size:13px; font-weight:600; line-height:1.35; overflow:hidden; }
+.we-music-comment[hidden] { display:none; }
 /* v3.13.x：摸鱼连击角标（周末组件「摸鱼+1」短时连击时浮出） */
 .we-combo {
   position:absolute; top:-9px; right:10px;
@@ -690,6 +694,19 @@ html.desk-zoom-card .week-card, html.desk-zoom-card .desk-period, html.desk-zoom
   opacity:var(--widget-opacity);
   border:1px solid var(--widget-border);
 }
+.music-widget.has-together { height:auto; min-height:190px; }
+.mw-together {
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  margin-top:9px; padding:7px 8px 0;
+  border-top:1px solid var(--widget-border); color:var(--ink);
+  font-size:12px; font-weight:600;
+}
+.mw-together[hidden] { display:none; }
+.mw-together-ok.cc-tool {
+  flex:none; width:auto; min-height:30px; padding:5px 11px;
+  border-radius:11px; font-size:12px;
+}
+.mw-together-ok.cc-tool[hidden] { display:none; }
 .mw-head {
   display:flex; align-items:center; justify-content:space-between; margin-bottom:9px;
 }
@@ -975,6 +992,7 @@ html.tablet .page-slide > .desk-page-add { grid-column:1 / -1; }
 
 /* —— 首卡档：纪念日卡 / 音乐卡（+ 卡内可见元素同步放大） —— */
 html.tablet .deco-widget, html.tablet .music-widget { height:var(--tb-hero); }
+html.tablet .music-widget.has-together { height:auto; min-height:var(--tb-hero); }
 html.tablet .deco-avatars { gap:32px; }
 html.tablet .deco-avatar .ring { width:118px; height:118px; }
 html.tablet .deco-avatar .ring svg { width:48px; height:48px; }

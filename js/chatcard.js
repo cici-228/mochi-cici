@@ -135,7 +135,7 @@ ccTokenizeGiantMedia(ownPoolCache, 'own');
 return ownPoolCache;
 }
 const CC_TYPES = ['text', 'kaomoji', 'emoji', 'sticker', 'image', 'poke', 'voice'];
-const CC_FUNC_KEYS = ['fish', 'eat', 'period', 'water', 'garden', 'sync', 'reach', 'cjian', 'room', 'piggy', 'drift', 'interact', 'music',
+const CC_FUNC_KEYS = ['fish', 'eat', 'period', 'water', 'garden', 'sync', 'reach', 'cjian', 'room', 'piggy', 'drift', 'interact', 'music', 'musicKeyword', 'movie',
 'mjfree']; // #317 梦角自由造句：程序生成的重造句卡（dream-free.js），管理页可查看/删除，不进聊天通用池
 const CC_ALL_TYPES = CC_TYPES.concat(CC_FUNC_KEYS);
 const CC_FUN_COUNT_KEYS = CC_FUNC_KEYS.filter(k => k !== 'mjfree');
@@ -2019,8 +2019,8 @@ return true;
 }
 const CC_COPY_MAX = 3 * 1024 * 1024;
 function ccExportOffer(json, extra) {
-const fname = 'mochi字卡库数据.json';
-const doFile = function () { ccSaveExportJson(json, fname, 'mochi 字卡库数据', '已导出字卡数据' + extra); };
+const fname = 'CiCi字卡库数据.json';
+const doFile = function () { ccSaveExportJson(json, fname, 'CiCi 字卡库数据', '已导出字卡数据' + extra); };
 const doCopy = function () {
 const okTip = '字卡数据已复制——发给对方后用 字卡库 →「导入数据 → 粘贴文本导入」贴进去即可';
 try {
@@ -2047,7 +2047,7 @@ const EXPORT_CATS = [
 ['sticker', '表情包'], ['image', '图片'], ['poke', '拍一拍'], ['voice', '语音'],
 ['fish', '摸鱼'], ['eat', '吃饭'], ['period', '经期'], ['water', '喝水'], ['garden', '花园'],
 ['sync', '同频'], ['reach', '伸手'], ['cjian', '此间'], ['room', '房间'], ['piggy', '存钱罐'],
-['drift', '漂流瓶'], ['interact', '互动回应'], ['music', '音乐'],
+['drift', '漂流瓶'], ['interact', '互动回应'], ['music', '音乐'], ['musicKeyword', '音乐关键词'], ['movie', '电影'],
 ['mjfree', '梦角自由造句']
 ];
 const ceMask = document.getElementById('cc-export-mask');
@@ -2162,7 +2162,7 @@ ccExportOffer(data,
 }
 const ccImportData = document.getElementById('cc-import-data');
 if (ccImportData) {
-const CAT_NAMES = { text: '主字卡', kaomoji: '颜文字', emoji: 'emoji', sticker: '表情包', image: '图片', poke: '拍一拍', voice: '语音', fish: '摸鱼', eat: '吃饭', period: '经期', water: '喝水', garden: '花园', sync: '同频', reach: '伸手', cjian: '此间', room: '房间', piggy: '存钱罐', drift: '漂流瓶', interact: '互动回应', music: '音乐', mjfree: '梦角自由造句' };
+const CAT_NAMES = { text: '主字卡', kaomoji: '颜文字', emoji: 'emoji', sticker: '表情包', image: '图片', poke: '拍一拍', voice: '语音', fish: '摸鱼', eat: '吃饭', period: '经期', water: '喝水', garden: '花园', sync: '同频', reach: '伸手', cjian: '此间', room: '房间', piggy: '存钱罐', drift: '漂流瓶', interact: '互动回应', music: '音乐', musicKeyword: '音乐关键词', movie: '电影', mjfree: '梦角自由造句' };
 ccImportData.addEventListener('click', () => {
 if (window.openModal) {
 const curName = CAT_NAMES[cur] || '当前分类';
@@ -2602,7 +2602,7 @@ inc[t].forEach(n => { if (typeof n === 'string' && o[t].indexOf(n) < 0) o[t].pus
 });
 st.set(key, JSON.stringify(o));
 }
-const CC_FULL_FUN_TYPES = ['fish', 'eat', 'period', 'water', 'garden', 'sync', 'reach', 'cjian', 'room', 'piggy', 'drift', 'interact', 'music'];
+const CC_FULL_FUN_TYPES = ['fish', 'eat', 'period', 'water', 'garden', 'sync', 'reach', 'cjian', 'room', 'piggy', 'drift', 'interact', 'music', 'musicKeyword', 'movie'];
 function ccFullPickCc(o, keepFun) {
 const out = {};
 CC_ALL_TYPES.forEach(t => {
@@ -2627,7 +2627,7 @@ liCcFullExport.addEventListener('click', () => {
 if (!window.openModal) { ccFullDoExport('all'); return; }
 window.openModal('导出自定义字卡', '', (mode) => { if (mode) ccFullDoExport(mode); }, {
 noInput: true,
-staticText: '选择导出范围（四档）：\n· 公用聊天字卡：全桌面共享（不含互动功能字卡），含分组与停用开关\n· 专属聊天字卡：只含当前桌面联系人的字卡（不含互动功能字卡），含分组与停用开关；寻踪日常 / 今日情话 / TA 六类题库（询问 / 小问题 / 好奇 / 吐槽 / 查岗 / 邀请）随本档导出\n· 互动功能字卡（单独）：摸鱼 / 吃饭 / 经期 / 喝水 / 花园 / 同频 / 伸手 / 此间 / 房间 / 存钱罐 / 漂流瓶 / 互动回应 / 音乐——公用与专属两个库都导，含停用开关；不用这些功能可忽略本档\n· 全量导出：以上全部\n注意：「专属」「互动功能字卡（专属库部分）」换机恢复时，请切到对应联系人桌面再导入；导出文件不代替 设置→数据备份 的整包备份',
+staticText: '选择导出范围（四档）：\n· 公用聊天字卡：全桌面共享（不含互动功能字卡），含分组与停用开关\n· 专属聊天字卡：只含当前桌面联系人的字卡（不含互动功能字卡），含分组与停用开关；寻踪日常 / 今日情话 / TA 六类题库（询问 / 小问题 / 好奇 / 吐槽 / 查岗 / 邀请）随本档导出\n· 互动功能字卡（单独）：摸鱼 / 吃饭 / 经期 / 喝水 / 花园 / 同频 / 伸手 / 此间 / 房间 / 存钱罐 / 漂流瓶 / 互动回应 / 音乐 / 电影——公用与专属两个库都导，含停用开关；不用这些功能可忽略本档\n· 全量导出：以上全部\n注意：「专属」「互动功能字卡（专属库部分）」换机恢复时，请切到对应联系人桌面再导入；导出文件不代替 设置→数据备份 的整包备份',
 pills: [
 { label: '公用聊天字卡', value: 'pub' },
 { label: '专属聊天字卡', value: 'own' },
@@ -3303,6 +3303,14 @@ g[t].forEach(([name, arr]) => arr.forEach(c => out.push(c)));
 });
 return out;
 };
+window.getCustomEmojiCards = function () {
+maybeHydrateReplyPool();
+const out = [];
+(replyPoolGroups().emoji || []).forEach(([name, arr]) => (arr || []).forEach(c => {
+if (typeof c === 'string' && c.trim()) out.push(c.trim());
+}));
+return out;
+};
 window.getPokeCards = function () {
 maybeHydrateReplyPool();
 const g = replyPoolGroups();
@@ -3573,6 +3581,14 @@ if (CC_FUNC_KEYS.indexOf(t) >= 0) return;
 });
 return out;
 };
+window.getCustomEmojiCardsFor = function (cid) {
+try { if (window.hydrateLibForCid) window.hydrateLibForCid(cid); } catch (e) {}
+const out = [];
+(replyPoolGroupsFor(cid).emoji || []).forEach(([name, arr]) => (arr || []).forEach(c => {
+if (typeof c === 'string' && c.trim()) out.push(c.trim());
+}));
+return out;
+};
 window.getPokeCardsFor = function (cid) {
 try { if (window.hydrateLibForCid) window.hydrateLibForCid(cid); } catch (e) {}
 const g = replyPoolGroupsFor(cid);
@@ -3818,7 +3834,7 @@ try {
 let data = '';
 try { data = JSON.stringify(payload, null, 2); }
 catch (e) { toast('导出失败：字卡数据过大，请到字卡库分分类导出'); finish(); return; }
-ccSaveExportJson(data, 'mochi字卡库备份.json', 'mochi 字卡库备份',
+ccSaveExportJson(data, 'CiCi字卡库备份.json', 'CiCi 字卡库备份',
 '字卡备份已导出' + (exp.miss ? '；' + exp.miss + ' 张图片数据缺失无法还原' : ''));
 } catch (e) { toast('导出失败'); }
 finish();

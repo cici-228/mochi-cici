@@ -680,6 +680,10 @@ toast('备份已打包（' + sizeStr + '），请重新点击「导出数据」�
 }
 }
 async function saveBackupFile(blob, fname, shareTitle, saveTypes) {
+if (window.mochiNativeSaveFile) {
+try { return await window.mochiNativeSaveFile(blob, fname) ? 'ok' : 'cancel'; }
+catch (e) { /* 回退原有网页保存链 */ }
+}
 const file = new File([blob], fname, { type: blob.type || 'application/json;charset=utf-8' });
 const brokenFileShare = !!((window.mochiDevice || {}).env || {}).brokenFileShare;
 const shareMax = 50 * 1024 * 1024;

@@ -656,7 +656,7 @@
       try {
         // avFixed：明示大头像由本页面的 cAvatar(req.cid) 权威决定（该联系人自己桌面的头像）。
         // 若不传，bg-keep 会在 av 为空时回退当前桌面头像 → 把「当前桌面的联系人头像」错当成
-        // 跨桌面联系人头像显示。传了 avFixed 后空值走中立 mochi 图标，绝不再借用当前桌面。
+        // 跨桌面联系人头像显示。传了 avFixed 后空值走中立 CiCi 图标，绝不再借用当前桌面。
         const av = cAvatar(req.cid);
         if (req.kind === 'call') {
           // #204：改走 call.js 响铃挂起（原 #159 只发通知即标记 seen 丢弃——切回应用

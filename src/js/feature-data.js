@@ -217,8 +217,8 @@
     { id: 'period', name: '经期记录', group: '桌面功能', scope: 'both', page: 'page-period',
       desc: '经期记录与预测、每日状态、关心语与提醒设置',
       res: [/^period-/] },
-    { id: 'accounting', name: '记账', group: '桌面功能', scope: 'desk', page: 'page-accounting',
-      desc: '账目记录、分类、预算与心意币记录',
+    { id: 'accounting', name: '旧记账数据', group: '历史数据', scope: 'desk',
+      desc: '旧账目、分类、预算与心意币记录，可导出备份',
       // #1325 审计：TA 记账提醒三把键 acc-remind-on/-prob/-day（accounting.js:786-788，随桌面隔离）
       // 旧正则 /^accounting-/ 认不到 ⇒ 账本搬走了、提醒却还在新设备上每天发。
       res: [/^accounting-/, /^acc-remind/, /^records-coin/] },

@@ -1302,7 +1302,7 @@
     // 进入应用后它已被 clock.js 从 DOM 移除；用 IIFE 启动时缓存的 verCache/localTsCache
     let ver = verCache || '', localTs = localTsCache || 0;
     if (!ver) { try { ver = window.APP_VERSION || ''; } catch (e) {} }
-    L.push('Mochi 诊断信息（' + ver + '）');
+    L.push('CiCi 诊断信息（' + ver + '）');
     // v3.27.x：本行启动序号与错误条目 b 字段（id#N）对号——b 与本行不同＝旧启动残留
     L.push('时间：' + new Date().toLocaleString() + '（本次启动 ' + BOOT_ID + '#' + BOOT_N + '）');
     L.push('');
@@ -1534,7 +1534,7 @@
           '通知=' + (kp.notify ? '开' : '关') + '/' + kp.perm];
         if (kp.audio) kpParts.push('音频=' + (kp.audio.paused ? '暂停' : '播放') + ' vol=' + kp.audio.volume);
         else kpParts.push('音频=无（保活未起）');
-        // #1489：把「这口气从哪个孔出」摊开——作者报「进 mochi 突然变响、退出来又变轻」这类音量泵动，
+        // #1489：把「这口气从哪个孔出」摊开——作者报「进 CiCi 突然变响、退出来又变轻」这类音量泵动，
         // 判的就是保活此刻占不占媒体音频通道：锚=媒体元素(占媒体通道)＝会压低别的 App；
         // 锚=WebAudio(不占媒体通道)＝不抢。路=xxx 是 WebAudio 不可用时回落的原因（没有＝没回落）。
         if (kp.anchor) kpParts.push('锚=' + kp.anchor);
@@ -3154,7 +3154,7 @@ window.mochiViewportForm = function (sig) {
   // #1048：env-top 说谎矛盾检测——standalone 全出血（diff≤2）时页面画进了系统状态栏区，
   // 任何有底部手势条 inset（env-bottom≥20）的设备顶部必然有刘海/灵动岛 inset（iPhone X 起
   // 硬件事实），env-top 仍报 <20 只能是内核没把顶部安全区透传给网页（iPhone17 + Edge 独立
-  // 应用实测：--mochi-safe-top 恒未设、模拟状态栏整行（Mochi/时钟/信号/电量图标）钻进灵动岛/
+  // 应用实测：--mochi-safe-top 恒未设、模拟状态栏整行（CiCi/时钟/信号/电量图标）钻进灵动岛/
   // 系统状态栏底下＝用户报「灵动岛这里不显示图标了」，#114 同根因复发；诊断 docx 实证
   // vv=874=screen、var 未设）。按 bottom 折算顶部避让下限（bottom+18，钳 [40,72]），写入
   // 既有 var(--mochi-safe-top) 全链（普通态 .statusbar / 全屏态 .phone padding-top 消费方
@@ -3190,7 +3190,7 @@ window.mochiViewportForm = function (sig) {
   // 16Pro/26.1、17/26.6 等实测均落此支）= 执行器要让模拟状态栏自身抬升到系统状态栏下方
   // （base.css html.ios-cover-top 规则消费）+ 非全屏高度须含顶部安全区（expBase=整屏）。
   // 此前该形态在 CSS 侧完全无人避让——浏览器覆盖壳有 #199/#236 的 mochi-cover-top、
-  // 全屏态有 ios-fs-active 链，唯独「普通态 standalone 覆盖」缺一条，Mochi 行常驻钻进
+  // 全屏态有 ios-fs-active 链，唯独「普通态 standalone 覆盖」缺一条，CiCi 行常驻钻进
   // 系统状态栏（用户报「整页上移」时诊断同步 ✗顶部重叠）。保留/已避让/IPad/force
   // 各形态恒 false（各自避让链已在），非 standalone 恒 false（浏览器壳走 coverBrowser）。
   const iosCover = standalone && !forceCover && !resStand && !ipadForm && envTop >= 20 && envTop <= 160;
@@ -3333,7 +3333,7 @@ window.mochiViewportForm = function (sig) {
     // #210：保留/覆盖两形态 JS 信号相同（env≈diff>0）程序不可分——歧义形态时
     // 报告必须主动引导用户用【顶部避让修正】开关自服（否则全 ✓ 假象掩盖真症状：
     // iPhone 17 Pro 实测顶栏与灵动岛融合点不动/输入栏悬空，报告却全 ✓）
-    if (Fm.resStand && !Fm.forceCover) add(true, '歧义形态提示：若顶部 Mochi 行与灵动岛/时间重叠或点不动 → 到 设置→工具 开启【顶部避让修正】开关（自动刷新即修）；若底部白带则保持关闭'); // #1408：该开关自「信息诊断」段搬回「工具」段（作者点名放错位置），本句原写「上方」＝报告在诊断段时把人指去同一屏的上一行，搬走后这句会指空
+    if (Fm.resStand && !Fm.forceCover) add(true, '歧义形态提示：若顶部 CiCi 行与灵动岛/时间重叠或点不动 → 到 设置→工具 开启【顶部避让修正】开关（自动刷新即修）；若底部白带则保持关闭'); // #1408：该开关自「信息诊断」段搬回「工具」段（作者点名放错位置），本句原写「上方」＝报告在诊断段时把人指去同一屏的上一行，搬走后这句会指空
     // ③ 顶部双重叠加：statusbar 实测顶位显著超过「安全区顶部+余量」
     if (inp.sbTop == null) add(true, '状态栏隐藏（聊天等全屏页），跳过顶位判定');
     if (inp.sbTop != null) {
@@ -4103,7 +4103,7 @@ window.mochiViewportForm = function (sig) {
       } catch (eA0) { out.push('日历填色-读取异常(不计失败)'); }
       return out;
     } },
-    { n: '记账', app: 'accounting', page: 'page-accounting', open: true },
+    { n: '看电影', app: 'movie', page: 'page-movie', open: true },
     { n: '梦角档案', app: 'memo-arc', page: 'page-memo-arc', open: true },
     { n: '我的档案', app: 'my-arc', page: 'page-my-arc', open: true },
     { n: '音乐', app: 'music', page: 'page-music', open: true },

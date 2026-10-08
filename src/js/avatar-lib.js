@@ -1,9 +1,9 @@
 // ===== 功能：头像和昵称互动（联系人头像池 + 我的头像池 + 联系人昵称池 + 我的昵称池） =====
 // 聊天页内底部半框：两级切换——上排选「换什么」（头像 / 昵称），下排页签选「换谁的」（TA / 我的）。
 // 四个池子各自支持添加多条 + 删除单条 + 清空 + 开关。
-// 头像池（v3.6.x 起）：上传多张图片，定时随机更换联系人聊天头像（1-8 小时）；
+// 头像池（v3.6.x 起）：上传多张图片，定时随机更换联系人聊天头像（1-48 小时）；
 // 更换时聊天显示"昵称 更换了头像"。
-// 我的头像池：联系人也会定时（1-8 小时）主动给我换头像——有概率直接换，
+// 我的头像池：联系人也会定时（1-48 小时）主动给我换头像——有概率直接换，
 // 有概率弹窗邀请我同意/拒绝（机制与联系人随机换头像一致，计时独立）。
 // 昵称池（2026-09-16 新增）：存的是文字，点击即换聊天昵称（联系人 cs-lbl-partner /
 // 我 cs-lbl-user）；随机更换、邀请回应、弹窗邀请、计时与头像池逐条对齐，计时相互独立。
@@ -224,7 +224,7 @@
 
   // ===== 功能：头像互动（原联系人头像库，改为聊天页内底部半框） =====
   // 半框展示头像池：上传多张 + 删除单张 + 清空 + 开关 + 点击切换（半框露出聊天消息，方便边看边玩）
-  // 定时随机更换联系人聊天头像（1-8 小时）；更换时聊天显示"昵称 更换了头像"
+  // 定时随机更换联系人聊天头像（1-48 小时）；更换时聊天显示"昵称 更换了头像"
   // 上传/清空有成功/失败提示（toast）
   const avPage = document.getElementById('avlib-card');
   const avGrid = document.getElementById('avlib-grid');
@@ -1030,7 +1030,7 @@
     const before = store.get('cs-avatar-partner');
     // 邀请回应/计时随机数先同步按原顺序掷完（保持与旧实现相同的 Math.random 序列，
     // 回归工具会钉死序列），压缩回调里按预掷结果走分支
-    const nextHours = String(1 + Math.random() * 7);
+    const nextHours = String(1 + Math.random() * 47);
     const inviteHit = Math.random() * 100 < INVITE_PROB;
     const agreeHit = Math.random() * 100 < AGREE_PROB;
     // v3.14.x：写入前压缩（见 normalizeAvSize 注释），大图不再把 cs 键挤进 IDB-only 区
@@ -1038,7 +1038,7 @@
       store.set('cs-avatar-partner', fit);
       applyAvatarImg(fit, false, true);
       noteApplied('partner', fit);
-      // 手动更换后重置随机计时：1-8 小时后才可能再随机换（与星言一致）
+      // 手动更换后重置随机计时：1-48 小时后才可能再随机换
       store.set('avatar-lib-last', String(Date.now()));
       store.set('avatar-lib-next', nextHours);
       store.set('avatar-lib-cur-hash', strHash(data));
@@ -1153,7 +1153,7 @@
   // 我的头像池定时换头像（触发概率/刷新机制与联系人主动换头像一致，计时独立）：
   // 每 60 秒轮询检查一次 + 启动时立即检查；
   // 上次/下次更换时间戳持久化（avatar-me-lib-last=0 / avatar-me-lib-next=0 初始值 → 首次加载立即触发），
-  // 触发后 next = 1 + random*7 小时；刷新页面周期不重置；异常时间戳归零重试。
+  // 触发后 next = 1 + random*47 小时；刷新页面周期不重置；异常时间戳归零重试。
   // 触发时掷 INVITE_PROB：弹窗邀请我同意/拒绝，否则直接换上我的新头像
   function getMeAvatarLast() { const v = parseInt(store.get('avatar-me-lib-last'), 10); return isNaN(v) ? 0 : v; }
   function getMeAvatarNext() { const v = parseFloat(store.get('avatar-me-lib-next')); return isNaN(v) ? 0 : v; }
@@ -1187,9 +1187,9 @@
         const mask = document.getElementById('modal-mask');
         if (mask && !mask.hidden) return;
       }
-      // 推进周期：下次 1-8 小时
+      // 推进周期：下次 1-48 小时
       store.set('avatar-me-lib-last', String(now));
-      store.set('avatar-me-lib-next', String(1 + Math.random() * 7));
+      store.set('avatar-me-lib-next', String(1 + Math.random() * 47));
       if (!avClaimCycle('avatar-me-lib-last', now)) return;
       if (invite) {
         showMeAvatarInvite(data);
@@ -1226,7 +1226,7 @@
   // 定时随机更换（与星言简约版机制一致）：
   // 每 60 秒轮询检查一次 + 启动时立即检查；
   // 上次/下次更换时间戳持久化（lastChange=0 / nextChange=0 初始值 → 首次加载立即换一次），
-  // 换完后 nextChange = 1 + random*7 小时；刷新页面周期不重置；
+  // 换完后 nextChange = 1 + random*47 小时；刷新页面周期不重置；
   // 异常时间戳（未来/负数/NaN）归零，下次检查立即重试
   function getAvatarLast() { const v = parseInt(store.get('avatar-lib-last'), 10); return isNaN(v) ? 0 : v; }
   function getAvatarNext() { const v = parseFloat(store.get('avatar-lib-next')); return isNaN(v) ? 0 : v; }
@@ -1259,7 +1259,7 @@
       // v3.14.x：先推进周期再异步压缩——压缩要等 Image 解码（异步），若等回调再推进，
       // 60 秒轮询可能在窗口期重复触发换头像
       store.set('avatar-lib-last', String(now));
-      store.set('avatar-lib-next', String(1 + Math.random() * 7));
+      store.set('avatar-lib-next', String(1 + Math.random() * 47));
       // FIX #882：认领复核（双开上下文各发一条一模一样的消息）＋触发点记 cur-hash。
       // 旧实现 cur-hash 只在「手动点图/邀请回滚」两处写，随机直换漏写，而上方「随机到当前
       // 头像就跳过」比的是池内原图字节，压缩落盘后再也不等＝同一张池图后续周期被重抽中时
@@ -1367,10 +1367,10 @@
     if (!name || lib.indexOf(name) === -1) return;
     const before = store.get('cs-lbl-partner');
     // 邀请回应/计时随机数先同步按原顺序掷完（与头像池同序，回归脚本可钉死序列）
-    const nextHours = String(1 + Math.random() * 7);
+    const nextHours = String(1 + Math.random() * 47);
     const inviteHit = Math.random() * 100 < INVITE_PROB;
     const agreeHit = Math.random() * 100 < AGREE_PROB;
-    // 手动更换后重置随机计时：1-8 小时后才可能再随机换
+    // 手动更换后重置随机计时：1-48 小时后才可能再随机换
     store.set('nick-lib-last', String(Date.now()));
     store.set('nick-lib-next', nextHours);
     if (inviteHit && !agreeHit) {
@@ -1461,9 +1461,9 @@
         const mask = document.getElementById('modal-mask');
         if (mask && !mask.hidden) return;
       }
-      // 推进周期：下次 1-8 小时
+      // 推进周期：下次 1-48 小时
       store.set('nick-me-lib-last', String(now));
-      store.set('nick-me-lib-next', String(1 + Math.random() * 7));
+      store.set('nick-me-lib-next', String(1 + Math.random() * 47));
       if (!avClaimCycle('nick-me-lib-last', now)) return; // FIX #882：同头像池口径，双开上下文只留先认领的一方
       if (invite) {
         showMeNickInvite(name);
@@ -1484,7 +1484,7 @@
   }
   // 联系人昵称池定时随机更换：每 60 秒轮询 + 启动立即检查；
   // 上次/下次时间戳持久化（last=0 / next=0 初始值 → 首次加载立即换一次），
-  // 换完后 next = 1 + random*7 小时；刷新页面周期不重置；异常时间戳归零重试。
+  // 换完后 next = 1 + random*47 小时；刷新页面周期不重置；异常时间戳归零重试。
   function getNickLast() { const v = parseInt(store.get('nick-lib-last'), 10); return isNaN(v) ? 0 : v; }
   function getNickNext() { const v = parseFloat(store.get('nick-lib-next')); return isNaN(v) ? 0 : v; }
   function checkNickLibRefresh() {
@@ -1508,7 +1508,7 @@
       const curHash = store.get('nick-lib-cur-hash');
       if (curHash && strHash(name) === curHash) return;
       store.set('nick-lib-last', String(now));
-      store.set('nick-lib-next', String(1 + Math.random() * 7));
+      store.set('nick-lib-next', String(1 + Math.random() * 47));
       if (!avClaimCycle('nick-lib-last', now)) return; // FIX #882：同头像池口径，双开上下文只留先认领的一方
       applyPartnerNick(name);
       store.set('nick-lib-cur-hash', strHash(name));

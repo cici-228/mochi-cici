@@ -502,6 +502,7 @@
     // #938：同值也走一遍「先比对」——textContent 赋值会换掉文本节点，抽屉里点一下要为十来个回显标签
     // 各拆建一次子树；值没变就一个字节都不碰。
     const set = (id, v) => { const el = document.getElementById(id); const s = String(v); if (el && el.textContent !== s) el.textContent = s; };
+    if (chatPage) chatPage.classList.toggle('cs-hide-tags', store.get('cs-chat-tags') === '0');
     const DEF = themeDefaults();
     const inBg = store.get('cs-in-bg') || DEF.inBg;
     const inInk = store.get('cs-in-ink') || DEF.inInk;
@@ -1494,6 +1495,53 @@
   // 发送按钮颜色 / 发送文字颜色
   bindBubbleColorRow('cs-send-bg', 'cs-send-bg', '#111111', '发送按钮颜色', SEND_BG_COLORS);
   bindBubbleColorRow('cs-send-ink', 'cs-send-ink', '#ffffff', '发送文字颜色', BUBBLE_INK_COLORS);
+  // 词条只控制显示：原消息、字卡抽取及各概率保持原样；每个联系人单独记住选择。
+  const csChatTags = document.getElementById('cs-chat-tags');
+  if (csChatTags) {
+    const tagsShown = () => store.get('cs-chat-tags') !== '0';
+    const items = document.getElementById('cs-chat-tag-items');
+    const basicTags = ['情绪', '心意', '交流意图', '多字卡回复', '词典', '词典拼字', '词典拼句', '词典拼词', '词典逐卡连发', '梦角自由造句', 'TA的心情', '你的心情', '漂流瓶', '备忘', '备忘提醒', '喝水提醒', '吃饭提醒', '摸鱼抓包', '用了你建的字卡'];
+    const readOff = () => {
+      try {
+        const saved = JSON.parse(store.get('cs-chat-tags-off') || '[]');
+        return new Set(Array.isArray(saved) ? saved.filter(tag => typeof tag === 'string' && tag.length <= 80) : []);
+      } catch (e) { return new Set(); }
+    };
+    const renderTagItems = () => {
+      if (!items) return;
+      const off = readOff();
+      const known = window.chatKnownTagTypes ? window.chatKnownTagTypes() : [];
+      const tags = Array.from(new Set(basicTags.concat(known, Array.from(off))));
+      items.replaceChildren();
+      tags.forEach(tag => {
+        if (typeof tag !== 'string' || !tag.trim() || tag.length > 80) return;
+        const option = document.createElement('label'); option.className = 'cs-chat-tag-option';
+        const name = document.createElement('span'); name.textContent = tag; name.title = tag === '情绪' ? '包含开心等情绪内容' : tag;
+        const toggle = document.createElement('span'); toggle.className = 'toggle';
+        const input = document.createElement('input'); input.type = 'checkbox'; input.checked = !off.has(tag); input.disabled = !tagsShown(); input.setAttribute('aria-label', '显示' + tag + '词条');
+        const knob = document.createElement('span'); knob.className = 'tk';
+        input.addEventListener('change', () => {
+          const next = readOff();
+          if (input.checked) next.delete(tag); else next.add(tag);
+          store.set('cs-chat-tags-off', JSON.stringify(Array.from(next)));
+          document.dispatchEvent(new Event('chat-tag-display-changed'));
+        });
+        toggle.appendChild(input); toggle.appendChild(knob);
+        option.appendChild(name); option.appendChild(toggle); items.appendChild(option);
+      });
+      items.classList.toggle('is-disabled', !tagsShown());
+    };
+    const syncChatTags = () => { csChatTags.checked = tagsShown(); renderTagItems(); applySettings(); };
+    syncChatTags();
+    csChatTags.addEventListener('change', () => {
+      store.set('cs-chat-tags', csChatTags.checked ? '1' : '0');
+      renderTagItems();
+      applySettings();
+    });
+    document.addEventListener('contact-switched', syncChatTags);
+    const open = document.getElementById('chat-settings-btn');
+    if (open) open.addEventListener('click', renderTagItems);
+  }
   // 发送按钮显示/隐藏（勾选=隐藏，默认显示；隐藏后仍可按回车键发送）。每联系人独立。
   const csSendShow = document.getElementById('cs-send-show');
   if (csSendShow) {

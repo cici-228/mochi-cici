@@ -65,7 +65,7 @@
     '<div class="app-ico"><svg viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4.5h8a2 2 0 012 2V19a2 2 0 01-2 2H8a2 2 0 01-2-2V6.5a2 2 0 012-2z"/><path d="M9.5 3h5v3h-5z"/><path d="M9 11h6M9 14.5h6M9 18h3.5"/></svg></div>' +
     '<div class="app-name">备忘录</div>';
   // 默认进第三页图标组。注意：全新冷启动时序里 buildDeskPages(DESK_PAGE_MIN 收缩) 会先把
-  // 第三页整页（含 p3apps 组）短暂移进隐藏池、稍后由 accounting.js 的 ensureP3 找回归位——
+  // 第三页整页（含 p3apps 组）短暂移进隐藏池、稍后由 movie.js 的 ensureP3 找回归位——
   // 所以这里必须无条件 append 进当前网格节点（哪怕它在池里），随组一起回第三页；
   // 不能做「在池里就跳过」的守卫（那会让图标永远孤儿）。装修布局里若已单独摆放过
   // app-memo，随后的 applyDeskLayout 重应用会把节点挪到配置的位置。
