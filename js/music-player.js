@@ -4769,6 +4769,10 @@ const requested = selecting && window.mochiNeteasePlayQueueItem
 : window.mochiNeteasePlayCurrent && window.mochiNeteasePlayCurrent();
 if (!requested) return false;
 taActive = true;
+if (selecting && currentId && window.mochiNeteaseSharedActive && !window.mochiNeteaseSharedActive()) {
+if (window.mochiMusicTogetherForce) window.mochiMusicTogetherForce('mochi', currentId);
+return true;
+}
 const heard = () => {
 const state = window.mochiNeteasePlaybackSnapshot && window.mochiNeteasePlaybackSnapshot();
 return !!(state && state.playing && (!selecting || state.queueId === String(flow.track.id) || state.title === flow.track.title));

@@ -112,7 +112,9 @@ window.mochiMusicTogetherForce('netease', togetherTrackKey());
 const canSelectQueueItem = () => !!(state && state.canSkipToQueueItem && typeof bridge.skipToQueueItem === 'function');
 const localQueuedTracks = () => window.mochiMusicQueuedTracks ? window.mochiMusicQueuedTracks() : [];
 function remoteQueueCandidates() {
-if (!activeShared() || !state.playing || !canSelectQueueItem()) return [];
+const canPlayInCici = !!(window.ciciNeteaseEnhanced && window.ciciNeteaseEnhanced.loggedIn &&
+window.ciciNeteaseEnhanced.loggedIn() && window.mochiMusicPlayRemoteQueueItem);
+if (!activeShared() || !state.playing || (!canSelectQueueItem() && !canPlayInCici)) return [];
 const currentId = currentQueueId();
 const currentMediaId = String(state.mediaId || '');
 let currentIndex = remoteQueue.findIndex(item => queueIdOf(item) === currentId);
@@ -137,7 +139,7 @@ pendingQueueJump = null;
 if (!success) {
 manualQueueJumpId = '';
 autoReservationTarget = '';
-if (!pending.manual || !playQueueItemInCici(pending.id)) playbackPrompt('需要手动播放哦');
+if (!playQueueItemInCici(pending.id)) playbackPrompt('需要手动播放哦');
 }
 }
 function playQueueItemInCici(id) {
@@ -169,7 +171,7 @@ playbackPrompt('需要手动播放哦');
 return false;
 }
 if (!canSelectQueueItem()) {
-if (manual && playQueueItemInCici(target)) return true;
+if (playQueueItemInCici(target)) return true;
 playbackPrompt('需要手动播放哦');
 return false;
 }
@@ -190,7 +192,7 @@ clearTimeout(pending.timer);
 pendingQueueJump = null;
 manualQueueJumpId = '';
 autoReservationTarget = '';
-if (manual && playQueueItemInCici(target)) return true;
+if (playQueueItemInCici(target)) return true;
 playbackPrompt('需要手动播放哦');
 return false;
 }
@@ -644,7 +646,7 @@ return '<div class="sm-song' + (match ? ' active' : '') + '" data-remote-qid="' 
 }).join('');
 html += '<p class="sm-req-hint">这里显示网易云向安卓系统提供的播放队列，可能只包含部分歌曲。</p>';
 if (remoteQueueCount > remoteQueue.length) html += '<p class="sm-req-hint">系统队列较长，当前显示前 ' + remoteQueue.length + ' 首。</p>';
-if (!canSelectQueueItem()) html += '<p class="sm-req-hint">网易云未开放按队列跳转；已登录网易云账号时，点歌会尝试交给 CiCi 播放。</p>';
+if (!canSelectQueueItem()) html += '<p class="sm-req-hint">网易云未开放按队列跳转；已登录网易云账号时，点歌或 TA 预订会尝试交给 CiCi 播放。</p>';
 } else {
 html += '<div class="sm-song active"><div class="sm-song-info"><div class="sm-song-name">' + escapeHtml(currentTitle || '未知歌曲') + '</div>' +
 '<div class="sm-song-sub">' + escapeHtml(state.artist || '未知歌手') + ' · 当前歌曲</div></div></div>' +
@@ -876,7 +878,10 @@ if (localQueuedTracks().length) playLocalQueued();
 else if (remoteReservations.length) {
 const target = remoteReservations[0];
 if (target === currentQueueId()) remoteReservations.shift();
-else if (selectQueueItem(target, false)) { autoReservationTarget = target; autoReservationAt = now; }
+else if (selectQueueItem(target, false) && sourceChoice === 'remote') {
+autoReservationTarget = target;
+autoReservationAt = now;
+}
 } else if (naturalEnd) maybeAutoActionAfterSong();
 }
 }

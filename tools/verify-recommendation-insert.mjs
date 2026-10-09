@@ -249,6 +249,19 @@ await evalJs(`window.mochiNeteaseUpdate({access:true,active:true,playing:true,
 check('系统声称可跳播时先请求网易云控制', await evalJs("!window.mochiMusicHasLocalPlayback()"));
 await sleep(12500);
 check('网易云跳播未生效后自动由 CiCi 接播', await evalJs("window.mochiMusicHasLocalPlayback() && document.getElementById('sm-pb-name')?.textContent.trim()==='跳播测试二'"));
+await evalJs(`window.mochiNeteaseUpdate({access:true,active:true,playing:true,
+  title:'预订测试一',artist:'测试',duration:30000,position:1000,
+  mediaId:'6101',activeQueueId:'b1',canSkipToQueueItem:false,queue:[
+    {id:'b1',mediaId:'6101',title:'预订测试一',artist:'测试'},
+    {id:'b2',mediaId:'6102',title:'预订测试二',artist:'测试'},
+    {id:'b3',mediaId:'6103',title:'预订测试三',artist:'测试'}
+  ]}); window.mochiNeteasePlayCurrent(); true`);
+check('网易云未开放跳播时 TA 仍可预订公开队列中的歌', await evalJs("window.mochiNeteaseQueueCandidates().some(x=>x.id==='b2') && window.mochiNeteaseReserveQueueItem('b2')"));
+await evalJs(`window.mochiNeteaseUpdate({access:true,active:true,playing:true,
+  title:'预订测试三',artist:'测试',duration:30000,position:1000,
+  mediaId:'6103',activeQueueId:'b3'}); true`);
+check('TA 预订的网易云队列歌曲可交给 CiCi 接播', await evalJs("window.mochiMusicHasLocalPlayback() && document.getElementById('sm-pb-name')?.textContent.trim()==='预订测试二'"));
+check('TA 预订接播后下一首仍在临时队列', await evalJs("document.getElementById('mw-next').click(); document.getElementById('sm-pb-name')?.textContent.trim()==='预订测试三'"));
 try { if (ws) ws.close(); } catch (e) {}
 try { chrome.kill(); } catch (e) {}
 try { server.close(); } catch (e) {}

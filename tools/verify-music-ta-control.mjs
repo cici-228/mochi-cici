@@ -1,6 +1,6 @@
 // ===== 音乐·梦角主动控制概率 + 联系人收藏歌曲 专项验证 =====
-// 覆盖：音乐设置新增 4 个概率（歌曲播完切下一首/随机挑歌/换播放模式、TA收藏歌曲）
-// 的 UI 与持久化；【TA的收藏】tab 渲染与昵称联动；歌曲播完 TA 按概率接动作；
+// 覆盖：音乐设置的 4 个概率（歌曲播完切下一首/随机挑歌/换播放模式、TA收藏歌曲）
+// 的 UI 与持久化；联系人收藏 tab 渲染与昵称联动；歌曲播完 TA 按概率接动作；
 // 播放歌曲听一会儿后联系人按概率把歌收进「TA的收藏」。
 // 用法：node tools/verify-music-ta-control.mjs（需先 node build.mjs）
 import { spawn } from 'node:child_process';
@@ -141,33 +141,35 @@ await openMusic();
 await evalJs("(function(){var b=document.getElementById('music-set');if(b)b.click();return true;})()");
 await sleep(500);
 let rows = await settingsRows();
-check('A1 设置面板含「歌曲播完·切下一首概率」且默认 15', rows.some(r => r.indexOf('歌曲播完·切下一首概率=15') >= 0), rows.join(' | '));
+check('A1 设置面板含「CiCi 歌曲播完·TA 切下一首概率」且默认 15', rows.some(r => r.indexOf('CiCi 歌曲播完·TA 切下一首概率=15') >= 0), rows.join(' | '));
 check('A2 设置面板含「歌曲播完·随机挑歌概率」且默认 10', rows.some(r => r.indexOf('歌曲播完·随机挑歌概率=10') >= 0));
 check('A3 设置面板含「歌曲播完·换播放模式概率」且默认 5', rows.some(r => r.indexOf('歌曲播完·换播放模式概率=5') >= 0));
 check('A4 设置面板含「TA 收藏歌曲概率」且默认 20', rows.some(r => r.indexOf('TA 收藏歌曲概率=20') >= 0));
 check('A5 原有「音乐请求触发概率」仍为 5（未被破坏）', rows.some(r => r.indexOf('音乐请求触发概率=5') >= 0));
-await clickStep('sm-set-next', 1);   // 15→20
-await clickStep('sm-set-favprob', -1); // 20→15
+await clickStep('sm-set-next', 1);    // 15→16，当前步长 1%
+await clickStep('sm-set-favprob', -1); // 20→19，当前步长 1%
 await sleep(300);
 rows = await settingsRows();
-check('A6 步进可调：切下一首 15→20、TA收藏 20→15', rows.some(r => r.indexOf('切下一首概率=20') >= 0) && rows.some(r => r.indexOf('TA 收藏歌曲概率=15') >= 0), rows.join(' | '));
+check('A6 步进可调：切下一首 15→16、TA收藏 20→19', rows.some(r => r.indexOf('切下一首概率=16') >= 0) && rows.some(r => r.indexOf('TA 收藏歌曲概率=19') >= 0), rows.join(' | '));
 const mgRaw = await lsGetRaw('xy-home-v2:default:music-global');
 let mg = {}; try { mg = JSON.parse(mgRaw || '{}'); } catch (e) {}
-check('A7 概率改动持久化到 music-global（taNextProb=20 / taFavProb=15）', Number(mg.taNextProb) === 20 && Number(mg.taFavProb) === 15, JSON.stringify(mg));
+check('A7 概率改动持久化到 music-global（taNextProb=16 / taFavProb=19）', Number(mg.taNextProb) === 16 && Number(mg.taFavProb) === 19, JSON.stringify(mg));
 
-// ===== B.【TA的收藏】tab：存在、昵称联动、空态文案 =====
+// ===== B. 联系人的收藏 tab：存在、昵称联动、空态文案 =====
 await openMusic('favta');
+const currentName = await evalJs("window.chatPartnerName && window.chatPartnerName()") || 'TA';
 const tabLabel = await evalJs("(function(){var t=document.querySelector('#page-music .fav-tab[data-mtab=\"favta\"]');return t?t.textContent:'';})()");
-check('B1 favta tab 存在且默认昵称文案「TA的收藏」', tabLabel === 'TA的收藏', tabLabel);
+check('B1 favta tab 使用当前联系人昵称', tabLabel === currentName + '的收藏', tabLabel);
 const emptyHtml = await evalJs("(function(){var el=document.getElementById('music-fav-ta-list');return el?el.textContent:'';})()");
-check('B2 空态文案包含昵称', emptyHtml.indexOf('还没有收藏歌曲') >= 0 && emptyHtml.indexOf('TA') >= 0, emptyHtml.slice(0, 40));
-// 昵称联动：设 lbl-partner 后 renderPage 重填
-await evalJs("(function(){window.activeStore().set('lbl-partner','小梦');return true;})()");
+check('B2 空态文案包含当前联系人昵称', emptyHtml.indexOf('还没有收藏歌曲') >= 0 && emptyHtml.indexOf(currentName) >= 0, emptyHtml.slice(0, 40));
+// 昵称联动：聊天昵称优先于联系人名片名；桌面装饰字段 lbl-partner 不参与。
+await evalJs("(function(){window.activeStore().set('cs-lbl-partner','小梦');return true;})()");
 await evalJs("(function(){document.getElementById('music-back').click();return true;})()");
 await sleep(200);
 await openMusic('favta');
+const currentName2 = await evalJs("window.chatPartnerName && window.chatPartnerName()");
 const tabLabel2 = await evalJs("(function(){var t=document.querySelector('#page-music .fav-tab[data-mtab=\"favta\"]');return t?t.textContent:'';})()");
-check('B3 设昵称后 tab 变为「小梦的收藏」', tabLabel2 === '小梦的收藏', tabLabel2);
+check('B3 设聊天昵称后 tab 变为「小梦的收藏」', currentName2 === '小梦' && tabLabel2 === '小梦的收藏', '昵称=' + currentName2 + '，标签=' + tabLabel2);
 
 // ===== C. 联系人收藏歌曲：taFavProb=100，播放后 10~25s 内收进 music-favs-ta =====
 const wavLong = makeWavDataUrl(40, 8000); // 40s 长音：判定窗口内不会自然结束（采样率需≥8k，低采样率 Chromium 解码失败）

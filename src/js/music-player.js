@@ -5648,6 +5648,12 @@
       : window.mochiNeteasePlayCurrent && window.mochiNeteasePlayCurrent();
     if (!requested) return false;
     taActive = true;
+    // 网易云不支持指定跳播时，选中的队列歌曲可能已经由 CiCi 接播。
+    // 此时不要继续等待网易云上报曲目变化，否则 12 秒后会重复走后备播放流程。
+    if (selecting && currentId && window.mochiNeteaseSharedActive && !window.mochiNeteaseSharedActive()) {
+      if (window.mochiMusicTogetherForce) window.mochiMusicTogetherForce('mochi', currentId);
+      return true;
+    }
     const heard = () => {
       const state = window.mochiNeteasePlaybackSnapshot && window.mochiNeteasePlaybackSnapshot();
       return !!(state && state.playing && (!selecting || state.queueId === String(flow.track.id) || state.title === flow.track.title));
