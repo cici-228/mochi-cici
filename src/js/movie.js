@@ -40,7 +40,7 @@
     replyProb: { key: 'movie-comment-reply-prob', label: '我评论后 TA 回复概率（%）', min: 0, max: 100, defaultValue: 20 }
   };
   const INVITE_SETTINGS = {
-    inviteProb: { key: 'movie-invite-prob', label: 'TA 邀请看电影概率（%）', min: 0.1, max: 100, step: 0.1, defaultValue: 5 },
+    inviteProb: { key: 'movie-invite-prob', label: 'TA 邀请看电影概率（0.1%～100%）', min: 0.1, max: 100, step: 0.1, defaultValue: 5 },
     companionProb: { key: 'movie-companion-prob', label: '自行播放时 TA 陪看概率（%）', min: 0, max: 100, step: 1, defaultValue: 50 }
   };
   const INVITE_COOLDOWN_KEY = 'movie-invite-declined-at';
@@ -104,16 +104,20 @@
       const raw = window.activeStore().get(config.key);
       if (raw !== null && raw !== '') {
         const n = Number(raw);
-        if (Number.isFinite(n)) return Math.max(config.min, Math.min(config.max, Math.round(n / config.step) * config.step));
+        if (Number.isFinite(n)) return normalizeInviteSetting(config, n);
       }
     } catch (e) {}
     return config.defaultValue;
   }
+  function normalizeInviteSetting(config, raw) {
+    const decimals = config.step < 1 ? 1 : 0;
+    const rounded = Number((Math.round(raw / config.step) * config.step).toFixed(decimals));
+    return Math.max(config.min, Math.min(config.max, rounded));
+  }
   function saveInviteSetting(name, raw) {
     const config = INVITE_SETTINGS[name];
     const n = Number(raw);
-    const value = Math.max(config.min, Math.min(config.max,
-      Number.isFinite(n) ? Math.round(n / config.step) * config.step : inviteSetting(name)));
+    const value = Number.isFinite(n) ? normalizeInviteSetting(config, n) : inviteSetting(name);
     try { window.activeStore().set(config.key, String(value)); } catch (e) {}
     return value;
   }
@@ -159,12 +163,14 @@
     if (!card || !String(card.text || '').trim()) return false;
     const cid = window.__activeCid || 'default';
     const name = partnerName();
-    const inviteLine = name + ' ' + String(card.text).trim();
-    window.openTCPanel('TA想邀请你一起看电影',
-      '<div class="sm-req-hint" id="movie-invite-line"></div>' +
+    const inviteLine = name + '对你发送了看电影邀请~';
+    window.openTCPanel('看电影',
+      '<div class="sm-req"><div class="sm-req-hint" id="movie-invite-line"></div>' +
+      '<div class="sm-req-detail" id="movie-invite-detail"></div></div>' +
       '<div class="mail-actions"><button class="cc-tool" id="movie-invite-later" type="button">下次再说</button>' +
       '<button class="cc-tool" id="movie-invite-accept" type="button">同意</button></div>');
-    document.getElementById('movie-invite-line').textContent = window.taFit ? window.taFit(inviteLine) : inviteLine;
+    document.getElementById('movie-invite-line').textContent = name + '对你发送了看电影邀请~';
+    document.getElementById('movie-invite-detail').textContent = String(card.text).trim();
     try { if (window.chatAddIn) window.chatAddIn(inviteLine, { special: 'poke', initiative: true, silent: true }); } catch (e) {}
     const close = () => { const panel = document.getElementById('tc-mask'); if (panel) panel.hidden = true; };
     document.getElementById('movie-invite-later').addEventListener('click', () => {
@@ -303,6 +309,7 @@
     window.openTCPanel('看电影设置',
       '<div class="gs-title">看电影邀请与陪看</div>' +
       Object.entries(INVITE_SETTINGS).map(([name, config]) => rowHtml(name, config, 'invite')).join('') +
+      '<div class="sm-set-hint">邀请概率可直接输入 0.1～100，或按 0.1% 调整。</div>' +
       '<div class="sm-set-hint">TA 回复聊天约 2 秒后判断邀请；你点“下次再说”后，12 小时内不会再收到 TA 的看电影邀请。自行播放时只在本次观影首次播放时判断是否陪看；接受邀请后必定陪看。只有显示“TA在一起看电影”时，TA 才会发评论或回复你的评论。</div>' +
       '<div class="gs-title">观影评论</div>' +
       Object.entries(COMMENT_SETTINGS).map(([name, config]) => rowHtml(name, config)).join('') +

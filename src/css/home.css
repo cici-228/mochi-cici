@@ -841,6 +841,20 @@ html.desk-zoom-card .week-card, html.desk-zoom-card .desk-period, html.desk-zoom
    固定 height + overflow:hidden 与 mini-card 一致，缩放后三页完全同步。
    v3.25.x：随第二档 band 77→92px 同步加高（今日情话放开 3 行），三页对齐保持。 */
 .week-card { border-radius:20px; padding:8px 14px; margin-bottom:14px; height:92px; overflow:hidden; box-sizing:border-box; display:flex; flex-direction:column; justify-content:center; }
+.week-card:has(.music-lyric-card:not([hidden])) { justify-content:center; }
+.music-lyric-card[hidden] { display:none; }
+.music-lyric-head { display:flex; align-items:center; justify-content:space-between; color:var(--muted); font-size:11px; }
+.music-lyric-head button { border:0; background:transparent; color:var(--ink); line-height:1; padding:0 2px; cursor:pointer; }
+.music-lyric-head button svg { width:26px; height:26px; display:block; }
+.music-lyric-head button.liked { color:#e05555; }
+.music-lyric-head button.liked svg { fill:#e05555; }
+.music-lyric-line { color:var(--ink); font-size:14px; font-weight:600; line-height:1.5; min-height:21px; overflow:hidden; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
+.music-lyric-favorites { margin-top:16px; padding-top:12px; border-top:1px solid var(--line,#e5e5e5); }
+.music-lyric-favorites-title { font-weight:700; margin-bottom:8px; }
+.music-lyric-favorite-row { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line,#e5e5e5); }
+.music-lyric-favorite-row span { flex:1; min-width:0; overflow-wrap:anywhere; }
+.music-lyric-favorite-row small { display:block; color:var(--muted); margin-top:3px; }
+.music-lyric-favorite-row button { border:0; background:transparent; color:var(--muted); padding:6px; }
 .week-days { display:flex; gap:6px; margin-top:5px; }
 .week-day {
   flex:1; text-align:center; padding:4px 0; border-radius:10px;

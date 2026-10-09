@@ -99,11 +99,15 @@ const SONG_URL = 'mia1';
 const GS = JSON.stringify({ floatEn: true, reqProb: 100, cooldownMs: 0, taNextProb: 0, taRandProb: 0, taModeProb: 0, taFavProb: 0, taReserveProb: 0, taPauseProb: 0 });
 
 async function seedStore(opts) {
-  const lib = JSON.stringify([opts.local
+  const lib = JSON.stringify([opts.badFirst
+    ? { id: 'mia-bad', name: '损坏的默认歌曲', artist: '', url: 'invalid-audio-url', source: 'url', duration: 30, playlistId: 'default', addedAt: Date.now() }
+    : null, opts.local
     ? { id: opts.local, name: '邀请本地歌', artist: '', url: '', source: 'local', duration: 30, playlistId: 'default', addedAt: Date.now() }
-    : { id: SONG_URL, name: '邀请验证歌', artist: '', url: wav, source: 'url', duration: 40, playlistId: 'default', addedAt: Date.now() }]);
+    : { id: SONG_URL, name: '邀请验证歌', artist: '', url: wav, source: 'url', duration: 40, playlistId: 'default', addedAt: Date.now() }].filter(Boolean));
   const fp = opts.floatPos ? "st.set('music-float-pos'," + JSON.stringify(JSON.stringify({ left: opts.floatPos[0], top: opts.floatPos[1] })) + ");" : "st.remove('music-float-pos');";
-  await evalJs("(function(){var st=window.storeFor('default');st.set('music-library'," + JSON.stringify(lib) + ");st.set('music-global'," + JSON.stringify(GS) + ");st.set('music-history','[]');" + fp + "return true;})()");
+  const settings = opts.forceNamed ? JSON.stringify({ ...JSON.parse(GS), plainInviteProb: 0, keywordProb: 0 }) : GS;
+  const favorite = opts.forceNamed ? JSON.stringify([{ id: opts.local, name: '邀请本地歌' }]) : '[]';
+  await evalJs("(function(){var st=window.storeFor('default');st.set('music-library'," + JSON.stringify(lib) + ");st.set('music-global'," + JSON.stringify(settings) + ");st.set('music-favs-ta'," + JSON.stringify(favorite) + ");st.set('music-history','[]');" + fp + "return true;})()");
   // 听歌记录同时清 IDB 权威副本，否则 idbRestore 回填会带回上一组的记录（G2 判据会被旧记录污染）
   await evalJs("(async function(){try{await window.idbDelete('xy-home-v2:default:music-history');}catch(e){}return true;})()");
 }
@@ -205,9 +209,13 @@ const playsBefore = await evalJs('window.__va.plays') || 0;
 await evalJs("(function(){var as=document.querySelectorAll('audio');for(var i=as.length-1;i>=0;i--){if(as[i].src){as[i].pause();break;}}return true;})()"); // 模拟外部打停（无任何恢复路径接管）
 await sleep(5200); // 4 秒校验窗 + 起播余量
 const playsAfter = await evalJs('window.__va.plays') || 0;
-check('B2 被外部打停后校验兜底自动补播（play 被再次调用）', playsAfter > playsBefore, 'before=' + playsBefore + ' after=' + playsAfter);
+check('B2 被外部打停后校验兜底自动补播（play 被再次调用）', playsAfter > playsBefore, 'before=' + playsBefore + ' after=' + playsAfter + ' audio=' + await audioState() + ' toasts=' + await evalJs('JSON.stringify(window.__va.toasts)'));
 const st2 = await audioState();
 check('B3 补播后音乐恢复播放', st2 && String(st2).indexOf('"paused":false') >= 0, st2);
+if (process.env.MOCHI_ONLY_B === '1') {
+  chrome.kill(); server.close();
+  process.exit(results.every(r => r.ok) ? 0 : 1);
+}
 
 // ===== C. #994a/b/c 诊断入口的邀请面板必须与聊天邀请同一实现（按钮有接线） =====
 if (!(await boot({ openPanel: false }))) { console.log('FAIL  C0 初始化失败'); results.push({ desc: 'C0', ok: false }); }
@@ -248,7 +256,7 @@ check('E2 小框几何落在当前视口内（修前实测整体在视口外 inV
 // ===== F. #994e 本地歌邀请弹窗期预热：把「同意那一刻的异步读」提前到弹窗期 =====
 // 判据取用户可见效果：面板打开后（预热窗口已过）把该曲目的 IDB 读取挂死——预热过则同意时
 // 同步命中内存缓存照常起播；没预热则同意那一刻才开始读、读被挂死＝点了同意不起播（老症状）。
-if (!(await boot({ local: 'mialF', openPanel: true }))) { console.log('FAIL  F0 邀请弹窗未能弹出'); results.push({ desc: 'F0', ok: false }); }
+if (!(await boot({ local: 'mialF', forceNamed: true, openPanel: true }))) { console.log('FAIL  F0 邀请弹窗未能弹出'); results.push({ desc: 'F0', ok: false }); }
 await sleep(900); // 留出弹窗期的预热窗口
 const fWarm = (await evalJs('JSON.stringify(window.__va.idb.slice(window.__va.idbMark))')) || '[]';
 const fSync = await evalJs("(function(){try{var v=window.storeFor('default').get('music-file:mialF');return v?('sync:len'+String(v).length):'sync:none';}catch(e){return 'sync:err';}})()");
@@ -269,6 +277,173 @@ const gToasts = (await evalJs('JSON.stringify(window.__va.toasts)')) || '[]';
 check('G1 跨桌面失效时如实提示（不再点了零反馈）', /已切换联系人|失效/.test(gToasts), gToasts);
 const gHist = (await evalJs("(function(){try{return String(window.storeFor('default').get('music-history')||'');}catch(e){return '';}})()")) || '';
 check('G2 跨桌面失效时仍不跨桌面写入（防串写不回退）', gHist.indexOf('接受了 TA 的听歌邀请') < 0, gHist.slice(0, 120));
+
+// ===== H. 自定义听歌邀请字卡与拒绝气泡 =====
+if (!(await boot({ openPanel: false }))) { console.log('FAIL  H0 初始化失败'); results.push({ desc: 'H0', ok: false }); }
+const hOpened = await evalJs(`(function(){
+  var s=window.activeStore();
+  s.set('ta-invite',JSON.stringify({settings:{useDefault:false},questions:[
+    {id:'verify-music-invite',kind:'music',cat:'music',text:'请陪我听歌，好吗？',enabled:true,isPreset:false}
+  ],mergedIds:[]}));
+  Object.assign(window.mochiMusicGetSettings(),{reqProb:100,cooldownMs:600000});
+  window.__hBefore=window.getChatMsgs().length;
+  var old=Math.random;Math.random=function(){return 0.99;};
+  try { window.maybeMusicRequest(); } finally { Math.random=old; }
+  return !!document.getElementById('sm-req-no');
+})()`);
+const hInvite = await evalJs(`(function(){
+  var a=window.getChatMsgs().slice(window.__hBefore);
+  return a.some(function(x){return x.side==='in'&&x.special==='poke'&&
+    String(x.text).includes('对你发送了听歌邀请~');}) &&
+    document.getElementById('tc-body').textContent.includes('请陪我听歌，好吗？');
+})()`);
+check('H1 自定义邀请显示昵称通知，字卡话术保留在邀请面板', hOpened && hInvite, 'opened=' + hOpened + ' panel=' + hInvite);
+const hDecline = await evalJs(`(function(){
+  document.getElementById('sm-req-no')?.click();
+  var a=window.getChatMsgs(),last=a[a.length-1];
+  var lines=window.getPresetGroupLines('听歌邀请·婉拒',[]);
+  return !!last&&last.side==='out'&&lines.includes(last.text);
+})()`);
+check('H2 拒绝听歌邀请后发出一条婉拒气泡', hDecline);
+check('H2a 拒绝结果保存在原有听歌记录', (await evalJs(`(function(){
+  var h=JSON.parse(window.storeFor('default').get('music-history')||'[]');
+  return h.some(x=>x.rejected===true&&String(x.triggerType).includes('听歌邀请'));
+})()`)) === true);
+const hCooldown = await evalJs(`(function(){
+  var before=window.getChatMsgs().length;
+  window.maybeMusicRequest();
+  return document.getElementById('tc-mask')?.hidden===true &&
+    window.getChatMsgs().length===before &&
+    !Array.from(document.querySelectorAll('audio')).some(x=>x.src&&!x.paused);
+})()`);
+check('H3 拒绝后不播放歌曲，并进入音乐请求冷却期', hCooldown);
+
+// ===== I. 普通邀请只有同意后才优先接入正在播放的网易云 =====
+await boot({ openPanel: false });
+const iBefore = await evalJs(`(function(){
+  Object.assign(window.mochiMusicGetSettings(),{reqProb:100,plainInviteProb:100,cooldownMs:0});
+  window.__inviteRemoteCalls=0;
+  window.mochiNeteasePlaybackSnapshot=()=>({available:true,playing:true,title:'网易云当前歌曲',queueId:'r1'});
+  window.mochiNeteasePlayCurrent=()=>{window.__inviteRemoteCalls++;return true};
+  var old=Math.random;Math.random=()=>0;
+  try{window.maybeMusicRequest()}finally{Math.random=old}
+  return !!document.getElementById('sm-req-yes') && window.__inviteRemoteCalls===0;
+})()`);
+const iAfter = await evalJs(`(function(){document.getElementById('sm-req-yes')?.click();return window.__inviteRemoteCalls===1;})()`);
+check('I1 普通邀请在同意前不启动网易云，同意后优先使用当前播放', iBefore && iAfter);
+check('I2 接受结果保存在原有听歌记录', (await evalJs(`(function(){
+  var h=JSON.parse(window.storeFor('default').get('music-history')||'[]');
+  return h.some(x=>x.rejected===false&&String(x.triggerType).includes('听歌邀请'));
+})()`)) === true);
+
+// ===== J. 关键词邀请同意前不联网；在线失败后继续尝试默认歌单 =====
+await boot({ openPanel: false });
+const jBefore = await evalJs(`(function(){
+  Object.assign(window.mochiMusicGetSettings(),{reqProb:100,plainInviteProb:0,keywordProb:100,cooldownMs:0});
+  window.getCustomFuncCards=kind=>kind==='musicKeyword'?['治愈']:[];
+  window.taInvitePickKind=kind=>kind==='music'?{text:'找到{歌名}，想和你一起听'}:null;
+  window.__inviteOnlineQueries=[];
+  window.CiCiMusicApi={request:(token,type,value)=>{
+    window.__inviteOnlineQueries.push({type,value});
+    const data=type==='style'
+      ? {songs:[{id:101,name:'会员曲',fee:1,duration:180000},{id:102,name:'免费曲甲',fee:8,duration:180000},{id:103,name:'免费曲乙',fee:0,duration:180000},{id:104,name:'会员曲二',fee:1,duration:180000}]}
+      : type==='url' ? value==='102' ? [{url:'https://music.example/preview.mp3',time:45000}]
+        : value==='101' ? [{url:'https://music.example/trial.mp3',freeTrialInfo:{end:30}}] : []
+      : {songs:[]};
+    setTimeout(()=>window.ciciOnlineMusicResponse(token,JSON.stringify({code:200,data})),0);
+  }};
+  window.mochiNeteasePlaybackSnapshot=()=>({available:false,playing:false});
+  window.mochiNeteasePlayCurrent=()=>false;
+  var old=Math.random;Math.random=()=>0;
+  try{window.maybeMusicRequest()}finally{Math.random=old}
+  return !!document.getElementById('sm-req-yes') &&
+    document.getElementById('tc-body').textContent.includes('治愈风格的歌曲') &&
+    document.getElementById('tc-body').textContent.includes('对你发送了听歌邀请~') &&
+    document.getElementById('tc-body').textContent.includes('想找一首治愈风格的歌') &&
+    document.getElementById('chat-body').textContent.includes('对你发送了听歌邀请~') &&
+    window.__inviteOnlineQueries.length===0;
+})()`);
+await evalJs(`document.getElementById('sm-req-yes')?.click()`);
+await sleep(1800);
+const jAfter = await evalJs(`(function(){
+  const q=window.__inviteOnlineQueries;
+  const audio=Array.from(document.querySelectorAll('audio')).find(x=>x.src && !x.paused);
+  return q.some(x=>x.type==='style'&&x.value==='治愈') &&
+    q.filter(x=>x.type==='url').map(x=>x.value).join(',')==='102,103,101' &&
+    !q.some(x=>x.value==='104') && !!audio;
+})()`);
+check('J1 免费曲优先，试听和无地址三首均跳过后继续默认歌单', jBefore && jAfter);
+
+// 接口没有试听标记时，实际音频元数据只有 40 秒，仍需跳过并继续原播放流程。
+await boot({ openPanel: false });
+await evalJs(`(function(){
+  Object.assign(window.mochiMusicGetSettings(),{reqProb:100,plainInviteProb:0,keywordProb:100,cooldownMs:0});
+  window.getCustomFuncCards=kind=>kind==='musicKeyword'?['治愈']:[];
+  window.__previewQueries=[];
+  window.CiCiMusicApi={request:(token,type,value)=>{
+    window.__previewQueries.push({type,value});
+    const data=type==='style' ? {songs:[{id:201,name:'短试听',fee:0,duration:180000}]}
+      : type==='url' ? [{url:${JSON.stringify(wav)}}] : {lrc:''};
+    setTimeout(()=>window.ciciOnlineMusicResponse(token,JSON.stringify({code:200,data})),0);
+  }};
+  window.mochiNeteasePlaybackSnapshot=()=>({available:false,playing:false});
+  window.mochiNeteasePlayCurrent=()=>false;
+  const old=Math.random;Math.random=()=>0;
+  try{window.maybeMusicRequest()}finally{Math.random=old}
+  document.getElementById('sm-req-yes')?.click();
+})()`);
+await sleep(1800);
+check('J2 未标记的短试听按实际音频时长跳过', await evalJs(`(function(){
+  const lib=JSON.parse(window.storeFor('default').get('music-library')||'[]');
+  return window.__previewQueries.some(x=>x.type==='url'&&x.value==='201') &&
+    !lib.some(x=>x.name==='短试听') &&
+    Array.from(document.querySelectorAll('audio')).some(x=>x.src&&!x.paused);
+})()`));
+
+// ===== K. 指定歌名搜索失败后，按要求提示并尝试网易云当前歌曲 =====
+await boot({ openPanel: false });
+const kBefore = await evalJs(`(function(){
+  window.storeFor('default').set('music-favs-ta',JSON.stringify([{id:'gone-song',name:'旧歌名'}]));
+  Object.assign(window.mochiMusicGetSettings(),{reqProb:100,plainInviteProb:0,keywordProb:0,cooldownMs:0});
+  window.__inviteOnlineQueries=[]; window.__inviteRemoteCalls=0;
+  window.CiCiMusicApi={request:(token,type,value)=>{
+    window.__inviteOnlineQueries.push({type,value});
+    setTimeout(()=>window.ciciOnlineMusicResponse(token,JSON.stringify({code:200,data:{songs:[]}})),0);
+  }};
+  window.mochiNeteasePlaybackSnapshot=()=>({available:true,playing:true,title:'网易云当前歌曲',queueId:'r1'});
+  window.mochiNeteasePlayCurrent=()=>{window.__inviteRemoteCalls++;return true};
+  var old=Math.random;Math.random=()=>0;
+  try{window.maybeMusicRequest()}finally{Math.random=old}
+  return document.getElementById('tc-body').textContent.includes('旧歌名') &&
+    window.__inviteOnlineQueries.length===0 && window.__inviteRemoteCalls===0;
+})()`);
+await evalJs(`document.getElementById('sm-req-yes')?.click()`);
+await sleep(1000);
+const kAfter = await evalJs(`(function(){
+  const q=window.__inviteOnlineQueries;
+  return q.some(x=>x.type==='search'&&x.value==='旧歌名') &&
+    window.__inviteRemoteCalls===1;
+})()`);
+check('K1 指定歌名同意后先联网搜索，失败后尝试网易云', kBefore && kAfter);
+
+// ===== L. 默认歌单首曲损坏时继续试下一首 =====
+await boot({ openPanel: false, badFirst: true });
+await evalJs(`(function(){
+  Object.assign(window.mochiMusicGetSettings(),{reqProb:100,plainInviteProb:100,cooldownMs:0});
+  window.__inviteOnlineQueries=[];
+  window.CiCiMusicApi={request:(token,type,value)=>{window.__inviteOnlineQueries.push({type,value});}};
+  window.mochiNeteasePlaybackSnapshot=()=>({available:false,playing:false});
+  window.mochiNeteasePlayCurrent=()=>false;
+  var old=Math.random;Math.random=()=>0;
+  try{window.maybeMusicRequest()}finally{Math.random=old}
+  document.getElementById('sm-req-yes')?.click();
+})()`);
+const lPlaying = await waitPlaying(7000);
+const lFallback = await evalJs(`(function(){
+  var a=Array.from(document.querySelectorAll('audio')).find(x=>x.src&&!x.paused);
+  return !!a&&a.src.startsWith('data:audio/wav')&&window.__inviteOnlineQueries.length===0;
+})()`);
+check('L1 默认歌单首曲损坏时继续播放下一首', lPlaying && lFallback);
 
 // ===== Z. 全程零新增 JS 异常 =====
 check('Z1 全程零新增 JS 异常', (await evalJs('window.__jsErrors ? window.__jsErrors.length : 0')) === 0, await evalJs("JSON.stringify((window.__jsErrors||[]).slice(0,3))"));

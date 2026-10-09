@@ -174,6 +174,46 @@ const dump2 = await openQueuePanelDump();
 const secondHit = dump2.queueNames.filter(n => n !== '正在播的歌').length >= 1;
 check('B1 再次预订仍会显示在待播队列', secondHit, JSON.stringify(dump2.queueNames));
 
+// ===== C. 具体歌名与风格词同时可用：共用“指定内容中关键词占比” =====
+await seedSongs(
+  [
+    { id: 'mrq_a', name: '正在播的歌', dur: 40, wav: wavLong },
+    { id: 'mrq_b', name: '可预订的歌名', dur: 40, wav: wavLong }
+  ],
+  { taReserveProb: 100, reqProb: 0, keywordProb: 100, cooldownMs: 0, taNextProb: 0, taRandProb: 0, taModeProb: 0, taFavProb: 0 }
+);
+await openMusic('lib');
+check('C1 歌名候选存在时歌曲仍能播放', await clickAndPlay('mrq_a'));
+await evalJs(`(function(){
+  window.getCustomFuncCards=kind=>kind==='musicKeyword'?['浪漫']:[];
+  window.__reserveQueries=[];
+  window.CiCiMusicApi={request:(token,type,value)=>{
+    window.__reserveQueries.push({type,value});
+    const songs=[
+      {id:31,name:'会员试听',fee:1,duration:180000},
+      {id:32,name:'免费试听',fee:0,duration:180000},
+      {id:33,name:'免费完整歌曲',fee:0,duration:40000},
+      {id:34,name:'免费备用',fee:0,duration:40000}
+    ];
+    const data=type==='style'?{code:200,data:{songs}}:
+      type==='url'?{code:200,data:[{url:${JSON.stringify(wavLong)},freeTrialInfo:Number(value)===32?{start:0,end:30000}:null}]}:
+      {code:200,data:{lrc:'[00:00.00]测试歌词'}};
+    setTimeout(()=>window.ciciOnlineMusicResponse(token,JSON.stringify(data)),0);
+  }};
+  const old=Math.random; Math.random=()=>0;
+  try { window.maybeMusicRequest(); } finally { Math.random=old; }
+  return true;
+})()`);
+for (let i = 0; i < 30; i++) {
+  if (await evalJs("window.__reserveQueries.some(x=>x.type==='url'&&x.value==='33')")) break;
+  await sleep(100);
+}
+check('C2 有歌名候选时，关键词占比 100% 会按风格搜索', await evalJs("window.__reserveQueries.some(x=>x.type==='style'&&x.value==='浪漫')"));
+check('C3 先试免费歌曲，跳过试听，再加入完整歌曲', await evalJs("(function(){var q=window.__reserveQueries.filter(x=>x.type==='url').map(x=>x.value);return q.join(',')==='32,33'&&window.mochiMusicQueuedTracks().some(x=>x.title==='免费完整歌曲');})()"));
+check('C4 风格预订发送聊天系统消息', await evalJs("(function(){return window.getChatMsgs().some(x=>String(x.text||'').includes('预订了下一首想听的浪漫类型的歌'));})()"));
+await evalJs("(function(){window.mochiMusicGetSettings().keywordProb=0;window.__reserveQueries=[];const old=Math.random;Math.random=()=>0;try{window.maybeMusicRequest();}finally{Math.random=old;}return true;})()");
+check('C5 关键词占比 0% 时预订具体歌名', await evalJs("(function(){return window.mochiMusicQueuedTracks().some(x=>x.title==='可预订的歌名')&&!window.__reserveQueries.some(x=>x.type==='style');})()"));
+
 try { if (ws) ws.close(); } catch (e) {}
 try { chrome.kill(); } catch (e) {}
 try { server.close(); } catch (e) {}

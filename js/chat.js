@@ -4323,6 +4323,21 @@ if (typeof t === 'string' && t.indexOf('{ta}') >= 0) t = t.split('{ta}').join(__
 if (typeof t === 'string' && t.indexOf('{me}') >= 0) t = t.split('{me}').join(__meNm);
 return t;
 };
+if (rec.special === 'music-song') {
+m.className = 'msg-music-song';
+m.dataset.idx = __msgAt;
+const cover = typeof rec.img === 'string' && /^(https?:\/\/|data:image\/)/i.test(rec.img) ? rec.img : '';
+m.innerHTML = '<div class="msg-music-song-card" role="button" tabindex="0" aria-label="打开音乐播放器">' +
+(cover ? '<img class="msg-music-song-cover" src="' + attrEsc(cover) + '" alt="歌曲封面">' : '<span class="msg-music-song-cover empty">♫</span>') +
+'<span class="msg-music-song-info"><span class="msg-music-song-label">' + escTxt(rec.quote || 'TA 点了一首歌') + '</span>' +
+'<span class="msg-music-song-title">' + escTxt(rec.text || '未知歌曲') + '</span></span><span class="msg-music-song-arrow">›</span></div>';
+const openSongPlayer = () => { const app = document.querySelector('.app[data-app="music"]'); if (app) app.click(); };
+m.addEventListener('click', openSongPlayer);
+m.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openSongPlayer(); } });
+appendMsg(m);
+maybeScrollChatBottom(rec.side);
+return m;
+}
 if (rec.special === 'invite') {
 m.className = 'msg-ask';
 m.dataset.idx = __msgAt; // #1326：分支重写读调用方给的这一格

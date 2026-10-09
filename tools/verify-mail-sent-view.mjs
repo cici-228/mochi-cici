@@ -185,7 +185,7 @@ s = await evalJs(`(function(){
     var raw = store.get('mail-letters');
     var arr = raw ? JSON.parse(raw) : [];
     if (!arr.length) return 'empty';
-    arr[0].partnerReply = { content: '收到你的信啦，我也很想你。', tm: Date.now() };
+    arr[0].partnerReply = { content: '收到你的信啦，我也很想你。', cards: ['收到你的信啦', '我也很想你'], tm: Date.now() };
     store.set('mail-letters', JSON.stringify(arr));
     try { window.idbSet(window.activePrefix()+':mail-letters', JSON.stringify(arr)); } catch(e){}
     return 'injected';
@@ -221,7 +221,44 @@ await sleep(400);
 check('D2 列表出现「对方已回信」标签', s && s.tag.indexOf('对方已回信') >= 0, String(s && s.tag));
 check('D3 详情弹层再次打开且含对方回信信纸', s && s.maskShown && s.paperCount >= 2 && s.hasReply, JSON.stringify({ n: s && s.paperCount }));
 check('D4 全程无 JS 异常', s && (!s.errs || !s.errs.length), JSON.stringify(s && s.errs));
-await evalJs(`(function(){ var m=document.getElementById('tc-mask'); if(m) m.hidden=true; return 'ok'; })()`);
+// API 用本机桥接桩验证请求内容；不向真实接口发送信件或密钥。
+s = await evalJs(`(function(){
+  window.__mailAiCalls=[];
+  window.CiCiMailAi={interpret:function(token,endpoint,model,key,system,user){
+    window.__mailAiCalls.push({endpoint,model,key,system,user});
+    window.ciciMailAiResponse(token,JSON.stringify({ok:true,content:'这封回信的测试解读'}));
+  }};
+  document.getElementById('mail-ai-settings-endpoint').value='https://example.test/v1/chat/completions';
+  document.getElementById('mail-ai-settings-model').value='qwen-test';
+  document.getElementById('mail-ai-settings-key').value='test-secret';
+  document.getElementById('mail-ai-settings-save').click();
+  document.getElementById('mail-ai-btn').click();
+  document.getElementById('mail-ai-start').click();
+  return true;
+})()`);
+await sleep(300);
+s = await evalJs(`(function(){
+  var call=window.__mailAiCalls[0]||{};
+  return {call:call, result:(document.getElementById('mail-ai-status')||{}).textContent||'',
+    savedKey:window.xyStore('xy-home-v2').get('mail-ai-api-key'),
+    globalModel:window.xyStore('xy-home-v2').get('mail-ai-model'),
+    setupInBasic:!!document.querySelector('.them-sec[data-sec="basic"] #mail-ai-settings'),
+    inputsInLetter:!!document.getElementById('mail-ai-key')};
+})()`);
+check('D5 TA 回信解读只带当前寄出信和对应回信', s && s.call &&
+  s.call.user.includes('亲爱的，最近好想你') && s.call.user.includes('收到你的信啦') &&
+  s.call.user.includes('1. 收到你的信啦\n2. 我也很想你') &&
+  s.call.system.includes('字卡传讯') && s.result.includes('测试解读'), JSON.stringify(s && s.call && s.call.user));
+check('D6 通用设置保存密钥和模型，信件弹窗不重复填写', s &&
+  s.savedKey === 'test-secret' && s.globalModel === 'qwen-test' && s.setupInBasic && !s.inputsInLetter &&
+  s.call.endpoint === 'https://example.test/v1/chat/completions' && s.call.model === 'qwen-test' && s.call.key === 'test-secret');
+s = await evalJs(`(function(){
+  document.getElementById('mail-ai-open-settings').click();
+  return {page:!document.getElementById('page-setting').hidden,
+    basic:!document.querySelector('#page-setting .them-sec[data-sec="basic"]').hidden,
+    modal:document.getElementById('tc-mask').hidden};
+})()`);
+check('D7 信件弹窗的接口设置入口直达设置通用', s && s.page && s.basic && s.modal, JSON.stringify(s));
 
 // ---- E 组：聊天里的信件通知可点击直达信箱 ----
 s = await evalJs(`(function(){
@@ -267,6 +304,91 @@ s = await evalJs(`(function(){
 })()`);
 await sleep(400);
 check('F1 收到的信可打开（回归）', s && s.shown && s.ok, JSON.stringify(s));
+s = await evalJs(`(function(){
+  document.getElementById('mail-ai-btn').click();
+  document.getElementById('mail-ai-start').click();
+  return true;
+})()`);
+await sleep(300);
+s = await evalJs(`(function(){ var call=window.__mailAiCalls[1]||{}; return {user:call.user||'',result:(document.getElementById('mail-ai-status')||{}).textContent||''}; })()`);
+check('F2 TA 主动来信独立解读，不关联其他信', s && s.user.includes('这是TA写来的信') &&
+  !s.user.includes('亲爱的，最近好想你') && s.result.includes('测试解读'), JSON.stringify(s));
+
+// TA 先来信、我回信、TA 再回复：最新回复仅参考我寄出的回信。
+s = await evalJs(`(function(){
+  var st=window.activeStore(),arr=JSON.parse(st.get('mail-letters')||'[]');
+  var letter=arr.find(function(x){return x.id==='l_test_in';});
+  letter.myReply={content:'我这次寄出的回信',tm:Date.now()};
+  letter.partnerReply={content:'TA这次的回复',tm:Date.now()};
+  st.set('mail-letters',JSON.stringify(arr));
+  document.querySelector('.app[data-app="mail"]').click();
+  document.querySelector('#page-mail .fav-tab[data-mtab="in"]').click();
+  document.querySelector('#mail-in-list .mail-item').click();
+  document.getElementById('mail-ai-btn').click();
+  document.getElementById('mail-ai-start').click();
+  return true;
+})()`);
+await sleep(300);
+s = await evalJs(`(function(){ var call=window.__mailAiCalls[2]||{}; return {user:call.user||'',result:(document.getElementById('mail-ai-status')||{}).textContent||''}; })()`);
+check('G1 TA 再次回信只关联我在该记录内寄出的回信', s &&
+  s.user.includes('我这次寄出的回信') && s.user.includes('TA这次的回复') &&
+  !s.user.includes('这是TA写来的信') && s.result.includes('测试解读'), JSON.stringify(s));
+
+// 解读期间离开信箱，再打开同一封信仍应显示进行中；回调完成后可查看结果。
+s = await evalJs(`(function(){
+  window.__delayedAiCount=0;
+  window.CiCiMailAi={interpret:function(token){
+    window.__delayedAiCount++;
+    window.__delayedAiToken=token;
+  }};
+  document.getElementById('mail-ai-start').click();
+  var waiting=document.getElementById('mail-ai-status').textContent;
+  document.getElementById('mail-ai-back').click();
+  document.getElementById('tc-mask').hidden=true;
+  document.getElementById('page-mail').hidden=true;
+  document.getElementById('page-phone').hidden=false;
+  document.querySelector('.app[data-app="mail"]').click();
+  document.querySelector('#page-mail .fav-tab[data-mtab="in"]').click();
+  document.querySelector('#mail-in-list .mail-item').click();
+  document.getElementById('mail-ai-btn').click();
+  return {waiting:waiting,reopened:document.getElementById('mail-ai-status').textContent,
+    disabled:document.getElementById('mail-ai-start').disabled,count:window.__delayedAiCount};
+})()`);
+check('G2 离开信箱后解读不中断，重开时显示进行中且不重复提交', s &&
+  s.waiting.includes('正在解读') && s.reopened.includes('正在解读') && s.disabled && s.count===1, JSON.stringify(s));
+s = await evalJs(`(function(){
+  document.getElementById('tc-mask').hidden=true;
+  document.getElementById('page-mail').hidden=true;
+  document.getElementById('page-phone').hidden=false;
+  window.ciciMailAiResponse(window.__delayedAiToken,JSON.stringify({ok:true,content:'离开信箱后的解读结果'}));
+  return {toast:(document.getElementById('cc-toast')||{}).textContent||'',count:window.__delayedAiCount};
+})()`);
+await sleep(100);
+check('G3 离开信箱后解读完成会提示', s && s.toast.includes('信件解读完成') && s.count===1, JSON.stringify(s));
+s = await evalJs(`(function(){
+  document.querySelector('.app[data-app="mail"]').click();
+  document.querySelector('#page-mail .fav-tab[data-mtab="in"]').click();
+  document.querySelector('#mail-in-list .mail-item').click();
+  document.getElementById('mail-ai-btn').click();
+  return {result:document.getElementById('mail-ai-status').textContent,
+    action:document.getElementById('mail-ai-start').textContent};
+})()`);
+check('G4 回到原信件可查看解读结果', s &&
+  s.result==='离开信箱后的解读结果' && s.action==='重新解读', JSON.stringify(s));
+
+// 通用配置要跨页面重启保留，且落在全局命名空间，不依赖当前联系人。
+await evalJs('location.reload()');
+await sleep(1800);
+s = await evalJs(`(function(){
+  return {
+    key:window.xyStore('xy-home-v2').get('mail-ai-api-key'),
+    disk:localStorage.getItem('xy-home-v2:mail-ai-api-key'),
+    field:(document.getElementById('mail-ai-settings-key')||{}).value,
+    model:window.xyStore('xy-home-v2').get('mail-ai-model')
+  };
+})()`);
+check('H1 接口配置重启后仍保留，密钥写入全局持久存储', s &&
+  s.key === 'test-secret' && s.field === 'test-secret' && s.model === 'qwen-test', JSON.stringify(s));
 
 const passed = results.filter((r) => r.ok).length;
 console.log('\n结果：' + passed + '/' + results.length + ' 项通过');

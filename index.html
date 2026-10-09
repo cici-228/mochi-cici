@@ -1503,6 +1503,20 @@ color:var(--ink); display:flex; align-items:center; justify-content:center;
 .page-slide.third .mini-row .memo-card,
 .page-slide.third .mini-row .mood-card { height:92px; }
 .week-card { border-radius:20px; padding:8px 14px; margin-bottom:14px; height:92px; overflow:hidden; box-sizing:border-box; display:flex; flex-direction:column; justify-content:center; }
+.week-card:has(.music-lyric-card:not([hidden])) { justify-content:center; }
+.music-lyric-card[hidden] { display:none; }
+.music-lyric-head { display:flex; align-items:center; justify-content:space-between; color:var(--muted); font-size:11px; }
+.music-lyric-head button { border:0; background:transparent; color:var(--ink); line-height:1; padding:0 2px; cursor:pointer; }
+.music-lyric-head button svg { width:26px; height:26px; display:block; }
+.music-lyric-head button.liked { color:#e05555; }
+.music-lyric-head button.liked svg { fill:#e05555; }
+.music-lyric-line { color:var(--ink); font-size:14px; font-weight:600; line-height:1.5; min-height:21px; overflow:hidden; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
+.music-lyric-favorites { margin-top:16px; padding-top:12px; border-top:1px solid var(--line,#e5e5e5); }
+.music-lyric-favorites-title { font-weight:700; margin-bottom:8px; }
+.music-lyric-favorite-row { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line,#e5e5e5); }
+.music-lyric-favorite-row span { flex:1; min-width:0; overflow-wrap:anywhere; }
+.music-lyric-favorite-row small { display:block; color:var(--muted); margin-top:3px; }
+.music-lyric-favorite-row button { border:0; background:transparent; color:var(--muted); padding:6px; }
 .week-days { display:flex; gap:6px; margin-top:5px; }
 .week-day {
 flex:1; text-align:center; padding:4px 0; border-radius:10px;
@@ -5639,7 +5653,9 @@ display:flex; align-items:center; justify-content:center; color:#111;
 }
 .sm-req-ico svg { width:22px; height:22px; }
 .sm-req-hint { font-size:12px; color:var(--muted); }
-.sm-req-name { font-size:15px; font-weight:700; color:var(--ink); margin-top:6px; }
+.sm-req .sm-req-hint { font-size:16px; line-height:1.55; color:var(--ink); }
+.sm-req-name { font-size:17px; font-weight:700; color:var(--ink); margin-top:8px; line-height:1.5; }
+.sm-req-detail { font-size:15px; line-height:1.55; color:var(--ink); margin-top:8px; }
 .sm-set-row {
 display:flex; align-items:center; justify-content:space-between;
 padding:10px 0; font-size:13px; color:var(--ink);
@@ -5957,6 +5973,14 @@ border-radius:12px;
 .pong-overlay-btn { padding:8px 24px; border-radius:20px; border:none; background:#3a7fd5; color:#fff; font-size:14px; font-weight:600; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; } .pong-overlay-btn:active { transform:scale(.96); }
 .pong-foot { font-size:11px; color:var(--muted); text-align:center; padding-top:2px; }
 .msg-pong { display:flex; justify-content:center; margin:6px 0; }
+.msg-music-song { display:flex; justify-content:flex-start; margin:6px 0; }
+.msg-music-song-card { display:flex; align-items:center; gap:10px; width:min(280px,80vw); padding:10px; border:1px solid rgba(0,0,0,.08); border-radius:15px; background:rgba(255,255,255,.93); box-shadow:0 1px 3px rgba(0,0,0,.06); color:var(--ink); cursor:pointer; }
+.msg-music-song-cover { width:48px; height:48px; flex:none; object-fit:cover; border-radius:9px; background:rgba(0,0,0,.07); }
+.msg-music-song-cover.empty { display:flex; align-items:center; justify-content:center; font-size:24px; color:var(--muted); }
+.msg-music-song-info { display:flex; flex:1; min-width:0; flex-direction:column; gap:3px; text-align:left; }
+.msg-music-song-label { font-size:11px; color:var(--muted); }
+.msg-music-song-title { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:14px; font-weight:600; }
+.msg-music-song-arrow { color:var(--muted); font-size:22px; }
 .msg-pong-card { background:rgba(255,255,255,.92); border:1px solid rgba(0,0,0,.08); border-radius:14px; padding:10px 18px; text-align:center; max-width:80%; box-shadow:0 1px 3px rgba(0,0,0,.06); }
 .msg-pong-label { font-size:11px; color:var(--muted); margin-bottom:2px; }
 .msg-pong-result { font-size:15px; font-weight:600; color:var(--ink); }
@@ -7355,6 +7379,8 @@ justify-content:safe center;
 .netease-remote-progress { display:flex; align-items:center; gap:8px; font-size:10px; color:var(--muted); }
 .netease-remote-progress input { flex:1; min-width:0; accent-color:var(--ink); }
 .netease-remote-actions { display:flex; gap:6px; margin-top:8px; }
+.sm-tools #cici-netease-recommendations { flex:0 0 100%; margin-top:0; }
+.sm-tools #cici-netease-recommendations[hidden] { display:none; }
 .netease-remote-actions button, .netease-remote-access { border:1px solid var(--line); border-radius:9px; background:var(--card-bg); color:var(--ink); padding:7px 8px; font:inherit; font-size:11px; }
 .netease-remote-actions button { flex:1; min-width:0; }
 .netease-remote-actions button:disabled { opacity:.38; }
@@ -10979,7 +11005,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
            （名称+版号 / 部署时间+实时秒 / 版本检测行）收成一行；检测行随 ver-check.js 退役删除。
            data-build-ts / data-version 两属性保留：device.js 诊断、bg-keep 自检、pwa.js 旧包检测
            仍只读属性（诊断版本号走 data-version 兜底，device.js 两处缓存原生支持）。 -->
-      <div class="splash-ver" id="splash-ver" data-build-ts="1791451913454" data-version="v8.66">
+      <div class="splash-ver" id="splash-ver" data-build-ts="1791567811169" data-version="v8.67">
         <span class="sv-app">CiCi传讯</span>
       </div>
       <!-- v3.5.120：数据（IndexedDB 回填）加载完成前不显示「点击进入」按钮，
@@ -11174,8 +11200,11 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
 
 <!-- 第二页补充：每周日程（填空白区）；今日备忘/今天的心情已移第三页经期卡下方 -->
 <div class="week-card glass" data-desk-widget="week" data-card-bg="week">
-<div class="mc-top">本周日常</div>
-<div class="week-days" id="week-days"></div>
+<div id="week-original"><div class="mc-top">本周日常</div><div class="week-days" id="week-days"></div></div>
+<div class="music-lyric-card" id="music-lyric-card" hidden>
+  <div class="music-lyric-head"><span>正在播放 · 歌词</span><button type="button" id="music-lyric-save" title="收藏当前这句歌词" aria-label="收藏当前这句歌词"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5S4.5 15.2 4.5 9.9A4.9 4.9 0 0112 7.1a4.9 4.9 0 017.5 2.8c0 5.3-7.5 10.6-7.5 10.6z"/></svg></button></div>
+  <div class="music-lyric-line" id="music-lyric-line">正在查找歌词…</div>
+</div>
 </div>
 <!-- 离周末还有几天（点击摸鱼 +1，可累计）
      v3.15.x：标题与副题合并同一行（.we-top），整卡与首页打卡横幅同档高度 -->
@@ -12534,7 +12563,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         <div class="set-row" id="row-changelog">
           <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 12c0-5.5 3.5-10 10-10 3.7 0 7 2 8.8 5M22 12c0 5.5-3.5 10-10 10-3.7 0-7-2-8.8-5"/></svg></div>
           <div class="txt">版本与更新<span class="sub">当前版本 · 一键更新到最新（更新摘要见开屏公告）</span></div>
-          <div class="val" id="about-ver-val">v8.66</div>
+          <div class="val" id="about-ver-val">v8.67</div>
           <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
         </div>
         <!-- #606 开源与致谢：开源/私有部署说明 + 灵感来源与致谢（内容与功能介绍页同源，做成独立入口） -->
@@ -12625,7 +12654,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         </div>
       </div>
       </div><!-- /them-sec about -->
-      <div class="ver">CiCi传讯 v8.66</div>
+      <div class="ver">CiCi传讯 v8.67</div>
       <div class="ver-credit">原版小红书@言序（1842523578）</div>
       <!-- v3.27.x：设置页底部防骗声明 -->
       <div class="set-alert">
@@ -13024,7 +13053,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
             <div class="lic-hero-top">
               <div class="lic-title">CiCi传讯</div>
               <span class="lic-badge">原版</span>
-              <span class="lic-ver">v8.66</span>
+              <span class="lic-ver">v8.67</span>
             </div>
             <div class="lic-p">原创极简风情侣字卡传讯，不是小手机：黑白灰简约设计，数据全部保存在本地、无需联网；所有内容均为代码触发、按概率运行，联系方可主动发送聊天消息。代码从零编写并完全开源——本作即原版。</div>
             <!-- v3.26.x #648：原版口径澄清——唯一原版使用网站＋其他版本均为开放二传二改产生的二传/二改版 -->
@@ -15150,6 +15179,10 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
       <div class="cal-scroll sm-scroll">
         <div class="cal-card glass" data-mpanel="lib">
           <div class="sm-tools">
+            <div class="netease-remote-actions" id="cici-netease-recommendations" hidden>
+              <button type="button" id="music-daily-recommend">网易云每日推荐</button>
+              <button type="button" id="music-heart-recommend">网易云心动模式</button>
+            </div>
             <button class="sm-tool" id="music-upload">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>上传音乐
             </button>
@@ -15177,6 +15210,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         </div>
         <div class="cal-card glass" data-mpanel="fav" hidden>
           <div id="music-fav-list"></div>
+          <section class="music-lyric-favorites"><div class="music-lyric-favorites-title">我收藏的歌词</div><div id="music-lyric-fav-mine"></div></section>
           <section class="netease-favorites" id="netease-favorites" hidden>
             <div class="netease-favorites-head">网易云收藏 <span>保存在 CiCi，需到网易云播放</span></div>
             <div id="netease-favorites-list"></div>
@@ -15185,6 +15219,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         <!-- v3.14.x：联系人的收藏列表 -->
         <div class="cal-card glass" data-mpanel="favta" hidden>
           <div id="music-fav-ta-list"></div>
+          <section class="music-lyric-favorites"><div class="music-lyric-favorites-title">TA 收藏的歌词</div><div id="music-lyric-fav-ta"></div></section>
         </div>
         <div class="cal-card glass" data-mpanel="his" hidden>
           <div id="music-his-list"></div>
@@ -17888,7 +17923,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
   // v3.5.123：readonly 起手（防 Chrome 密码弹条破坏表单签名）——这里立即解除，
   // 早于所有功能模块，任何设备都不会出现输入框不可用的情况
   (function () { var _ci = document.getElementById('chat-input'); if (_ci) _ci.readOnly = false; })();
-window.__jsErrors = window.__jsErrors || []; window.__mochiLoaded = window.__mochiLoaded || []; window.__mochiErrLoaded = window.__mochiErrLoaded || []; window.__mochiBootAt = Date.now(); window.__mochiJsFiles = ["device.js","idb.js","contacts.js","applock.js","card-lock.js","dcp-master.js","media-pool.js","storage-slim.js","perf-check.js","energy-check.js","flash-check.js","img-compress.js","img-ingest.js","clock.js","tabs.js","desktop-slider.js","quote-cards.js","personalize.js","chat.js","group-chat.js","chatcard.js","chat-settings.js","reply-settings.js","fav-settings.js","default-cards-data.js","dict-ext-data.js","default-cards.js","quote-spell.js","dream-free.js","mood-followup-data.js","mood-reply-cards.js","ta-mood-data.js","ta-mood.js","music-player.js","netease-remote.js","calendar.js","divination.js","avatar-lib.js","ta-ask.js","ck-question.js","incoming-requests.js","ta-invite.js","bg-keep.js","records.js","call.js","mail.js","feed.js","loc-lib.js","p2-features.js","gift-shop.js","memo-app.js","memo-arc.js","my-arc.js","period.js","movie.js","garden.js","room.js","drift-bottle.js","decision.js","group-decision.js","pong.js","snake-game.js","breakout.js","connect-four.js","coop-mine.js","fishing.js","memory-game.js","gomoku.js","linkup.js","match3.js","auction.js","arcade.js","mood-diary.js","sfx.js","fullscreen.js","data-backup.js","feature-data.js","pwa.js","cjian.js","feature-hub.js","settings-help.js","onboarding.js","page-coach.js","card-audit.js","storage-guide.js","mobile-adapt.js"]; window.__mochiExtFiles = ["idb.js","contacts.js","applock.js","card-lock.js","dcp-master.js","media-pool.js","storage-slim.js","perf-check.js","energy-check.js","flash-check.js","img-compress.js","img-ingest.js","clock.js","tabs.js","desktop-slider.js","quote-cards.js","personalize.js","chat.js","group-chat.js","chatcard.js","chat-settings.js","reply-settings.js","fav-settings.js","default-cards-data.js","dict-ext-data.js","default-cards.js","quote-spell.js","dream-free.js","mood-followup-data.js","mood-reply-cards.js","ta-mood-data.js","ta-mood.js","music-player.js","netease-remote.js","calendar.js","divination.js","avatar-lib.js","ta-ask.js","ck-question.js","incoming-requests.js","ta-invite.js","bg-keep.js","records.js","call.js","mail.js","feed.js","loc-lib.js","p2-features.js","gift-shop.js","memo-app.js","memo-arc.js","my-arc.js","period.js","movie.js","garden.js","room.js","drift-bottle.js","decision.js","group-decision.js","pong.js","snake-game.js","breakout.js","connect-four.js","coop-mine.js","fishing.js","memory-game.js","gomoku.js","linkup.js","match3.js","auction.js","arcade.js","mood-diary.js","sfx.js","fullscreen.js","data-backup.js","feature-data.js","cjian.js","feature-hub.js","settings-help.js","onboarding.js","page-coach.js","card-audit.js","storage-guide.js","mobile-adapt.js"];
+window.__jsErrors = window.__jsErrors || []; window.__mochiLoaded = window.__mochiLoaded || []; window.__mochiErrLoaded = window.__mochiErrLoaded || []; window.__mochiBootAt = Date.now(); window.__mochiJsFiles = ["device.js","idb.js","contacts.js","applock.js","card-lock.js","dcp-master.js","media-pool.js","storage-slim.js","perf-check.js","energy-check.js","flash-check.js","img-compress.js","img-ingest.js","clock.js","tabs.js","desktop-slider.js","quote-cards.js","personalize.js","chat.js","group-chat.js","chatcard.js","chat-settings.js","reply-settings.js","fav-settings.js","default-cards-data.js","dict-ext-data.js","default-cards.js","quote-spell.js","dream-free.js","mood-followup-data.js","mood-reply-cards.js","ta-mood-data.js","ta-mood.js","music-player.js","netease-remote.js","qrcode-generator.min.js","netease-enhanced.js","music-lyrics.js","calendar.js","divination.js","avatar-lib.js","ta-ask.js","ck-question.js","incoming-requests.js","ta-invite.js","bg-keep.js","records.js","call.js","mail.js","feed.js","loc-lib.js","p2-features.js","gift-shop.js","memo-app.js","memo-arc.js","my-arc.js","period.js","movie.js","garden.js","room.js","drift-bottle.js","decision.js","group-decision.js","pong.js","snake-game.js","breakout.js","connect-four.js","coop-mine.js","fishing.js","memory-game.js","gomoku.js","linkup.js","match3.js","auction.js","arcade.js","mood-diary.js","sfx.js","fullscreen.js","data-backup.js","feature-data.js","pwa.js","cjian.js","feature-hub.js","settings-help.js","onboarding.js","page-coach.js","card-audit.js","storage-guide.js","mobile-adapt.js"]; window.__mochiExtFiles = ["idb.js","contacts.js","applock.js","card-lock.js","dcp-master.js","media-pool.js","storage-slim.js","perf-check.js","energy-check.js","flash-check.js","img-compress.js","img-ingest.js","clock.js","tabs.js","desktop-slider.js","quote-cards.js","personalize.js","chat.js","group-chat.js","chatcard.js","chat-settings.js","reply-settings.js","fav-settings.js","default-cards-data.js","dict-ext-data.js","default-cards.js","quote-spell.js","dream-free.js","mood-followup-data.js","mood-reply-cards.js","ta-mood-data.js","ta-mood.js","music-player.js","netease-remote.js","qrcode-generator.min.js","netease-enhanced.js","music-lyrics.js","calendar.js","divination.js","avatar-lib.js","ta-ask.js","ck-question.js","incoming-requests.js","ta-invite.js","bg-keep.js","records.js","call.js","mail.js","feed.js","loc-lib.js","p2-features.js","gift-shop.js","memo-app.js","memo-arc.js","my-arc.js","period.js","movie.js","garden.js","room.js","drift-bottle.js","decision.js","group-decision.js","pong.js","snake-game.js","breakout.js","connect-four.js","coop-mine.js","fishing.js","memory-game.js","gomoku.js","linkup.js","match3.js","auction.js","arcade.js","mood-diary.js","sfx.js","fullscreen.js","data-backup.js","feature-data.js","cjian.js","feature-hub.js","settings-help.js","onboarding.js","page-coach.js","card-audit.js","storage-guide.js","mobile-adapt.js"];
 (function () { try {
 (function () {
 try { window.__jsErrors = window.__jsErrors || []; } catch (e0) {}
@@ -22737,6 +22772,9 @@ window.__mochiBootRetry = function () { try { location.reload(); } catch (e) {} 
 <script defer src="js/ta-mood.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('ta-mood.js')"></script>
 <script defer src="js/music-player.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('music-player.js')"></script>
 <script defer src="js/netease-remote.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('netease-remote.js')"></script>
+<script defer src="js/qrcode-generator.min.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('qrcode-generator.min.js')"></script>
+<script defer src="js/netease-enhanced.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('netease-enhanced.js')"></script>
+<script defer src="js/music-lyrics.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('music-lyrics.js')"></script>
 <script defer src="js/calendar.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('calendar.js')"></script>
 <script defer src="js/divination.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('divination.js')"></script>
 <script defer src="js/avatar-lib.js" onerror="window.__mochiExtFail=(window.__mochiExtFail||[]).concat('avatar-lib.js')"></script>
@@ -22809,4 +22847,4 @@ window.__mochiBootRetry = function () { try { location.reload(); } catch (e) {} 
 </body>
 </html>
 
-<!-- __MOCHI_EOF__ muzc7r3i -->
+<!-- __MOCHI_EOF__ mv197uch -->

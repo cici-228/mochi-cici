@@ -732,8 +732,11 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
 
 <!-- 第二页补充：每周日程（填空白区）；今日备忘/今天的心情已移第三页经期卡下方 -->
 <div class="week-card glass" data-desk-widget="week" data-card-bg="week">
-<div class="mc-top">本周日常</div>
-<div class="week-days" id="week-days"></div>
+<div id="week-original"><div class="mc-top">本周日常</div><div class="week-days" id="week-days"></div></div>
+<div class="music-lyric-card" id="music-lyric-card" hidden>
+  <div class="music-lyric-head"><span>正在播放 · 歌词</span><button type="button" id="music-lyric-save" title="收藏当前这句歌词" aria-label="收藏当前这句歌词"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5S4.5 15.2 4.5 9.9A4.9 4.9 0 0112 7.1a4.9 4.9 0 017.5 2.8c0 5.3-7.5 10.6-7.5 10.6z"/></svg></button></div>
+  <div class="music-lyric-line" id="music-lyric-line">正在查找歌词…</div>
+</div>
 </div>
 <!-- 离周末还有几天（点击摸鱼 +1，可累计）
      v3.15.x：标题与副题合并同一行（.we-top），整卡与首页打卡横幅同档高度 -->
@@ -4708,6 +4711,10 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
       <div class="cal-scroll sm-scroll">
         <div class="cal-card glass" data-mpanel="lib">
           <div class="sm-tools">
+            <div class="netease-remote-actions" id="cici-netease-recommendations" hidden>
+              <button type="button" id="music-daily-recommend">网易云每日推荐</button>
+              <button type="button" id="music-heart-recommend">网易云心动模式</button>
+            </div>
             <button class="sm-tool" id="music-upload">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>上传音乐
             </button>
@@ -4735,6 +4742,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         </div>
         <div class="cal-card glass" data-mpanel="fav" hidden>
           <div id="music-fav-list"></div>
+          <section class="music-lyric-favorites"><div class="music-lyric-favorites-title">我收藏的歌词</div><div id="music-lyric-fav-mine"></div></section>
           <section class="netease-favorites" id="netease-favorites" hidden>
             <div class="netease-favorites-head">网易云收藏 <span>保存在 CiCi，需到网易云播放</span></div>
             <div id="netease-favorites-list"></div>
@@ -4743,6 +4751,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         <!-- v3.14.x：联系人的收藏列表 -->
         <div class="cal-card glass" data-mpanel="favta" hidden>
           <div id="music-fav-ta-list"></div>
+          <section class="music-lyric-favorites"><div class="music-lyric-favorites-title">TA 收藏的歌词</div><div id="music-lyric-fav-ta"></div></section>
         </div>
         <div class="cal-card glass" data-mpanel="his" hidden>
           <div id="music-his-list"></div>

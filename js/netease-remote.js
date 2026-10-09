@@ -49,10 +49,19 @@ let remoteQueueTitle = '';
 let queueRevision = 0;
 let remoteReservations = [];
 let returnToRemoteAfterLocal = false;
+let adoptedQueueForTakeover = false;
+let pendingReservationResume = null;
 let autoReservationTarget = '';
 let autoReservationAt = 0;
 let manualQueueJumpId = '';
 let manualQueueJumpAt = 0;
+let localTakeoverAt = 0;
+let localTakeoverMediaId = '';
+let localTakeoverQueueId = '';
+let localTakeoverTitle = '';
+let localPauseObserved = false;
+let localPauseRetries = 0;
+let localPauseRetryAt = 0;
 let pendingQueueJump = null;
 const fmt = ms => {
 const seconds = Math.max(0, Math.floor(Number(ms || 0) / 1000));
@@ -88,6 +97,10 @@ playing: !!(state && state.playing),
 title: String(state && state.title || ''),
 queueId: currentQueueId()
 });
+window.mochiNeteaseLyricSnapshot = () => activeShared() && state && state.playing && state.title ? {
+key: trackKey(state), title: String(state.title), artist: String(state.artist || ''),
+mediaId: String(state.mediaId || ''), position: Math.max(0, Number(state.position || 0))
+} : null;
 const queueIdOf = item => String(item && item.id != null ? item.id : '');
 const currentQueueId = () => String(state && state.activeQueueId || '');
 const togetherTrackKey = () => currentQueueId() + ':' + currentTrackKey;
@@ -111,7 +124,8 @@ if (!currentId || currentId === '-1') {
 if (item.mediaId && currentMediaId && item.mediaId === currentMediaId) return false;
 }
 return !remoteReservations.includes(id);
-}).map(item => ({ source: 'netease', id: queueIdOf(item), title: String(item.title), artist: String(item.artist || '') }));
+}).map(item => ({ source: 'netease', id: queueIdOf(item), title: String(item.title),
+artist: String(item.artist || ''), cover: String(item.cover || '') }));
 }
 window.mochiNeteaseQueueCandidates = remoteQueueCandidates;
 function finishQueueJump(success) {
@@ -170,6 +184,7 @@ let favorites = [];
 try { const saved = JSON.parse(musicStore.get(FAV_KEY) || '[]'); if (Array.isArray(saved)) favorites = saved; } catch (e) {}
 let lastAutoAt = 0;
 let lastManualAt = 0;
+let pendingTaSongChange = null;
 let appForeground = true;
 let currentTrackKey = '';
 let favoriteCheckedKey = '';
@@ -275,6 +290,7 @@ const modeLimit = randomLimit + clampProb(settings.taModeProb ?? 5);
 if (roll < nextLimit) {
 if (state.canSkipNext && call('command', 'next')) {
 lastAutoAt = now;
+pendingTaSongChange = { kind: 'next', previousKey: currentTrackKey, previousQueueId: currentQueueId(), at: now };
 if (window.mochiMusicTogetherForce) window.mochiMusicTogetherForce('netease', '', 'netease:' + togetherTrackKey());
 }
 return;
@@ -283,6 +299,7 @@ if (roll < randomLimit) {
 const item = randomRemoteQueueItem();
 if (item && selectQueueItem(queueIdOf(item), false)) {
 lastAutoAt = now;
+pendingTaSongChange = { kind: 'random', id: queueIdOf(item), title: String(item.title), mediaId: String(item.mediaId || ''), at: now };
 if (window.mochiMusicTogetherForce) window.mochiMusicTogetherForce('netease', queueIdOf(item));
 }
 return;
@@ -356,7 +373,7 @@ renderFavoriteButtons();
 if (window.toast) window.toast(currentFavorite() ? '已收藏到 CiCi' : '已从 CiCi 收藏移除');
 return true;
 }
-function markManual() { lastManualAt = Date.now(); completionCandidate = null; cancelRemoteTaPause(); }
+function markManual() { lastManualAt = Date.now(); completionCandidate = null; pendingTaSongChange = null; cancelRemoteTaPause(); }
 function resetAutoChecks() {
 cancelRemoteTaPause();
 favoriteCheckedKey = '';
@@ -404,8 +421,32 @@ else autoTick();
 renderFavorites();
 window.mochiNeteaseSharedActive = activeShared;
 window.mochiNeteaseIsPlaying = () => !!(activeShared() && state.playing);
+function adoptCurrentRemoteQueue() {
+if (adoptedQueueForTakeover) return true;
+if (!activeShared() || !state.playing || !window.mochiMusicAdoptNeteaseQueue) return false;
+adoptedQueueForTakeover = !!window.mochiMusicAdoptNeteaseQueue({
+queue: remoteQueue.map(item => ({ id: item.id, mediaId: item.mediaId,
+title: item.title, artist: item.artist })),
+activeQueueId: state.activeQueueId, mediaId: state.mediaId,
+title: state.title, artist: state.artist, duration: state.duration,
+cover: lastCover
+});
+return adoptedQueueForTakeover;
+}
 window.mochiNeteaseUseLocal = fromUnifiedQueue => {
-if (!fromUnifiedQueue) returnToRemoteAfterLocal = false;
+if (fromUnifiedQueue) adoptCurrentRemoteQueue();
+localTakeoverAt = Date.now();
+localTakeoverMediaId = String(state && state.mediaId || '');
+localTakeoverQueueId = String(state && state.activeQueueId || '');
+localTakeoverTitle = String(state && state.title || '');
+localPauseObserved = !(state && state.playing);
+localPauseRetries = 0;
+localPauseRetryAt = localTakeoverAt;
+if (pendingReservationResume) {
+clearTimeout(pendingReservationResume.timer);
+pendingReservationResume = null;
+}
+if (!fromUnifiedQueue || adoptedQueueForTakeover) returnToRemoteAfterLocal = false;
 manualQueueJumpId = '';
 if (pendingQueueJump) { clearTimeout(pendingQueueJump.timer); pendingQueueJump = null; }
 if (state && state.active && state.playing) call('command', 'pause');
@@ -414,7 +455,8 @@ resetAutoChecks();
 document.body.classList.remove('netease-shared');
 };
 window.mochiNeteasePrepareTemporaryLocalPlayback = () => {
-returnToRemoteAfterLocal = !!(activeShared() && state.playing);
+adoptCurrentRemoteQueue();
+returnToRemoteAfterLocal = !!(state && state.access && state.active);
 return returnToRemoteAfterLocal;
 };
 function playLocalQueued(id) {
@@ -429,11 +471,35 @@ return !!played;
 window.mochiNeteaseResumeAfterLocal = () => {
 if (!returnToRemoteAfterLocal) return false;
 returnToRemoteAfterLocal = false;
-if (!appForeground || document.hidden || !state || !state.access || !state.active) return false;
-if (!activateRemote()) return false;
+if (!appForeground || document.hidden) return false;
+if (!state || !state.access || !state.active) {
+playbackPrompt('要打开网易云哦');
+return true;
+}
+if (!activateRemote()) { playbackPrompt('需要手动播放哦'); return true; }
 const reserved = remoteReservations[0];
 if (reserved && selectQueueItem(reserved, false)) return true;
-call('command', 'play');
+if (!call('command', 'play')) playbackPrompt('需要手动播放哦');
+return true;
+};
+function finishReservationResume(success) {
+const pending = pendingReservationResume;
+if (!pending) return;
+clearTimeout(pending.timer);
+pendingReservationResume = null;
+if (!success) pending.onFailure();
+}
+window.mochiNeteaseResumeAfterReservation = onFailure => {
+returnToRemoteAfterLocal = false;
+if (!appForeground || document.hidden || !state || !state.access || !state.active) return false;
+if (!activateRemote()) return false;
+if (pendingReservationResume) finishReservationResume(false);
+const pending = { onFailure, timer: null, startedAt: Date.now() };
+pendingReservationResume = pending;
+pending.timer = setTimeout(() => {
+if (pendingReservationResume === pending) finishReservationResume(false);
+}, 8000);
+if (!call('command', 'play')) finishReservationResume(false);
 return true;
 };
 function renderShared() {
@@ -580,6 +646,7 @@ openRemoteQueue();
 }, true);
 function activateRemote() {
 if (!state || !state.access || !state.active) return false;
+adoptedQueueForTakeover = false;
 sourceChoice = 'remote';
 try { if (window.mochiMusicStopForRemote) window.mochiMusicStopForRemote(); } catch (e) {}
 renderShared();
@@ -643,6 +710,29 @@ const wasRemotePlaying = activeShared() && state.playing;
 const now = Date.now();
 if (wasRemotePlaying && musicSettings().neteaseAutoEn) noteNearEnd(previousState, previousKey, now);
 state = next;
+if (sourceChoice === 'local' && next.access && next.active) {
+if (!next.playing) localPauseObserved = true;
+else if (window.mochiMusicHasLocalPlayback && window.mochiMusicHasLocalPlayback()) {
+const remoteChanged = !!((localTakeoverMediaId && next.mediaId && localTakeoverMediaId !== String(next.mediaId)) ||
+(localTakeoverQueueId && localTakeoverQueueId !== '-1' && next.activeQueueId &&
+localTakeoverQueueId !== String(next.activeQueueId)) ||
+(localTakeoverTitle && next.title && localTakeoverTitle !== String(next.title)));
+if (!localPauseObserved && !remoteChanged && localPauseRetries < 2 && now - localPauseRetryAt >= 2000) {
+localPauseRetries++;
+localPauseRetryAt = now;
+call('command', 'pause');
+}
+if (localPauseObserved || remoteChanged || now - localTakeoverAt > 7000) {
+sourceChoice = 'remote';
+adoptedQueueForTakeover = false;
+try { if (window.mochiMusicStopForRemote) window.mochiMusicStopForRemote(); } catch (e) {}
+}
+}
+}
+if (pendingReservationResume) {
+if (!next.access || !next.active) finishReservationResume(false);
+else if (next.playing && Date.now() - pendingReservationResume.startedAt >= 400) finishReservationResume(true);
+}
 const granted = !!next.access;
 const available = granted && !!next.active;
 if (pendingQueueJump) {
@@ -652,6 +742,7 @@ else if (queueJumpPlaying(next, pendingQueueJump)) finishQueueJump(true);
 if (!available && sourceChoice === 'remote') {
 resetAutoChecks();
 sourceChoice = 'auto';
+adoptedQueueForTakeover = false;
 document.body.classList.remove('netease-shared');
 if (window.mochiMusicTogetherUpdate) window.mochiMusicTogetherUpdate('', '', false);
 if (window.mochiMusicRestoreLocalUI) window.mochiMusicRestoreLocalUI();
@@ -664,6 +755,8 @@ if (Object.prototype.hasOwnProperty.call(next, 'queue')) {
 remoteQueue = Array.isArray(next.queue) ? next.queue : [];
 remoteQueueCount = Number(next.queueCount || 0);
 remoteQueueTitle = String(next.queueTitle || '');
+if (sourceChoice === 'local' && adoptedQueueForTakeover && window.mochiMusicRefreshAdoptedQueue)
+window.mochiMusicRefreshAdoptedQueue(next);
 const missingReservations = remoteReservations.filter(id => !remoteQueue.some(item => queueIdOf(item) === id));
 remoteReservations = remoteReservations.filter(id => !missingReservations.includes(id));
 if (missingReservations.length) playbackPrompt('需要手动播放哦');
@@ -683,6 +776,22 @@ const trackChanged = previousKey && currentTrackKey && (queueChanged || currentT
 const identityChanged = !!(queueChanged || (previousState && (
 (previousState.mediaId && next.mediaId && previousState.mediaId !== next.mediaId) ||
 previousState.title !== next.title || previousState.artist !== next.artist)));
+if (pendingTaSongChange) {
+const action = pendingTaSongChange;
+const changed = action.kind === 'random'
+? (String(next.activeQueueId || '') === action.id ||
+(action.mediaId && String(next.mediaId || '') === action.mediaId) ||
+((!next.activeQueueId || String(next.activeQueueId) === '-1') && !next.mediaId && next.title === action.title))
+: (currentTrackKey && currentTrackKey !== action.previousKey) ||
+(action.previousQueueId && currentQueueId() !== action.previousQueueId);
+if (now - action.at > 12000 || !available) pendingTaSongChange = null;
+else if (next.playing && changed) {
+pendingTaSongChange = null;
+const name = window.chatPartnerName ? window.chatPartnerName() : 'TA';
+const verb = action.kind === 'random' ? ' 随机挑了一首《' : ' 切到了下一首《';
+try { if (window.chatAddSystem) window.chatAddSystem(name + verb + (next.title || '未知歌曲') + '》', { silent: true, nightAllow: true }); } catch (e) {}
+}
+}
 const naturalEnd = identityChanged && completedNaturally(previousKey, previousQueueId, now) && !!next.playing;
 const nearTrackEnd = Number(previousState && previousState.duration || 0) >= 10000 &&
 Number(previousState && previousState.position || 0) >= Number(previousState.duration) - 3000;
@@ -749,8 +858,22 @@ seek.addEventListener('change', () => {
 if (state && state.active && state.duration && activateRemote()) { markManual(); call('seekTo', Math.round(Number(seek.value) / 1000 * state.duration)); }
 dragging = false;
 });
-document.addEventListener('visibilitychange', () => { if (document.hidden) resetAutoChecks(); else call('refresh'); });
+let lastPeriodicRefreshAt = Date.now();
+document.addEventListener('visibilitychange', () => {
+if (document.hidden) { resetAutoChecks(); return; }
+call('refresh');
+if (Date.now() - lastPeriodicRefreshAt >= 10 * 60 * 1000) {
+lastPeriodicRefreshAt = Date.now();
+if (window.mochiMusicRefreshRecommendation) window.mochiMusicRefreshRecommendation();
+}
+});
 window.addEventListener('pageshow', () => call('refresh'));
+setInterval(() => {
+if (document.hidden) return;
+lastPeriodicRefreshAt = Date.now();
+call('refresh');
+if (window.mochiMusicRefreshRecommendation) window.mochiMusicRefreshRecommendation();
+}, 10 * 60 * 1000);
 call('refresh');
 })();
 if (window.__mochiLoaded) window.__mochiLoaded.push("netease-remote.js");

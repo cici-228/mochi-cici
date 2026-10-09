@@ -2917,7 +2917,9 @@ body.mail-emoji-mode #emoji-panel { bottom: calc(64px + var(--mochi-safe-bottom,
 }
 .sm-req-ico svg { width:22px; height:22px; }
 .sm-req-hint { font-size:12px; color:var(--muted); }
-.sm-req-name { font-size:15px; font-weight:700; color:var(--ink); margin-top:6px; }
+.sm-req .sm-req-hint { font-size:16px; line-height:1.55; color:var(--ink); }
+.sm-req-name { font-size:17px; font-weight:700; color:var(--ink); margin-top:8px; line-height:1.5; }
+.sm-req-detail { font-size:15px; line-height:1.55; color:var(--ink); margin-top:8px; }
 .sm-set-row {
   display:flex; align-items:center; justify-content:space-between;
   padding:10px 0; font-size:13px; color:var(--ink);
@@ -3286,6 +3288,14 @@ body.mail-emoji-mode #emoji-panel { bottom: calc(64px + var(--mochi-safe-bottom,
 
 /* 聊天记录里的 Pong 结果卡片（居中白底） */
 .msg-pong { display:flex; justify-content:center; margin:6px 0; }
+.msg-music-song { display:flex; justify-content:flex-start; margin:6px 0; }
+.msg-music-song-card { display:flex; align-items:center; gap:10px; width:min(280px,80vw); padding:10px; border:1px solid rgba(0,0,0,.08); border-radius:15px; background:rgba(255,255,255,.93); box-shadow:0 1px 3px rgba(0,0,0,.06); color:var(--ink); cursor:pointer; }
+.msg-music-song-cover { width:48px; height:48px; flex:none; object-fit:cover; border-radius:9px; background:rgba(0,0,0,.07); }
+.msg-music-song-cover.empty { display:flex; align-items:center; justify-content:center; font-size:24px; color:var(--muted); }
+.msg-music-song-info { display:flex; flex:1; min-width:0; flex-direction:column; gap:3px; text-align:left; }
+.msg-music-song-label { font-size:11px; color:var(--muted); }
+.msg-music-song-title { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:14px; font-weight:600; }
+.msg-music-song-arrow { color:var(--muted); font-size:22px; }
 .msg-pong-card { background:rgba(255,255,255,.92); border:1px solid rgba(0,0,0,.08); border-radius:14px; padding:10px 18px; text-align:center; max-width:80%; box-shadow:0 1px 3px rgba(0,0,0,.06); }
 .msg-pong-label { font-size:11px; color:var(--muted); margin-bottom:2px; }
 .msg-pong-result { font-size:15px; font-weight:600; color:var(--ink); }
@@ -4916,6 +4926,8 @@ select.mochi-custom-select-native { display:none; }
 .netease-remote-progress { display:flex; align-items:center; gap:8px; font-size:10px; color:var(--muted); }
 .netease-remote-progress input { flex:1; min-width:0; accent-color:var(--ink); }
 .netease-remote-actions { display:flex; gap:6px; margin-top:8px; }
+.sm-tools #cici-netease-recommendations { flex:0 0 100%; margin-top:0; }
+.sm-tools #cici-netease-recommendations[hidden] { display:none; }
 .netease-remote-actions button, .netease-remote-access { border:1px solid var(--line); border-radius:9px; background:var(--card-bg); color:var(--ink); padding:7px 8px; font:inherit; font-size:11px; }
 .netease-remote-actions button { flex:1; min-width:0; }
 .netease-remote-actions button:disabled { opacity:.38; }
