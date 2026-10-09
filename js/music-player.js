@@ -51,14 +51,14 @@ window.mochiMusicAdoptNeteaseQueue = function (snapshot) {
 const api = window.ciciNeteaseEnhanced;
 if (!api || !api.loggedIn() || !snapshot || !Array.isArray(snapshot.queue)) return false;
 const rows = snapshot.queue.filter(item => item && String(item.title || '').trim());
-if (rows.length < 2) return false;
+if (rows.length < (snapshot.allowSingle ? 1 : 2)) return false;
 let currentIndex = rows.findIndex(item => String(item.id || '') === String(snapshot.activeQueueId || ''));
 if (currentIndex < 0 && snapshot.mediaId)
 currentIndex = rows.findIndex(item => String(item.mediaId || '') === String(snapshot.mediaId));
 if (currentIndex < 0)
 currentIndex = rows.findIndex(item => String(item.title || '') === String(snapshot.title || '') &&
 String(item.artist || '') === String(snapshot.artist || ''));
-if (currentIndex < 0 || currentIndex >= rows.length - 1) return false;
+if (currentIndex < 0 || (currentIndex >= rows.length - 1 && !snapshot.allowSingle)) return false;
 const upcoming = rows.slice(currentIndex);
 const pid = 'cici_netease_remote';
 const oldIds = new Set(sessionTracks.keys());
@@ -128,6 +128,22 @@ changed = true;
 }
 if (changed) renderPage();
 return changed;
+};
+window.mochiMusicPlayRemoteQueueItem = function (snapshot, queueId) {
+const api = window.ciciNeteaseEnhanced;
+if (!api || !api.loggedIn() || !snapshot || !Array.isArray(snapshot.queue)) return false;
+const target = snapshot.queue.find(item => item && String(item.id || '') === String(queueId || ''));
+if (!target || !String(target.title || '').trim()) return false;
+const selected = Object.assign({}, snapshot, {
+activeQueueId: String(queueId), title: String(target.title), artist: String(target.artist || ''),
+duration: String(snapshot.activeQueueId || '') === String(queueId) ? snapshot.duration : 0,
+cover: String(target.cover || ''), allowSingle: true
+});
+if (!window.mochiMusicAdoptNeteaseQueue(selected)) return false;
+const first = recommendationSession && recommendationSession.ids[0];
+if (!first) return false;
+playTrack(first);
+return true;
 };
 const onlineReservations = new Map(); // 列表外歌曲的待播占位；搜索成功后替换为默认歌单歌曲
 const taReservedIds = new Set();
@@ -2646,6 +2662,22 @@ renderLibrary();
 }
 window.mochiMusicStopForRemote = () => stopFromMediaSession(true);
 window.mochiMusicHasLocalPlayback = function () { return !!currentId; };
+window.mochiMusicLocalPlaybackSnapshot = function () {
+const track = findTrack(currentId);
+return track ? {
+title: String(track.name || '未知歌曲'), artist: String(track.artist || ''),
+cover: String(track.cover || ''), playing: !!(audio && !audio.paused), loading: !audio
+} : null;
+};
+window.mochiMusicControlLocal = function (action) {
+if (!currentId) return false;
+if (action === 'toggle' && !audio) return false;
+if (action === 'previous') prev();
+else if (action === 'next') next();
+else if (action === 'toggle') toggle();
+else return false;
+return true;
+};
 window.mochiMusicRemoteFloatAllowed = function () { return !!(settings.floatEn && !floatClosed && !floatOwnSurfaceShown()); };
 window.mochiMusicRestoreLocalUI = function () {
 updatePlayerBar();
@@ -3401,6 +3433,7 @@ openQueuePanel();
 });
 });
 }
+window.mochiMusicOpenQueue = openQueuePanel;
 function nextRecommendation(forceAdvance = false, fromWidget = false) {
 const s = recommendationSession;
 if (!s || !s.ids.length) return false;
@@ -3864,6 +3897,7 @@ const e = document.getElementById(id);
 if (e) e.textContent = t;
 });
 }
+if (window.mochiNeteaseRenderLocalControlPanel) window.mochiNeteaseRenderLocalControlPanel();
 }
 function updatePlayerBar() {
 if (window.mochiNeteaseSharedActive && window.mochiNeteaseSharedActive()) {

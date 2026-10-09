@@ -90,6 +90,7 @@ const escapeHtml = value => String(value == null ? '' : value).replace(/[&<>"']/
 const playingPath = '<path d="M7 5.5h3.5v13H7zM13.5 5.5H17v13h-3.5z"/>';
 const pausedPath = '<path d="M8 5.5v13l11-6.5z"/>';
 const activeShared = () => sourceChoice === 'remote' && !!(state && state.access && state.active);
+const localPlaybackActive = () => !!(window.mochiMusicHasLocalPlayback && window.mochiMusicHasLocalPlayback());
 window.mochiNeteaseSessionAvailable = () => !!(state && state.access && state.active);
 window.mochiNeteasePlaybackSnapshot = () => ({
 available: !!(state && state.access && state.active),
@@ -130,13 +131,27 @@ artist: String(item.artist || ''), cover: String(item.cover || '') }));
 window.mochiNeteaseQueueCandidates = remoteQueueCandidates;
 function finishQueueJump(success) {
 if (!pendingQueueJump) return;
-clearTimeout(pendingQueueJump.timer);
+const pending = pendingQueueJump;
+clearTimeout(pending.timer);
 pendingQueueJump = null;
 if (!success) {
 manualQueueJumpId = '';
 autoReservationTarget = '';
-playbackPrompt('需要手动播放哦');
+if (!pending.manual || !playQueueItemInCici(pending.id)) playbackPrompt('需要手动播放哦');
 }
+}
+function playQueueItemInCici(id) {
+if (!state || !state.access || !state.active || !window.mochiMusicPlayRemoteQueueItem) return false;
+const played = window.mochiMusicPlayRemoteQueueItem({
+queue: remoteQueue, activeQueueId: state.activeQueueId,
+title: state.title, artist: state.artist,
+duration: state.duration, cover: lastCover
+}, id);
+if (played) {
+adoptedQueueForTakeover = true;
+remoteReservations = remoteReservations.filter(itemId => itemId !== id);
+}
+return !!played;
 }
 function queueJumpPlaying(next, pending) {
 if (!next.playing) return false;
@@ -149,7 +164,12 @@ return false;
 function selectQueueItem(id, manual = true) {
 const target = String(id || '');
 const item = remoteQueue.find(entry => queueIdOf(entry) === target);
-if (!activeShared() || !canSelectQueueItem() || !item) {
+if (!activeShared() || !item) {
+playbackPrompt('需要手动播放哦');
+return false;
+}
+if (!canSelectQueueItem()) {
+if (manual && playQueueItemInCici(target)) return true;
 playbackPrompt('需要手动播放哦');
 return false;
 }
@@ -161,10 +181,19 @@ manualQueueJumpAt = Date.now();
 autoReservationTarget = '';
 }
 remoteReservations = remoteReservations.filter(itemId => itemId !== target);
-const pending = { id: target, mediaId: String(item.mediaId || ''), title: String(item.title || ''), artist: String(item.artist || ''), timer: null };
+const pending = { id: target, mediaId: String(item.mediaId || ''), title: String(item.title || ''),
+artist: String(item.artist || ''), manual: !!manual, timer: null };
 pending.timer = setTimeout(() => { if (pendingQueueJump === pending) finishQueueJump(false); }, 12000);
 pendingQueueJump = pending;
-if (!call('skipToQueueItem', target)) { finishQueueJump(false); return false; }
+if (!call('skipToQueueItem', target)) {
+clearTimeout(pending.timer);
+pendingQueueJump = null;
+manualQueueJumpId = '';
+autoReservationTarget = '';
+if (manual && playQueueItemInCici(target)) return true;
+playbackPrompt('需要手动播放哦');
+return false;
+}
 return true;
 }
 window.mochiNeteasePlayQueueItem = selectQueueItem;
@@ -551,6 +580,29 @@ if (bars) { bars.classList.toggle('playing', !!state.playing); bars.classList.re
 renderFavoriteButtons();
 }
 window.mochiNeteaseRenderShared = renderShared;
+function renderLocalControlPanel() {
+if (!localPlaybackActive() || !window.mochiMusicLocalPlaybackSnapshot) return false;
+const local = window.mochiMusicLocalPlaybackSnapshot();
+if (!local) return false;
+const granted = !!(state && state.access);
+put('netease-remote-heading', 'CiCi 当前播放');
+put('netease-remote-status', local.loading ? '正在加载' : local.playing ? '正在播放' : '已暂停');
+put('netease-remote-help', '当前由 CiCi 播放；这里的控制和播放列表与主页音乐卡片一致。');
+access.hidden = granted;
+el('track').hidden = false;
+el('progress').hidden = true;
+put('netease-remote-title', local.title);
+put('netease-remote-artist', local.artist || '未知歌手');
+const cover = el('cover');
+if (local.cover) { if (cover.src !== local.cover) cover.src = local.cover; cover.hidden = false; }
+else { cover.removeAttribute('src'); cover.hidden = true; }
+controls.forEach(id => { el(id).disabled = id === 'play' && local.loading; });
+el('queue').disabled = false;
+el('favorite').disabled = true;
+el('play').textContent = local.loading ? '加载中' : local.playing ? '暂停' : '播放';
+return true;
+}
+window.mochiNeteaseRenderLocalControlPanel = renderLocalControlPanel;
 function renderRemoteQueue() {
 const container = byId('netease-queue-list');
 if (!container) return;
@@ -592,7 +644,7 @@ return '<div class="sm-song' + (match ? ' active' : '') + '" data-remote-qid="' 
 }).join('');
 html += '<p class="sm-req-hint">这里显示网易云向安卓系统提供的播放队列，可能只包含部分歌曲。</p>';
 if (remoteQueueCount > remoteQueue.length) html += '<p class="sm-req-hint">系统队列较长，当前显示前 ' + remoteQueue.length + ' 首。</p>';
-if (!canSelectQueueItem()) html += '<p class="sm-req-hint">网易云当前未开放按队列歌曲跳转，列表暂时只能查看。</p>';
+if (!canSelectQueueItem()) html += '<p class="sm-req-hint">网易云未开放按队列跳转；已登录网易云账号时，点歌会尝试交给 CiCi 播放。</p>';
 } else {
 html += '<div class="sm-song active"><div class="sm-song-info"><div class="sm-song-name">' + escapeHtml(currentTitle || '未知歌曲') + '</div>' +
 '<div class="sm-song-sub">' + escapeHtml(state.artist || '未知歌手') + ' · 当前歌曲</div></div></div>' +
@@ -601,6 +653,10 @@ html += '<div class="sm-song active"><div class="sm-song-info"><div class="sm-so
 container.innerHTML = html;
 }
 function openRemoteQueue() {
+if (localPlaybackActive()) {
+if (window.mochiMusicOpenQueue) window.mochiMusicOpenQueue();
+return;
+}
 if (!activeShared() || !window.openTCPanel) return;
 window.openTCPanel('网易云播放列表', '<div id="netease-queue-list"></div><div class="mail-actions"><button class="cc-tool" id="netease-queue-close">关闭</button></div>');
 renderRemoteQueue();
@@ -639,7 +695,15 @@ const mask = byId('tc-mask'); if (mask) mask.hidden = true;
 const remoteQueueButtons = new Set(['mw-queue', 'sm-queue', 'sm-f-queue', 'sm-lib-queue', 'netease-remote-queue']);
 document.addEventListener('click', event => {
 const button = event.target.closest && event.target.closest('button');
-if (!button || !remoteQueueButtons.has(button.id) || !activeShared()) return;
+if (!button || !remoteQueueButtons.has(button.id)) return;
+if (localPlaybackActive()) {
+if (button.id !== 'netease-remote-queue') return;
+event.preventDefault();
+event.stopImmediatePropagation();
+openRemoteQueue();
+return;
+}
+if (!activeShared()) return;
 event.preventDefault();
 event.stopImmediatePropagation();
 openRemoteQueue();
@@ -658,6 +722,10 @@ if (state.playing) return true;
 return call('command', 'play');
 };
 function command(action, manual = true) {
+if (localPlaybackActive()) {
+if (window.mochiMusicControlLocal) window.mochiMusicControlLocal(action);
+return;
+}
 if (action === 'next' && activeShared() && localQueuedTracks().length && playLocalQueued()) return;
 if (!activateRemote()) return;
 if (manual) markManual();
@@ -673,7 +741,7 @@ const sharedButtons = {
 Object.keys(sharedButtons).forEach(id => {
 const button = byId(id);
 if (button) button.addEventListener('click', event => {
-if (!activeShared()) return;
+if (localPlaybackActive() || !activeShared()) return;
 event.preventDefault();
 event.stopImmediatePropagation();
 command(sharedButtons[id]);
@@ -682,7 +750,7 @@ command(sharedButtons[id]);
 ['mw-heart', 'sm-pb-heart', 'sm-f-heart'].forEach(id => {
 const button = byId(id);
 if (button) button.addEventListener('click', event => {
-if (!activeShared()) return;
+if (localPlaybackActive() || !activeShared()) return;
 event.preventDefault();
 event.stopImmediatePropagation();
 markManual();
@@ -813,7 +881,13 @@ else if (selectQueueItem(target, false)) { autoReservationTarget = target; autoR
 }
 }
 if (trackChanged) resetAutoChecks();
+if (renderLocalControlPanel()) {
+renderRemoteQueue();
+autoTick();
+return;
+}
 access.hidden = granted;
+put('netease-remote-heading', '网易云音乐遥控');
 el('status').textContent = granted ? (available ? (next.playing ? '正在播放' : '已暂停') : '等待网易云播放') : '需要系统授权';
 el('help').textContent = granted
 ? (available ? '正在控制网易云音乐 App；歌单及会员歌曲仍由网易云播放。' : '先在网易云音乐中打开歌单并播放，然后返回 CiCi 点「刷新」。')
@@ -846,10 +920,10 @@ window.mochiNeteaseUpdate = paint;
 access.addEventListener('click', () => call('requestAccess'));
 el('refresh').addEventListener('click', () => call('refresh'));
 controls.forEach(id => el(id).addEventListener('click', () => {
-if (!state || !state.active) return;
+if (!localPlaybackActive() && (!state || !state.active)) return;
 command(id === 'play' ? 'toggle' : id === 'prev' ? 'previous' : 'next');
 }));
-el('favorite').addEventListener('click', () => { markManual(); toggleFavorite(); });
+el('favorite').addEventListener('click', () => { if (localPlaybackActive()) return; markManual(); toggleFavorite(); });
 seek.addEventListener('input', () => {
 dragging = true;
 if (state && state.duration) el('current').textContent = fmt(Number(seek.value) / 1000 * state.duration);

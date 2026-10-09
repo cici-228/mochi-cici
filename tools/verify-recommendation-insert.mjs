@@ -134,6 +134,17 @@ await evalJs(`window.ciciNeteaseEnhanced={
 await sleep(1000);
 check('每日推荐由 CiCi 起播第一首', await evalJs("document.getElementById('sm-pb-name')?.textContent.trim()==='推荐第一首'"));
 check('每日推荐只在当前播放，不进入我的音乐库', await evalJs("!JSON.parse(window.storeFor('default').get('music-library')).some(x=>x.playlistId==='cici_netease_daily'||x.playlistId==='cici_netease_heart')"));
+await evalJs(`window.mochiNeteaseUpdate({access:true,active:true,playing:false,
+  title:'网易云已暂停的歌曲',artist:'测试',duration:30000,position:0,
+  mediaId:'9001',activeQueueId:'paused',canSkipToQueueItem:false,
+  queue:[{id:'paused',mediaId:'9001',title:'网易云已暂停的歌曲',artist:'测试'}]}); true`);
+check('每日推荐播放时音乐页上方播放列表可用', await evalJs("!document.getElementById('netease-remote-queue').disabled"));
+await evalJs("document.getElementById('netease-remote-queue').click(); true");
+check('音乐页上方按钮显示 CiCi 每日推荐列表', await evalJs("!!document.querySelector('#td-qlist .sm-song[data-qid=\"cici_net_daily_1002\"]')"));
+await evalJs("document.querySelector('#td-qlist .sm-song[data-qid=\"cici_net_daily_1002\"]').click(); true");
+check('音乐页上方列表点歌由 CiCi 播放', await evalJs("document.getElementById('sm-pb-name')?.textContent.trim()==='推荐第二首'"));
+await evalJs("document.getElementById('netease-remote-next').click(); true");
+check('音乐页上方下一首控制 CiCi 列表', await evalJs("document.getElementById('sm-pb-name')?.textContent.trim()==='推荐第一首'"));
 await evalJs(`document.querySelector('#music-lib-list .sm-song-more[data-id="inserted"]').click();
   document.getElementById('sm-e-qnext').click(); true`);
 check('插播曲进入待播队列', await evalJs("window.mochiMusicQueuedTracks().some(x=>x.id==='inserted')"));
@@ -208,6 +219,36 @@ await evalJs(`window.mochiNeteaseUpdate({access:true,active:true,playing:true,
     title:'刚手动点的歌',artist:'测试',duration:30000,position:0,
     mediaId:'3003',activeQueueId:'n3'}); true`);
 check('刚接管时网易云手动选歌也立即停止 CiCi', await evalJs("!window.mochiMusicHasLocalPlayback()"));
+await evalJs(`window.mochiNeteaseUpdate({access:true,active:true,playing:true,
+  title:'遥控歌曲一',artist:'测试',duration:30000,position:1000,
+  mediaId:'4101',activeQueueId:'r1',canSkipToQueueItem:false,queue:[
+    {id:'r1',mediaId:'4101',title:'遥控歌曲一',artist:'测试'},
+    {id:'r2',mediaId:'4102',title:'遥控歌曲二',artist:'测试'},
+    {id:'r3',mediaId:'4103',title:'遥控歌曲三',artist:'测试'}
+  ]}); window.mochiNeteasePlayCurrent(); document.getElementById('mw-queue').click(); true`);
+check('主页卡片先显示网易云公开的队列', await evalJs("!!document.querySelector('#netease-queue-list [data-remote-qid=\"r2\"]')"));
+await evalJs("document.querySelector('#netease-queue-list [data-remote-qid=\"r2\"]').click(); true");
+check('网易云未开放指定跳播时 CiCi 接播所选歌曲', await evalJs("window.mochiMusicHasLocalPlayback() && document.getElementById('sm-pb-name')?.textContent.trim()==='遥控歌曲二'"));
+await evalJs(`window.mochiNeteaseUpdate({access:true,active:true,playing:false,
+  title:'遥控歌曲一',artist:'测试',duration:30000,position:1000,
+  mediaId:'4101',activeQueueId:'r1',canSkipToQueueItem:false,queue:[
+    {id:'r1',mediaId:'4101',title:'遥控歌曲一',artist:'测试'},
+    {id:'r2',mediaId:'4102',title:'遥控歌曲二',artist:'测试'},
+    {id:'r3',mediaId:'4103',title:'遥控歌曲三',artist:'测试'}
+  ]}); document.getElementById('mw-next').click(); true`);
+check('CiCi 接播后可从同步队列切下一首', await evalJs("document.getElementById('sm-pb-name')?.textContent.trim()==='遥控歌曲三'"));
+check('网易云同步队列仍不写入我的音乐库', await evalJs("!JSON.parse(window.storeFor('default').get('music-library')).some(x=>x.playlistId==='cici_netease_remote')"));
+await evalJs(`window.mochiNeteaseUpdate({access:true,active:true,playing:true,
+  title:'跳播测试一',artist:'测试',duration:30000,position:1000,
+  mediaId:'5101',activeQueueId:'s1',canSkipToQueueItem:true,queue:[
+    {id:'s1',mediaId:'5101',title:'跳播测试一',artist:'测试'},
+    {id:'s2',mediaId:'5102',title:'跳播测试二',artist:'测试'},
+    {id:'s3',mediaId:'5103',title:'跳播测试三',artist:'测试'}
+  ]}); window.mochiNeteasePlayCurrent(); document.getElementById('mw-queue').click();
+  document.querySelector('#netease-queue-list [data-remote-qid="s2"]').click(); true`);
+check('系统声称可跳播时先请求网易云控制', await evalJs("!window.mochiMusicHasLocalPlayback()"));
+await sleep(12500);
+check('网易云跳播未生效后自动由 CiCi 接播', await evalJs("window.mochiMusicHasLocalPlayback() && document.getElementById('sm-pb-name')?.textContent.trim()==='跳播测试二'"));
 try { if (ws) ws.close(); } catch (e) {}
 try { chrome.kill(); } catch (e) {}
 try { server.close(); } catch (e) {}
