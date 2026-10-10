@@ -851,7 +851,9 @@ html.desk-zoom-card .week-card, html.desk-zoom-card .desk-period, html.desk-zoom
 .music-lyric-line { color:var(--ink); font-size:14px; font-weight:600; line-height:1.5; min-height:21px; overflow:hidden; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
 .music-lyric-favorites { margin-top:16px; padding-top:12px; border-top:1px solid var(--line,#e5e5e5); }
 .music-lyric-favorites-title { font-weight:700; margin-bottom:8px; }
+.music-lyric-favorites-title small { display:block; margin-top:3px; color:var(--muted); font-size:11px; font-weight:400; }
 .music-lyric-favorite-row { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line,#e5e5e5); }
+.music-lyric-favorite-row.mine-selectable { cursor:pointer; }
 .music-lyric-favorite-row span { flex:1; min-width:0; overflow-wrap:anywhere; }
 .music-lyric-favorite-row small { display:block; color:var(--muted); margin-top:3px; }
 .music-lyric-favorite-row button { border:0; background:transparent; color:var(--muted); padding:6px; }

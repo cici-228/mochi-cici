@@ -1,6 +1,6 @@
 // ===== 功能：桌面今日情话（自定义字卡库） =====
 // 字卡库入口 → 管理页：批量添加 / 删除 情话字卡
-// 桌面「今日情话」每天从库中随机一句（自定义优先，未添加用默认库）
+// 桌面「今日情话」每天从当前联系人的情话和歌词收藏中选一句。
 (function () {
   const uid = window.activePrefix();
   const store = window.activeStore();
@@ -29,7 +29,26 @@
     '我等你，不是因为没事做', '我只是想陪你', '我喜欢你需要我的样子', '你不用一个人撑着',
     '累了就来找我', '不管什么时候，你都可以来找我', '我想听你多说一会儿', '我还想和你聊很久',
     '今天也想把时间留给你', '我有很多话想告诉你', '其实我一直都在想你', '你不在的时候，我会想你',
-    '我喜欢你在我身边的感觉', '只要是你，久一点也没关系'
+    '我喜欢你在我身边的感觉', '只要是你，久一点也没关系',
+    // 从 2026-07-31 回复库的 customMottos（开屏语录）并入。
+    '⋆⁺₊⋆ ☾ ⋆⁺₊⋆ 思念的电波已连接 ⋆⁺₊⋆ ☾ ⋆⁺₊⋆',
+    '我们是彼此的宇宙回响', '所有思绪，都奔向你', '答案很长，我准备用一生来回答',
+    '月色真美', '一期一会', '念念不忘，必有回响', '山有木兮木有枝',
+    '今晚月色真美', '春风十里不如你', '心有猛虎，细嗅蔷薇', '人间有味是清欢',
+    '斯人若彩虹，遇上方知有', 'You are my sunshine', 'I love you three thousand',
+    'What is essential is invisible to the eye', 'Carpe diem', 'To be or not to be',
+    '永遠の一瞬', '君の名は', '世界が終わるまでは', 'さようなら、ありがとう',
+    '君と会えてよかった', '人生若只如初见', '当时只道是寻常', '曾经沧海难为水',
+    '此情可待成追忆', '似此星辰非昨夜', 'The best is yet to come',
+    'All you need is love', 'Let it be', 'Here comes the sun', 'Yesterday once more',
+    '春はあけぼの', '物の哀れ', 'わびさび', '花は桜木人は武士',
+    '心悦君兮君不知', '风起于青萍之末', '云卷云舒', '花开花落',
+    '月圆月缺', '潮起潮落', '心有灵犀一点通', '言有尽而意无穷',
+    '风乍起，吹皱一池春水', '云无心以出岫', '花自飘零水自流', '月是故乡明',
+    '潮平两岸阔', '心有千千结', '言不尽意', '此时此夜难为情',
+    '欲语泪先流', '千山万水', '风萧萧兮易水寒', '云淡风轻',
+    '花好月圆', '月落乌啼霜满天', '潮落夜江斜月里',
+    '心之所向，素履以往', '言为心声', '欲穷千里目', '千里共婵娟'
   ];
   function toast(msg) {
     let t = document.getElementById('cc-toast');
@@ -103,8 +122,24 @@
     } catch (e) {}
     return [];
   }
+  function getSavedLyricQuotes() {
+    const quotes = [];
+    const seen = new Set();
+    // activeStore 动态绑定当前桌面；只读取这个联系人的两份歌词收藏。
+    ['music-lyric-favs-mine', 'music-lyric-favs-ta'].forEach(key => {
+      let entries = [];
+      try { const value = JSON.parse(store.get(key) || '[]'); if (Array.isArray(value)) entries = value; } catch (e) {}
+      entries.forEach(entry => {
+        const lyric = String(entry && entry.text || '').trim();
+        if (!lyric || seen.has(lyric)) return;
+        seen.add(lyric);
+        quotes.push('“' + lyric + '”');
+      });
+    });
+    return quotes;
+  }
   // 供桌面「今日情话」使用：当天固定一条（自定义库优先）
-  // v3.6.x：关闭「使用系统预设」后只从用户添加的情话里抽；没有用户自定义则返回空（桌面显示默认兜底文案）
+  // 关闭系统预设后仍可从当前联系人的自定义情话和歌词收藏中抽取。
   // v3.6.x：单卡开关过滤——用户关闭的预设句（quote-off:*）不参与抽取
   // FIX 2026-09-28 #1371d：这本账一直是「JSON.parse(同步读数 || 空) → 改 → store.set(整包)」，
   // 而 #1361 写下「这是最后两本」时漏了它。同步读空在这本账上有三种真实来路（#1361n 已逐条记过）：
@@ -166,7 +201,8 @@
     const custom = getCustom();
     let quotes = null;
     if (useDefault) quotes = (custom.length ? custom.map(c => c.t) : DEFAULT_QUOTES.filter(q => !isQuoteOff(q))).filter(q => !isQuoteOff(q));
-    else quotes = custom.map(c => c.t).filter(q => !isQuoteOff(q)); // 只用自己的
+    else quotes = custom.map(c => c.t).filter(q => !isQuoteOff(q));
+    quotes = quotes.concat(getSavedLyricQuotes());
     if (!quotes.length) return '';
     const d = new Date();
     const today = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
@@ -205,7 +241,7 @@
     if (!useDefault) {
       const tip = document.createElement('div');
       tip.className = 'ta-empty';
-      tip.textContent = '系统预设情话已关闭（桌面今日情话只从「我的添加」里抽取）。开启上方开关即可恢复使用。';
+      tip.textContent = '系统预设情话已关闭（桌面今日情话从「我的添加」和当前联系人的收藏歌词中抽取）。开启上方开关即可恢复使用。';
       el.appendChild(tip);
       return;
     }
@@ -400,7 +436,7 @@
       store.set(DEF_KEY, cqDefault.checked ? '1' : '0');
       renderSysList();
       updateEntryCount();
-      toast(cqDefault.checked ? '系统预设情话已开启' : '系统预设情话已关闭（仅用你添加的情话）');
+      toast(cqDefault.checked ? '系统预设情话已开启' : '系统预设情话已关闭（使用我的添加和当前联系人的收藏歌词）');
     });
   }
   // tab 切换

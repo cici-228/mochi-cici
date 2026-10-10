@@ -43,6 +43,10 @@ vm.runInNewContext(code, { window, setTimeout, clearTimeout, setInterval, clearI
 const api = window.ciciNeteaseEnhanced;
 assert.ok(api);
 await api.refresh();
+const searched = await api.findCandidates('search', '测试曲', 30);
+assert.deepEqual(Array.from(searched, song => song.id), ['bad', 'first', 'second']);
+assert.equal(calls.at(-1).action, 'searchSong');
+calls.length = 0;
 const named = await api.addRequestedSong('named', '测试曲');
 assert.equal(named.song.id, 'second');
 assert.deepEqual(calls.filter(call => call.action === 'addSong').map(call => call.payload.songId), ['first', 'second']);
@@ -64,9 +68,17 @@ assert.equal((await api.resolveSong('300', 180000)).time, 180000);
 assert.equal((await api.resolveTrack({ neteaseId: '300', duration: 0 })).songId, '300');
 assert.equal((await api.resolveTrack({ neteaseId: '300', name: '队列歌曲',
   playlistId: 'cici_netease_remote', duration: 0 })).songId, '300');
+assert.equal((await api.resolveTrack({ neteaseId: '300', name: '队列歌曲',
+  playlistId: 'cici_netease_favorite', duration: 180 })).source, 'netease');
 assert.ok(calls.some(call => call.action === 'songDetail' && call.payload.songId === '300'));
 calls.length = 0;
 streamTrial = true;
+const favoriteFallback = await api.resolveTrack({ neteaseId: '300', name: '队列歌曲',
+  artist: '歌手', playlistId: 'cici_netease_favorite', duration: 180 });
+assert.equal(favoriteFallback.source, 'migu');
+assert.deepEqual(calls.filter(call => call.action === 'songUrl' || call.action === 'fallbackUrl')
+  .map(call => call.action), ['songUrl', 'fallbackUrl']);
+calls.length = 0;
 const recovered = await api.onlineSongJson('url', { id: '300', name: '队列歌曲', artists: '歌手', duration: 180000 });
 assert.equal(recovered.data[0].url, 'https://example.com/backup.mp3');
 assert.deepEqual(calls.filter(call => call.action === 'songUrl' || call.action === 'fallbackUrl')

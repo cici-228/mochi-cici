@@ -30,7 +30,7 @@
 //   ⚠ --autoplay-policy=no-user-gesture-required 是**测试夹具旋钮**（无头里让媒体不必真手势），
 //     不是产品分支；两侧同参，判据只取「元素在不在播、src 是不是这一首」。
 import { createServer } from 'node:http';
-import { readFileSync, statSync } from 'node:fs';
+import { readFileSync, statSync, existsSync } from 'node:fs';
 import { join, normalize, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
@@ -81,12 +81,17 @@ const html = read('index.html');
 A_(mp.indexOf('id="sm-e-ta-ask"') >= 0 && mp.indexOf('inviteTaToListen(id)') >= 0, 'S1 管理音乐那排有「邀请 TA 一起听」且接到了 inviteTaToListen', { ask: mp.indexOf('id="sm-e-ta-ask"') >= 0, wired: mp.indexOf('inviteTaToListen(id)') >= 0 });
 A_(mp.indexOf('id="sm-e-ta-inv"') >= 0 && mp.indexOf('forceTaInviteFor(id)') >= 0, 'S2 同一排有「让 TA 邀我听这首」且接到了 forceTaInviteFor');
 A_(mp.indexOf("if (roll < 0.6) { accept(say('音乐邀请TA·同意'") >= 0 && mp.indexOf('if (roll < 0.85) {') >= 0, 'S3 三档阈值在（同意 60／拒绝 25／其余＝申请换一首）');
-A_(mp.indexOf('openMusicInvitePanel(pick.id, !!currentId)') >= 0, 'S4 换那一跳复用唯一邀请面板（没有另建一层弹窗）');
+A_(mp.indexOf("openMusicRequestPanel('named', pick, '')") >= 0, 'S4 换那一跳复用唯一邀请面板（没有另建一层弹窗）');
 A_(mp.indexOf('if (myInvitePending) {') >= 0 && mp.indexOf('myInvitePending = false;') >= 0, 'S5 在飞闸在位、回应落地与切桌面两处都交还');
 A_(mp.indexOf("return !!(reqData && m && !m.hidden && document.getElementById('sm-req-yes'));") >= 0, 'S6 待确认邀请只在面板真在屏上时才算数（否则被顶掉的那一条会永久锁死入口）');
 A_(html.indexOf('你也可以主动邀请 TA 听歌') >= 0 && html.indexOf('音乐</span><span class="lg-count">12</span>') >= 0, 'S7 功能介绍第 10 节补了条、计数跟着走到 12');
 
-const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required', '--mute-audio'] });
+const systemBrowser = process.platform === 'win32'
+  ? ['C:/Program Files/Google/Chrome/Application/chrome.exe',
+      'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'].find(existsSync)
+  : null;
+const browser = await chromium.launch({ executablePath: systemBrowser || undefined,
+  args: ['--autoplay-policy=no-user-gesture-required', '--mute-audio'] });
 const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
 const page = await ctx.newPage();
 const jsErrs = [], consErrs = [];
@@ -147,6 +152,11 @@ await fixRandom(0.1);            // 0.1 ⇒ 延迟 1750ms、roll=0.1＜0.6 ⇒ �
 await clickBtn('sm-e-ta-ask'); await sleep(700);
 const inv1 = await countMsg('一起听《甲》');
 A_(inv1 >= 1, 'A2 点「邀请 TA 一起听」→ 聊天里当场留下「你邀请 X 一起听《甲》」', { inv1 });
+const mySongCards = await page.evaluate(() => (window.chatExportMsgs ? window.chatExportMsgs() : [])
+  .filter(m => m && m.special === 'music-song' && m.side === 'out' && String(m.text || '').includes('甲'))
+  .map(m => ({ text: m.text, quote: m.quote, side: m.side })));
+A_(mySongCards.length === 1 && mySongCards[0].quote.includes('邀请'),
+  'A2b 指定歌曲邀请同步发送一次我的歌曲卡片', { mySongCards });
 await sleep(3200);
 const p1 = JSON.parse(await page.evaluate(PLAY));
 const ok1 = await countMsg('TA 同意了一起听');
@@ -232,6 +242,17 @@ await openMenu('t_B'); const gotInv = await clickBtn('sm-e-ta-inv'); await sleep
 const reqB4b = await page.evaluate(REQNAME);
 const yesB4b = await page.evaluate(() => !!document.getElementById('sm-req-yes'));
 A_(gotInv === 1 && onScreen4 === true && /甲/.test(reqB4) && /乙/.test(reqB4b) && yesB4b === true, 'B4 被别的面板顶掉的邀请不许把这两个入口永久锁死', { reqB4, reqB4b, onScreen4, yesB4b });
+
+await closePanel();
+const myCardUi = await page.evaluate(() => {
+  const app = document.querySelector('.app[data-app="chat"]');
+  if (app) app.click();
+  const card = document.querySelector('#chat-body .msg-music-song.from-me .msg-music-song-card');
+  return { exists: !!card, align: card ? getComputedStyle(card.parentElement).justifyContent : '',
+    title: card ? card.querySelector('.msg-music-song-title')?.textContent : '' };
+});
+A_(myCardUi.exists && myCardUi.align === 'flex-end' && !!myCardUi.title,
+  'A2c 我的歌曲卡片在聊天右侧显示歌名', myCardUi);
 
 console.log('[Z] 异常面');
 const local = consErrs.filter((s) => s.indexOf(ORIGIN) === 0);

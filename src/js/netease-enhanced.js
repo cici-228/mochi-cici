@@ -4,6 +4,8 @@
   if (!native) return;
   const recommendationsBar = document.getElementById('cici-netease-recommendations');
   if (recommendationsBar) recommendationsBar.hidden = false;
+  const searchBar = document.getElementById('music-search');
+  if (searchBar) searchBar.hidden = false;
   const pending = new Map();
   let serial = 0;
   let status = null;
@@ -96,6 +98,9 @@
   async function findCandidates(kind, query, maximum = 3) {
     if (kind !== 'keyword') {
       const result = await request('searchSong', { query });
+      // 人工点歌保留搜索排序和暂不可用的曲目，让播放阶段仍有机会试备用源。
+      if (kind === 'search') return tracks(result).filter(song => song && song.id)
+        .slice(0, maximum).map(normalizeSong).filter(Boolean);
       const all = tracks(result).filter(usable);
       const exact = all.filter(song => String(song.name || '').trim().toLocaleLowerCase() === query.trim().toLocaleLowerCase());
       return (exact.length ? exact : all).slice(0, maximum).map(normalizeSong).filter(Boolean);
@@ -142,7 +147,7 @@
     if (!loggedIn()) throw new Error('请先登录网易云');
     let songId = String(track && track.neteaseId || '');
     let metadata = null;
-    const remoteQueueTrack = track && track.playlistId === 'cici_netease_remote';
+    const remoteQueueTrack = track && ['cici_netease_remote', 'cici_netease_favorite'].includes(track.playlistId);
     // Imported Meting metadata can contain a 30-second trial duration. Ask NetEase for
     // the real song duration before deciding whether its account URL is complete.
     if (/^\d+$/.test(songId)) {

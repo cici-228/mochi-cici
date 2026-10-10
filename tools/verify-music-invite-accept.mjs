@@ -106,7 +106,7 @@ async function seedStore(opts) {
     : { id: SONG_URL, name: '邀请验证歌', artist: '', url: wav, source: 'url', duration: 40, playlistId: 'default', addedAt: Date.now() }].filter(Boolean));
   const fp = opts.floatPos ? "st.set('music-float-pos'," + JSON.stringify(JSON.stringify({ left: opts.floatPos[0], top: opts.floatPos[1] })) + ");" : "st.remove('music-float-pos');";
   const settings = opts.forceNamed ? JSON.stringify({ ...JSON.parse(GS), plainInviteProb: 0, keywordProb: 0 }) : GS;
-  const favorite = opts.forceNamed ? JSON.stringify([{ id: opts.local, name: '邀请本地歌' }]) : '[]';
+  const favorite = opts.forceNamed ? JSON.stringify([{ id: opts.local || SONG_URL, name: opts.local ? '邀请本地歌' : '邀请验证歌' }]) : '[]';
   await evalJs("(function(){var st=window.storeFor('default');st.set('music-library'," + JSON.stringify(lib) + ");st.set('music-global'," + JSON.stringify(settings) + ");st.set('music-favs-ta'," + JSON.stringify(favorite) + ");st.set('music-history','[]');" + fp + "return true;})()");
   // 听歌记录同时清 IDB 权威副本，否则 idbRestore 回填会带回上一组的记录（G2 判据会被旧记录污染）
   await evalJs("(async function(){try{await window.idbDelete('xy-home-v2:default:music-history');}catch(e){}return true;})()");
@@ -191,7 +191,7 @@ await cdp('Page.enable'); await cdp('Runtime.enable');
 await cdp('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
 
 // ===== A. 残留来电 hold（#904a）：hold 未释放时接受邀请，新播放必须不被吞 =====
-if (!(await boot({ openPanel: true }))) { console.log('FAIL  A0 邀请弹窗未能弹出'); results.push({ desc: 'A0', ok: false }); }
+if (!(await boot({ forceNamed: true, openPanel: true }))) { console.log('FAIL  A0 邀请弹窗未能弹出'); results.push({ desc: 'A0', ok: false }); }
 await evalJs("(function(){if(window.musicHoldForCall)window.musicHoldForCall(true);return true;})()"); // 模拟来电 hold 且从未释放
 await sleep(300);
 await acceptInvite();
@@ -202,7 +202,7 @@ await sleep(500);
 check('A2 悬浮小框从 hold 隐藏态恢复显示', (await evalJs("(function(){var f=document.getElementById('sm-float');return f?!f.hidden:false;})()")) === true, 'sm-float hidden=' + await evalJs("(function(){var f=document.getElementById('sm-float');return f?f.hidden:'nofloat';})()"));
 
 // ===== B. 起播校验兜底（#904b）：播放被外部打停后 4 秒内自动拉起 =====
-if (!(await boot({ openPanel: true }))) { console.log('FAIL  B0 邀请弹窗未能弹出'); results.push({ desc: 'B0', ok: false }); }
+if (!(await boot({ forceNamed: true, openPanel: true }))) { console.log('FAIL  B0 邀请弹窗未能弹出'); results.push({ desc: 'B0', ok: false }); }
 await acceptInvite();
 check('B1 接受邀请正常起播', await waitPlaying(7000), await audioState());
 const playsBefore = await evalJs('window.__va.plays') || 0;
@@ -233,7 +233,7 @@ check('C2 诊断入口的邀请面板点「一起听」能起播（不再是只�
 check('C3 诊断入口接受后面板关闭（死按钮形态下会停在原地）', (await evalJs("(function(){var m=document.getElementById('tc-mask');return m?m.hidden:'nomask';})()")) === true, 'tc-mask.hidden=' + await evalJs("(function(){var m=document.getElementById('tc-mask');return m?m.hidden:'nomask';})()"));
 
 // ===== D. #994d 本地音频异步读未回/读失败：不再全程静默 =====
-if (!(await boot({ local: 'mialD', hangIdb: true, openPanel: true }))) { console.log('FAIL  D0 邀请弹窗未能弹出'); results.push({ desc: 'D0', ok: false }); }
+if (!(await boot({ local: 'mialD', forceNamed: true, hangIdb: true, openPanel: true }))) { console.log('FAIL  D0 邀请弹窗未能弹出'); results.push({ desc: 'D0', ok: false }); }
 await acceptInvite();
 await sleep(11500); // 4s（第一段）→ 9s（第二段：如实告知 + 自动重跑）
 const dToasts = (await evalJs('JSON.stringify(window.__va.toasts)')) || '[]';
@@ -244,7 +244,7 @@ const dFloat = await floatRect();
 check('D3 该场景也没有悬浮小框（对照：小框依赖 audio 存在）', dFloat === 'hidden' || dFloat === 'nofloat', dFloat);
 
 // ===== E. #994f 小框恢复位置按视口钳制（保存位置在视口外＝「没出现悬浮小框」） =====
-if (!(await boot({ floatPos: ['900px', '1200px'], openPanel: true }))) { console.log('FAIL  E0 邀请弹窗未能弹出'); results.push({ desc: 'E0', ok: false }); }
+if (!(await boot({ forceNamed: true, floatPos: ['900px', '1200px'], openPanel: true }))) { console.log('FAIL  E0 邀请弹窗未能弹出'); results.push({ desc: 'E0', ok: false }); }
 await evalJs("(function(){document.querySelectorAll('.page').forEach(function(p){p.hidden=(p.id!=='page-chat');});return true;})()");
 await acceptInvite();
 await waitPlaying(7000);
@@ -318,23 +318,40 @@ const hCooldown = await evalJs(`(function(){
 })()`);
 check('H3 拒绝后不播放歌曲，并进入音乐请求冷却期', hCooldown);
 
-// ===== I. 普通邀请只有同意后才优先接入正在播放的网易云 =====
+// ===== I. 普通邀请同意后直接使用 CiCi 的心动模式 =====
 await boot({ openPanel: false });
 const iBefore = await evalJs(`(function(){
   Object.assign(window.mochiMusicGetSettings(),{reqProb:100,plainInviteProb:100,cooldownMs:0});
-  window.__inviteRemoteCalls=0;
-  window.mochiNeteasePlaybackSnapshot=()=>({available:true,playing:true,title:'网易云当前歌曲',queueId:'r1'});
+  window.__inviteRemoteCalls=0; window.__heartCalls=[];
+  window.ciciNeteaseEnhanced={
+    refresh:async()=>({loggedIn:true}), loggedIn:()=>true,
+    recommendations:async(mode,seed)=>{window.__heartCalls.push({mode,seed});return [
+      {id:'991001',name:'邀请心动第一首',artists:'测试',duration:40000,picUrl:''},
+      {id:'991002',name:'邀请心动第二首',artists:'测试',duration:40000,picUrl:''}
+    ]},
+    resolveTrack:async()=>({url:${JSON.stringify(wav)},time:40000})
+  };
+  window.mochiNeteasePlaybackSnapshot=()=>({available:true,playing:false,title:'网易云已暂停',queueId:'r1'});
   window.mochiNeteasePlayCurrent=()=>{window.__inviteRemoteCalls++;return true};
   var old=Math.random;Math.random=()=>0;
   try{window.maybeMusicRequest()}finally{Math.random=old}
-  return !!document.getElementById('sm-req-yes') && window.__inviteRemoteCalls===0;
+  return !!document.getElementById('sm-req-yes') && window.__heartCalls.length===0 && window.__inviteRemoteCalls===0;
 })()`);
-const iAfter = await evalJs(`(function(){document.getElementById('sm-req-yes')?.click();return window.__inviteRemoteCalls===1;})()`);
-check('I1 普通邀请在同意前不启动网易云，同意后优先使用当前播放', iBefore && iAfter);
+await evalJs(`document.getElementById('sm-req-yes')?.click()`);
+const iPlaying = await waitPlaying(7000);
+const iAfter = await evalJs(`(function(){
+  const current=document.getElementById('sm-pb-name')?.textContent.trim();
+  const queue=Array.from(document.querySelectorAll('#music-lib-list .sm-song')).map(x=>x.dataset.id);
+  return window.__heartCalls.length===1 && window.__heartCalls[0].mode==='heart' &&
+    window.__inviteRemoteCalls===0 && current==='邀请心动第一首' &&
+    !JSON.parse(window.storeFor('default').get('music-library')||'[]').some(x=>x.playlistId==='cici_netease_heart');
+})()`);
+check('I1 普通邀请同意后由 CiCi 获取心动歌单并播放，不调用网易云遥控', iBefore && iPlaying && iAfter);
 check('I2 接受结果保存在原有听歌记录', (await evalJs(`(function(){
   var h=JSON.parse(window.storeFor('default').get('music-history')||'[]');
   return h.some(x=>x.rejected===false&&String(x.triggerType).includes('听歌邀请'));
 })()`)) === true);
+check('I3 接受普通邀请后显示 TA 陪听', (await evalJs('window.mochiMusicTogetherVisible && window.mochiMusicTogetherVisible()')) === true);
 
 // ===== J. 关键词邀请同意前不联网；在线失败后继续尝试默认歌单 =====
 await boot({ openPanel: false });
@@ -426,24 +443,27 @@ const kAfter = await evalJs(`(function(){
 })()`);
 check('K1 指定歌名同意后先联网搜索，失败后尝试网易云', kBefore && kAfter);
 
-// ===== L. 默认歌单首曲损坏时继续试下一首 =====
-await boot({ openPanel: false, badFirst: true });
+// ===== L. 未登录时提示登录，不转去网易云遥控或默认歌单 =====
+await boot({ openPanel: false });
 await evalJs(`(function(){
   Object.assign(window.mochiMusicGetSettings(),{reqProb:100,plainInviteProb:100,cooldownMs:0});
-  window.__inviteOnlineQueries=[];
-  window.CiCiMusicApi={request:(token,type,value)=>{window.__inviteOnlineQueries.push({type,value});}};
-  window.mochiNeteasePlaybackSnapshot=()=>({available:false,playing:false});
-  window.mochiNeteasePlayCurrent=()=>false;
+  window.__inviteRemoteCalls=0;
+  window.ciciNeteaseEnhanced={
+    refresh:async()=>({loggedIn:false}),
+    recommendations:async()=>{throw new Error('请先在音乐设置中扫码登录网易云')}
+  };
+  window.mochiNeteasePlayCurrent=()=>{window.__inviteRemoteCalls++;return true};
   var old=Math.random;Math.random=()=>0;
   try{window.maybeMusicRequest()}finally{Math.random=old}
   document.getElementById('sm-req-yes')?.click();
 })()`);
-const lPlaying = await waitPlaying(7000);
-const lFallback = await evalJs(`(function(){
-  var a=Array.from(document.querySelectorAll('audio')).find(x=>x.src&&!x.paused);
-  return !!a&&a.src.startsWith('data:audio/wav')&&window.__inviteOnlineQueries.length===0;
+await sleep(500);
+const lBlocked = await evalJs(`(function(){
+  const audio=Array.from(document.querySelectorAll('audio')).find(x=>x.src&&!x.paused);
+  return !audio && window.__inviteRemoteCalls===0 &&
+    window.__va.toasts.some(x=>x.includes('请先在音乐设置中扫码登录网易云'));
 })()`);
-check('L1 默认歌单首曲损坏时继续播放下一首', lPlaying && lFallback);
+check('L1 未登录时提示扫码登录，不切到其他播放源', lBlocked);
 
 // ===== Z. 全程零新增 JS 异常 =====
 check('Z1 全程零新增 JS 异常', (await evalJs('window.__jsErrors ? window.__jsErrors.length : 0')) === 0, await evalJs("JSON.stringify((window.__jsErrors||[]).slice(0,3))"));

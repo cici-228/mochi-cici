@@ -14,7 +14,7 @@ let shownLine = null;
 let lookupSerial = 0;
 let taDueAt = 0;
 let taChecked = false;
-let taLastFavoriteAt = 0;
+const taLastFavoriteAt = new Map(); // 各联系人独立计时，切桌面不占用另一位 TA 的收藏机会。
 let displayedCid = window.__activeCid || 'default';
 const cache = new Map();
 function favorites(who) {
@@ -83,7 +83,21 @@ return;
 }
 entries.forEach(entry => {
 const row = document.createElement('div');
-row.className = 'music-lyric-favorite-row';
+row.className = 'music-lyric-favorite-row' + (who === 'mine' ? ' mine-selectable' : '');
+if (who === 'mine') {
+row.tabIndex = 0;
+row.setAttribute('role', 'button');
+row.setAttribute('aria-label', '发送歌词到聊天：' + entry.text);
+row.addEventListener('click', event => {
+if (event.target === remove) return;
+openSendLyricPanel(entry);
+});
+row.addEventListener('keydown', event => {
+if (event.target !== row || (event.key !== 'Enter' && event.key !== ' ')) return;
+event.preventDefault();
+openSendLyricPanel(entry);
+});
+}
 const content = document.createElement('span');
 content.textContent = entry.text;
 const detail = document.createElement('small');
@@ -94,13 +108,37 @@ remove.type = 'button';
 remove.title = '移除这句歌词';
 remove.setAttribute('aria-label', '移除这句歌词');
 remove.textContent = '×';
-remove.addEventListener('click', () => {
+remove.addEventListener('click', event => {
+event.stopPropagation();
 store.set(keys[who], JSON.stringify(favorites(who).filter(item => item.key !== entry.key)));
 renderFavorites(who);
 renderCurrentLine();
 });
 row.append(content, remove);
 listNode.appendChild(row);
+});
+}
+function openSendLyricPanel(entry) {
+if (!entry || !String(entry.text || '').trim() || !window.openTCPanel) return;
+const cid = window.__activeCid || 'default';
+window.openTCPanel('发送歌词', '<div class="sm-req-detail" id="music-lyric-send-preview"></div>' +
+'<div class="mail-actions"><button class="cc-tool" id="music-lyric-send-cancel">取消</button>' +
+'<button class="cc-tool" id="music-lyric-send-confirm">发送到聊天</button></div>');
+const preview = document.getElementById('music-lyric-send-preview');
+const cancel = document.getElementById('music-lyric-send-cancel');
+const confirm = document.getElementById('music-lyric-send-confirm');
+if (!preview || !cancel || !confirm) return;
+preview.textContent = '“' + entry.text + '”';
+const close = () => { const mask = document.getElementById('tc-mask'); if (mask) mask.hidden = true; };
+cancel.addEventListener('click', close);
+confirm.addEventListener('click', () => {
+if ((window.__activeCid || 'default') !== cid) { close(); return; }
+if (!window.chatSendQuotedLyric || !window.chatSendQuotedLyric(entry.text)) {
+if (window.toast) window.toast('发送失败，请稍后再试');
+return;
+}
+close();
+if (window.toast) window.toast('已发送到聊天');
 });
 }
 function saveFavorite(who) {
@@ -169,13 +207,14 @@ renderCurrentLine();
 }
 current = song;
 if (cache.has(key)) { lines = cache.get(key); renderCurrentLine(); }
-if (document.hidden || taChecked || Date.now() < taDueAt || Date.now() - taLastFavoriteAt < 90000 || !shownLine ||
+if (document.hidden || taChecked || Date.now() < taDueAt ||
+Date.now() - (taLastFavoriteAt.get(cid) || 0) < 90000 || !shownLine ||
 !(window.mochiMusicTogetherVisible && window.mochiMusicTogetherVisible())) return;
 taChecked = true;
 const settings = window.mochiMusicGetSettings ? window.mochiMusicGetSettings() : {};
 const chance = Math.max(1, Math.min(100, Number(settings.taLyricFavProb ?? 20) || 20));
 if (Math.random() * 100 >= chance || !saveFavorite('ta')) return;
-taLastFavoriteAt = Date.now();
+taLastFavoriteAt.set(cid, Date.now());
 const name = window.chatPartnerName ? window.chatPartnerName() : 'TA';
 if (window.chatAddIn) window.chatAddIn('"' + shownLine.text + '"',
 { silent: true, nightAllow: true, rateAllow: true });

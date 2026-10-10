@@ -1478,7 +1478,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
       <div class="cal-card-title" style="padding:14px 14px 0">我添加的情话</div>
       <div id="cq-mine-list" style="padding:8px 14px 14px"></div>
     </div>
-    <div class="cal-card-title" style="padding:0 2px">桌面每天会从这些情话里随机展示一句</div>
+    <div class="cal-card-title" style="padding:0 2px">桌面每天会从情话和当前联系人收藏的歌词中展示一句</div>
   </div>
 </div>
 
@@ -4712,8 +4712,8 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         <div class="cal-card glass" data-mpanel="lib">
           <div class="sm-tools">
             <div class="netease-remote-actions" id="cici-netease-recommendations" hidden>
-              <button type="button" id="music-daily-recommend">网易云每日推荐</button>
-              <button type="button" id="music-heart-recommend">网易云心动模式</button>
+              <button type="button" id="music-daily-recommend">今日音乐</button>
+              <button type="button" id="music-heart-recommend">音乐时刻</button>
             </div>
             <button class="sm-tool" id="music-upload">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>上传音乐
@@ -4732,6 +4732,14 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>清理会员歌曲
             </button>
           </div>
+          <section class="sm-music-search" id="music-search" hidden aria-label="搜索网易云歌曲">
+            <form id="music-search-form" class="sm-music-search-form">
+              <input id="music-search-input" type="search" enterkeyhint="search" maxlength="100" autocomplete="off" placeholder="搜索歌名或歌手" aria-label="搜索歌名或歌手">
+              <button id="music-search-submit" type="submit">搜索</button>
+            </form>
+            <div id="music-search-status" class="sm-music-search-status" role="status" aria-live="polite"></div>
+            <div id="music-search-results"></div>
+          </section>
           <div class="music-lib-filter" id="music-lib-filter"></div>
           <div id="music-lib-list"></div>
           <div class="ta-empty" id="music-lib-empty" hidden>还没有音乐，上传本地音乐，建立属于你们的声音陪伴空间（只支持本机音频文件、网易云链接 / 歌单、音频直链；QQ音乐等其他 App 的分享链接不能导入）</div>
@@ -4742,9 +4750,9 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         </div>
         <div class="cal-card glass" data-mpanel="fav" hidden>
           <div id="music-fav-list"></div>
-          <section class="music-lyric-favorites"><div class="music-lyric-favorites-title">我收藏的歌词</div><div id="music-lyric-fav-mine"></div></section>
+          <section class="music-lyric-favorites"><div class="music-lyric-favorites-title">我收藏的歌词 <small>点击歌词可发送到聊天</small></div><div id="music-lyric-fav-mine"></div></section>
           <section class="netease-favorites" id="netease-favorites" hidden>
-            <div class="netease-favorites-head">网易云收藏 <span>保存在 CiCi，需到网易云播放</span></div>
+            <div class="netease-favorites-head">网易云收藏 <span>点击歌曲由 CiCi 播放</span></div>
             <div id="netease-favorites-list"></div>
           </section>
         </div>

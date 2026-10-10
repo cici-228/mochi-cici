@@ -199,8 +199,9 @@ check('C3 「小梦的收藏」列表显示被收藏的歌曲', favRow === '收�
 const wavShort = makeWavDataUrl(1, 8000);
 await seedSongs(
   [{ id: 'mtc_b1', name: '短歌一', dur: 1, wav: wavShort }, { id: 'mtc_b2', name: '短歌二', dur: 1, wav: wavShort }],
-  { reqProb: 100, cooldownMs: 0, taNextProb: 0, taRandProb: 0, taModeProb: 100, taFavProb: 0 }
+  { reqProb: 100, plainInviteProb: 0, keywordProb: 0, cooldownMs: 0, taNextProb: 0, taRandProb: 0, taModeProb: 100, taFavProb: 0 }
 );
+await evalJs("window.activeStore().set('music-favs-ta',JSON.stringify([{id:'mtc_b1',name:'短歌一'}])); true");
 await openMusic('lib');
 await evalJs("(function(){window.maybeMusicRequest();return true;})()");
 let hasReq = false;
@@ -225,8 +226,9 @@ check('D1 歌曲播完 TA 按 100% 概率换了播放模式并有记录', modeRe
 // ===== E. 三项全 0 = TA 不主动控制：播完不产生任何 TA 动作记录 =====
 await seedSongs(
   [{ id: 'mtc_c1', name: '安静歌一', dur: 1, wav: wavShort }, { id: 'mtc_c2', name: '安静歌二', dur: 1, wav: wavShort }],
-  { reqProb: 100, cooldownMs: 0, taNextProb: 0, taRandProb: 0, taModeProb: 0, taFavProb: 0 }
+  { reqProb: 100, plainInviteProb: 0, keywordProb: 0, cooldownMs: 0, taNextProb: 0, taRandProb: 0, taModeProb: 0, taFavProb: 0 }
 );
+await evalJs("window.activeStore().set('music-favs-ta',JSON.stringify([{id:'mtc_c1',name:'安静歌一'}])); true");
 await openMusic('lib');
 await evalJs("(function(){window.maybeMusicRequest();return true;})()");
 let hasReq2 = false;
@@ -239,6 +241,34 @@ await sleep(4500);
 const histAfter = JSON.parse(await evalJs("(function(){return window.activeStore().get('music-history')||'[]';})()") || '[]');
 const newTaActs = histAfter.slice(histBefore.length).filter(h => (h.mode && /TA 把播放模式换成/.test(h.triggerType || '')) || /TA 切到了下一首|TA 随机挑了一首/.test(h.triggerType || ''));
 check('E1 三项概率全 0 时歌曲播完 TA 无任何主动控制记录', newTaActs.length === 0, 'new=' + newTaActs.length);
+
+// ===== F. 旧共享收藏复制到现有联系人后，三个桌面独立增删 =====
+const taDesks = await evalJs(`(function(){
+  var a=window.createContact('收藏桌面A'), b=window.createContact('收藏桌面B');
+  var s=window.storeFor('default');
+  s.set('music-favs-ta',JSON.stringify([{id:'legacy-fav',name:'旧共享收藏'}]));
+  s.remove('music-ta-favs-split-done');
+  return {a:a,b:b};
+})()`);
+await openMusic('favta');
+const copied = await evalJs(`(function(){
+  var ids=['default',${JSON.stringify(taDesks.a)},${JSON.stringify(taDesks.b)}];
+  return ids.map(function(cid){return JSON.parse(window.storeFor(cid).get('music-favs-ta')||'[]').map(function(x){return x.id||x;});});
+})()`);
+check('F1 旧共享收藏升级时复制给所有现有联系人', copied && copied.every(list => list.includes('legacy-fav')), JSON.stringify(copied));
+await evalJs(`window.setActiveContact(${JSON.stringify(taDesks.a)}); true`);
+const aVisible = await evalJs("!!document.querySelector('#music-fav-ta-list .sm-song[data-id=\"legacy-fav\"]')");
+check('F2 切换桌面后展示当前联系人的收藏', aVisible);
+await evalJs("document.querySelector('#music-fav-ta-list .sm-song[data-id=\"legacy-fav\"] .sm-song-more').click(); true");
+const isolated = await evalJs(`(function(){
+  var ids=['default',${JSON.stringify(taDesks.a)},${JSON.stringify(taDesks.b)}];
+  return ids.map(function(cid){return JSON.parse(window.storeFor(cid).get('music-favs-ta')||'[]').some(function(x){return x.id==='legacy-fav';});});
+})()`);
+check('F3 在 A 桌面取消收藏不影响默认桌面和 B 桌面', JSON.stringify(isolated) === '[true,false,true]', JSON.stringify(isolated));
+await evalJs(`window.mochiMusicAddRemoteTaFavorite({key:'remote-same',title:'网易云曲'}); window.setActiveContact(${JSON.stringify(taDesks.b)}); true`);
+check('F4 同一首网易云曲在 B 桌面仍可独立收藏', await evalJs("!window.mochiMusicHasRemoteTaFavorite('remote-same')"));
+const fresh = await evalJs("(function(){var id=window.createContact('新联系人');return JSON.parse(window.storeFor(id).get('music-favs-ta')||'[]').length;})()");
+check('F5 拆分后新建联系人从空收藏库开始', fresh === 0, String(fresh));
 
 try { if (ws) ws.close(); } catch (e) {}
 try { chrome.kill(); } catch (e) {}

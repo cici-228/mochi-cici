@@ -4324,7 +4324,7 @@ if (typeof t === 'string' && t.indexOf('{me}') >= 0) t = t.split('{me}').join(__
 return t;
 };
 if (rec.special === 'music-song') {
-m.className = 'msg-music-song';
+m.className = 'msg-music-song' + (rec.side === 'out' ? ' from-me' : '');
 m.dataset.idx = __msgAt;
 const cover = typeof rec.img === 'string' && /^(https?:\/\/|data:image\/)/i.test(rec.img) ? rec.img : '';
 m.innerHTML = '<div class="msg-music-song-card" role="button" tabindex="0" aria-label="打开音乐播放器">' +
@@ -13663,6 +13663,17 @@ if (v && typeof v === 'string' && v.length > 2) store.set('rp-cover-' + side, v)
 }
 } catch (e) {}
 window.chatSendMsg = (text) => { if (typeof text === 'string' && text.trim()) addMsg(text.trim()); };
+window.chatSendQuotedLyric = (text) => {
+const line = String(text || '').trim();
+if (!line) return false;
+const rec = addOut('“' + line + '”');
+if (!rec) return false;
+try { if (window.cjianNoteChat) window.cjianNoteChat(); } catch (e) {}
+try { if (window.playSfx) window.playSfx('out'); } catch (e) {}
+try { if (window.logFish) window.logFish(); } catch (e) {}
+scheduleReply();
+return true;
+};
 window.chatSendFlower = (emoji, name, wish, fromTA) => {
 return addRec({ side: fromTA ? 'in' : 'out', special: 'flower', flEmoji: emoji, flName: name, flWish: wish || '' });
 };

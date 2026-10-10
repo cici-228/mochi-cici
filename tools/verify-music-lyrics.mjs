@@ -6,6 +6,7 @@ import vm from 'node:vm';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const source = readFileSync(join(root, 'src/js/music-lyrics.js'), 'utf8');
 const values = new Map();
+const valuesByCid = new Map([['test', values]]);
 const events = [];
 let now = 100000;
 let remote = null;
@@ -22,7 +23,9 @@ function node() {
       contains(name) { return classes.has(name); }
     },
     setAttribute() {}, addEventListener(name, fn) { handlers[name] = fn; },
-    click() { handlers.click?.(); }, append(...items) { this.children.push(...items); },
+    click() { handlers.click?.({ target: this, stopPropagation() {}, preventDefault() {} }); },
+    keydown(key) { handlers.keydown?.({ target: this, key, preventDefault() {} }); },
+    append(...items) { this.children.push(...items); },
     appendChild(item) { this.children.push(item); }, replaceChildren() { this.children = []; }
   };
 }
@@ -31,13 +34,24 @@ const ids = Object.fromEntries([
   'music-lyric-fav-mine', 'music-lyric-fav-ta'
 ].map(id => [id, node()]));
 const window = {
-  __activeCid: 'test', activeStore: () => ({ get: key => values.get(key), set: (key, value) => values.set(key, value) }),
+  __activeCid: 'test', activeStore: () => ({
+    get: key => valuesByCid.get(window.__activeCid)?.get(key),
+    set: (key, value) => {
+      if (!valuesByCid.has(window.__activeCid)) valuesByCid.set(window.__activeCid, new Map());
+      valuesByCid.get(window.__activeCid).set(key, value);
+    }
+  }),
   mochiNeteaseLyricSnapshot: () => remote,
   mochiMusicLocalLyricSnapshot: () => null,
   mochiMusicTogetherVisible: () => together,
   mochiMusicGetSettings: () => ({ taLyricFavProb: 100 }),
   chatPartnerName: () => '测试联系人',
   chatAddIn: (message, options) => events.push({ message, options }),
+  chatSendQuotedLyric: text => { events.push({ sentLyric: text }); return true; },
+  openTCPanel: () => {
+    for (const id of ['music-lyric-send-preview', 'music-lyric-send-cancel', 'music-lyric-send-confirm']) ids[id] = node();
+    ids['tc-mask'] = node();
+  },
   chatAddSystem: message => events.push({ system: message }),
   ciciMusicLyricRequest: async (type, value) => {
     requests.push({ type, value });
@@ -70,6 +84,15 @@ check('有歌曲 ID 时直接取歌词', requests.length === 1 && requests[0].ty
 ids['music-lyric-save'].click();
 check('我的收藏只保存当前一句', JSON.parse(values.get('music-lyric-favs-mine')).length === 1 &&
   JSON.parse(values.get('music-lyric-favs-mine'))[0].text === '第二句');
+ids['music-lyric-fav-mine'].children[0].click();
+check('点击我的歌词收藏显示带双引号的发送预览', ids['music-lyric-send-preview'].textContent === '“第二句”');
+ids['music-lyric-send-cancel'].click();
+check('取消发送不会写入聊天', !events.some(item => item.sentLyric));
+ids['music-lyric-fav-mine'].children[0].click();
+ids['music-lyric-send-confirm'].click();
+check('确认发送只提交所选歌词', events.filter(item => item.sentLyric).length === 1 &&
+  events.find(item => item.sentLyric).sentLyric === '第二句');
+events.length = 0;
 now += 10001;
 window.ciciMusicLyricsTick();
 check('没有陪听提示时 TA 不收藏', !values.has('music-lyric-favs-ta'));
@@ -90,3 +113,25 @@ await flush();
 window.ciciMusicLyricsTick();
 check('无歌曲 ID 时核对歌名和歌手', requests.some(item => item.type === 'lyric' && item.value === '92') &&
   ids['music-lyric-line'].textContent === '第三句');
+window.__activeCid = 'other';
+window.ciciMusicLyricsTick();
+await flush();
+window.ciciMusicLyricsTick();
+check('切到另一联系人时，我和 TA 的歌词收藏列表都为空',
+  ids['music-lyric-fav-mine'].children[0].textContent === '还没有收藏歌词' &&
+  ids['music-lyric-fav-ta'].children[0].textContent === '还没有收藏歌词');
+ids['music-lyric-save'].click();
+check('另一联系人可以独立收藏同一句歌词',
+  JSON.parse(valuesByCid.get('other').get('music-lyric-favs-mine'))[0].text === '第三句' &&
+  JSON.parse(values.get('music-lyric-favs-mine'))[0].text === '第二句');
+now += 10001;
+together = true;
+window.ciciMusicLyricsTick();
+check('TA 收藏间隔按联系人独立，收藏也只写入当前联系人',
+  JSON.parse(valuesByCid.get('other').get('music-lyric-favs-ta'))[0].text === '第三句' &&
+  JSON.parse(values.get('music-lyric-favs-ta'))[0].text === '第二句');
+window.__activeCid = 'test';
+window.ciciMusicLyricsTick();
+check('切回原联系人恢复原有的两份歌词收藏',
+  ids['music-lyric-fav-mine'].children[0].children[0].textContent === '第二句' &&
+  ids['music-lyric-fav-ta'].children[0].children[0].textContent === '第二句');

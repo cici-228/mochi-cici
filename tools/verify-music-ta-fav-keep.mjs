@@ -241,6 +241,43 @@ try {
   })()`);
   check('已删不可还原歌可正常移除（行消失 + 存储清理）', !!(r4 && r4.n === 2 && !r4.hasGone && r4.taLen === 2), JSON.stringify(r4));
 
+  // 网易云媒体会话保存的 TA 收藏应由 CiCi 播放，且不污染共享音乐库。
+  const remoteFavorite = await evalJs(`(function(){
+    window.__favoriteResolve = [];
+    window.ciciNeteaseEnhanced = {
+      loggedIn: function(){ return true; },
+      resolveTrack: function(track){
+        window.__favoriteResolve.push({ name:track.name, artist:track.artist, id:track.neteaseId });
+        return Promise.resolve({ url:'https://cdn.test/favorite.mp3', source:'netease', songId:'990003' });
+      }
+    };
+    return window.mochiMusicAddRemoteTaFavorite({
+      key:'远程收藏\\u001f歌手\\u001f180', title:'远程收藏', artist:'歌手',
+      mediaId:'990003', duration:180000
+    });
+  })()`);
+  check('网易云会话歌曲可加入 TA 收藏', remoteFavorite === true, String(remoteFavorite));
+  const beforeRemote = await evalJs(`(function(){ return {
+    plays:window.__au.log.filter(function(e){return e.act==='play';}).length,
+    library:JSON.parse(window.storeFor('default').get('music-library')||'[]').length
+  }; })()`);
+  await evalJs(`(function(){
+    var rows=document.querySelectorAll('#music-fav-ta-list .sm-song');
+    for(var i=0;i<rows.length;i++) if(rows[i].textContent.indexOf('远程收藏')>=0){ rows[i].click(); break; }
+    return true;
+  })()`);
+  await sleep(500);
+  const afterRemote = await evalJs(`(function(){ return {
+    resolved:window.__favoriteResolve,
+    plays:window.__au.log.filter(function(e){return e.act==='play';}).length,
+    library:JSON.parse(window.storeFor('default').get('music-library')||'[]').length,
+    favorite:JSON.parse(window.storeFor('default').get('music-favs-ta')||'[]').some(function(x){return x.name==='远程收藏';})
+  }; })()`);
+  check('点击 TA 的网易云收藏由 CiCi 解析并起播', !!(afterRemote && afterRemote.resolved.length === 1 &&
+    afterRemote.resolved[0].id === '990003' && afterRemote.plays > beforeRemote.plays), JSON.stringify(afterRemote));
+  check('播放远程收藏不写入我的音乐库或移除收藏', !!(afterRemote &&
+    afterRemote.library === beforeRemote.library && afterRemote.favorite), JSON.stringify(afterRemote));
+
   console.log('\n==== 结果：' + (pass + fail) + ' 项检查，' + fail + ' 项失败 ====');
   if (fail) process.exitCode = 1;
   else console.log('全部通过');

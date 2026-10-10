@@ -124,13 +124,31 @@ check('升级时清除旧版累积的自动歌单，保留我的歌曲', await e
 })()`));
 await evalJs(`window.ciciNeteaseEnhanced={
   refresh:async()=>({loggedIn:true}),
+  findCandidates:async(kind,query)=>{
+    window.__searchCalls=(window.__searchCalls||[]).concat([{kind,query}]);
+    return [{id:'7001',name:'搜索第一首',artists:'测试',duration:30000,picUrl:''},
+      {id:'7002',name:'搜索第二首',artists:'测试',duration:30000,picUrl:''}];
+  },
   recommendations:async()=>[
     {id:'1001',name:'推荐第一首',artists:'测试',duration:30000,picUrl:''},
     {id:'1002',name:'推荐第二首',artists:'测试',duration:30000,picUrl:''}
   ],
   loggedIn:()=>true,
   resolveTrack:async()=>({url:${JSON.stringify(recommendationAudio)},time:30000})
-}; document.getElementById('music-daily-recommend').click(); true`);
+}; document.getElementById('music-search').hidden=false;
+  document.getElementById('music-search-input').value='浪漫';
+  document.getElementById('music-search-form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})); true`);
+await sleep(300);
+check('音乐搜索调用网易云歌曲搜索并保留结果顺序', await evalJs(`window.__searchCalls?.[0]?.kind==='search' &&
+  window.__searchCalls?.[0]?.query==='浪漫' &&
+  Array.from(document.querySelectorAll('#music-search-results .sm-song-name')).map(x=>x.textContent).join(',')==='搜索第一首,搜索第二首'`));
+await evalJs("document.querySelector('#music-search-results [data-search-index=\"1\"]').click(); true");
+await sleep(250);
+check('点击搜索结果由 CiCi 播放选中的歌曲', await evalJs("document.getElementById('sm-pb-name')?.textContent.trim()==='搜索第二首'"));
+await evalJs("document.getElementById('sm-next').click(); true");
+check('搜索结果成为当前播放列表，下一首可以继续播放', await evalJs("document.getElementById('sm-pb-name')?.textContent.trim()==='搜索第一首'"));
+check('搜索歌曲不写入我的音乐库', await evalJs("!JSON.parse(window.storeFor('default').get('music-library')).some(x=>x.playlistId==='cici_netease_search')"));
+await evalJs("document.getElementById('music-daily-recommend').click(); true");
 await sleep(1000);
 check('每日推荐由 CiCi 起播第一首', await evalJs("document.getElementById('sm-pb-name')?.textContent.trim()==='推荐第一首'"));
 check('每日推荐只在当前播放，不进入我的音乐库', await evalJs("!JSON.parse(window.storeFor('default').get('music-library')).some(x=>x.playlistId==='cici_netease_daily'||x.playlistId==='cici_netease_heart')"));

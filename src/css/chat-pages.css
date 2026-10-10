@@ -2633,6 +2633,24 @@ body.mail-emoji-mode #emoji-panel { bottom: calc(64px + var(--mochi-safe-bottom,
 }
 .sm-tool:active { background:rgba(0,0,0,.04); }
 .sm-tool svg { width:15px; height:15px; flex-shrink:0; }
+/* 网易云账号歌曲搜索：结果是本次播放列表，不自动导入音乐库。 */
+.sm-music-search { margin-bottom:12px; }
+.sm-music-search[hidden] { display:none; }
+.sm-music-search-form { display:flex; gap:8px; }
+.sm-music-search-form input {
+  flex:1; min-width:0; padding:9px 11px; border:1px solid var(--card-border);
+  border-radius:10px; background:var(--card-bg); color:var(--ink);
+  font:inherit; font-size:13px;
+}
+.sm-music-search-form button {
+  flex:none; padding:9px 15px; border:1px solid var(--card-border);
+  border-radius:10px; background:var(--card-bg); color:var(--ink);
+  font:inherit; font-size:12px; cursor:pointer;
+}
+.sm-music-search-form button:disabled { opacity:.5; cursor:default; }
+.sm-music-search-status { margin:7px 2px 0; color:var(--muted); font-size:11px; }
+.sm-music-search-status:empty { display:none; }
+.sm-music-search .sm-song.active { background:var(--static-bg); }
 /* 音乐库分类筛选条 —— v3.9.x（全部音乐 / 未分类音乐 / 各歌单，横向滚动） */
 .music-lib-filter {
   display:flex; gap:8px; margin-bottom:12px; overflow-x:auto;
@@ -3289,6 +3307,7 @@ body.mail-emoji-mode #emoji-panel { bottom: calc(64px + var(--mochi-safe-bottom,
 /* 聊天记录里的 Pong 结果卡片（居中白底） */
 .msg-pong { display:flex; justify-content:center; margin:6px 0; }
 .msg-music-song { display:flex; justify-content:flex-start; margin:6px 0; }
+.msg-music-song.from-me { justify-content:flex-end; }
 .msg-music-song-card { display:flex; align-items:center; gap:10px; width:min(280px,80vw); padding:10px; border:1px solid rgba(0,0,0,.08); border-radius:15px; background:rgba(255,255,255,.93); box-shadow:0 1px 3px rgba(0,0,0,.06); color:var(--ink); cursor:pointer; }
 .msg-music-song-cover { width:48px; height:48px; flex:none; object-fit:cover; border-radius:9px; background:rgba(0,0,0,.07); }
 .msg-music-song-cover.empty { display:flex; align-items:center; justify-content:center; font-size:24px; color:var(--muted); }
@@ -4939,7 +4958,7 @@ body.netease-shared #sm-f-mode { display:none; }
 .netease-favorites[hidden] { display:none; }
 .netease-favorites-head { font-size:13px; font-weight:600; margin-bottom:7px; }
 .netease-favorites-head span { display:block; font-size:10px; font-weight:400; color:var(--muted); }
-.netease-favorite-row { display:flex; align-items:center; gap:9px; padding:7px 0; border-top:1px solid var(--line); }
+.netease-favorite-row { display:flex; align-items:center; gap:9px; padding:7px 0; border-top:1px solid var(--line); cursor:pointer; }
 .netease-favorite-row img { width:34px; height:34px; object-fit:cover; border-radius:7px; flex-shrink:0; }
 .netease-favorite-info { flex:1; min-width:0; }
 .netease-favorite-info strong, .netease-favorite-info small { display:block; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }

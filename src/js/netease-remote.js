@@ -364,6 +364,17 @@
     favorites.forEach(item => {
       const row = document.createElement('div');
       row.className = 'netease-favorite-row';
+      row.tabIndex = 0;
+      row.setAttribute('role', 'button');
+      row.setAttribute('aria-label', '播放' + (item.title || '收藏歌曲'));
+      const playFavorite = () => {
+        if (window.mochiMusicPlayNeteaseFavorite) window.mochiMusicPlayNeteaseFavorite(item);
+        else playbackPrompt('播放器尚未就绪');
+      };
+      row.addEventListener('click', event => { if (!event.target.closest('button')) playFavorite(); });
+      row.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); playFavorite(); }
+      });
       if (item.cover && /^https:\/\//.test(item.cover)) {
         const img = document.createElement('img');
         img.src = item.cover;
@@ -404,7 +415,9 @@
     if (!state || !state.active || !state.title) return false;
     const key = trackKey(state);
     if (currentFavorite()) favorites = favorites.filter(item => item.key !== key);
-    else favorites.unshift({ key, title: String(state.title), artist: String(state.artist || ''), duration: Number(state.duration || 0), cover: /^https:\/\//.test(lastCover) ? lastCover : '', savedAt: Date.now() });
+    else favorites.unshift({ key, title: String(state.title), artist: String(state.artist || ''),
+      mediaId: /^\d+$/.test(String(state.mediaId || '')) ? String(state.mediaId) : '',
+      duration: Number(state.duration || 0), cover: /^https:\/\//.test(lastCover) ? lastCover : '', savedAt: Date.now() });
     favorites = favorites.slice(0, 100);
     saveFavorites();
     renderFavorites();
@@ -444,7 +457,8 @@
       const already = window.mochiMusicHasRemoteTaFavorite && window.mochiMusicHasRemoteTaFavorite(key);
       if (state.playing && !cooldown && !already && Math.random() * 100 < clampProb(settings.taFavProb ?? 20)) {
         const added = window.mochiMusicAddRemoteTaFavorite && window.mochiMusicAddRemoteTaFavorite({
-          key, title: String(state.title), artist: String(state.artist || ''), duration: Number(state.duration || 0), cover: lastCover
+          key, title: String(state.title), artist: String(state.artist || ''),
+          mediaId: String(state.mediaId || ''), duration: Number(state.duration || 0), cover: lastCover
         });
         if (added && window.mochiMusicNoteTaFav) window.mochiMusicNoteTaFav();
       }
@@ -456,6 +470,11 @@
     if (!musicSettings().taPauseEn || clampProb(musicSettings().taPauseProb ?? 3) <= 0) cancelRemoteTaPause();
     if (!musicSettings().neteaseAutoEn) completionCandidate = null;
     else autoTick();
+  });
+  // 同一首网易云歌曲跨桌面继续播放时，新联系人应独立获得一次收藏判定。
+  document.addEventListener('contact-switched', () => {
+    favoriteCheckedKey = '';
+    favoriteDueAt = 0;
   });
   renderFavorites();
   window.mochiNeteaseSharedActive = activeShared;

@@ -1513,7 +1513,9 @@ color:var(--ink); display:flex; align-items:center; justify-content:center;
 .music-lyric-line { color:var(--ink); font-size:14px; font-weight:600; line-height:1.5; min-height:21px; overflow:hidden; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
 .music-lyric-favorites { margin-top:16px; padding-top:12px; border-top:1px solid var(--line,#e5e5e5); }
 .music-lyric-favorites-title { font-weight:700; margin-bottom:8px; }
+.music-lyric-favorites-title small { display:block; margin-top:3px; color:var(--muted); font-size:11px; font-weight:400; }
 .music-lyric-favorite-row { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line,#e5e5e5); }
+.music-lyric-favorite-row.mine-selectable { cursor:pointer; }
 .music-lyric-favorite-row span { flex:1; min-width:0; overflow-wrap:anywhere; }
 .music-lyric-favorite-row small { display:block; color:var(--muted); margin-top:3px; }
 .music-lyric-favorite-row button { border:0; background:transparent; color:var(--muted); padding:6px; }
@@ -5395,6 +5397,23 @@ background:rgba(255,255,255,.92); color:#111; font-size:12px; cursor:pointer;
 }
 .sm-tool:active { background:rgba(0,0,0,.04); }
 .sm-tool svg { width:15px; height:15px; flex-shrink:0; }
+.sm-music-search { margin-bottom:12px; }
+.sm-music-search[hidden] { display:none; }
+.sm-music-search-form { display:flex; gap:8px; }
+.sm-music-search-form input {
+flex:1; min-width:0; padding:9px 11px; border:1px solid var(--card-border);
+border-radius:10px; background:var(--card-bg); color:var(--ink);
+font:inherit; font-size:13px;
+}
+.sm-music-search-form button {
+flex:none; padding:9px 15px; border:1px solid var(--card-border);
+border-radius:10px; background:var(--card-bg); color:var(--ink);
+font:inherit; font-size:12px; cursor:pointer;
+}
+.sm-music-search-form button:disabled { opacity:.5; cursor:default; }
+.sm-music-search-status { margin:7px 2px 0; color:var(--muted); font-size:11px; }
+.sm-music-search-status:empty { display:none; }
+.sm-music-search .sm-song.active { background:var(--static-bg); }
 .music-lib-filter {
 display:flex; gap:8px; margin-bottom:12px; overflow-x:auto;
 scrollbar-width:none; -ms-overflow-style:none;
@@ -5974,6 +5993,7 @@ border-radius:12px;
 .pong-foot { font-size:11px; color:var(--muted); text-align:center; padding-top:2px; }
 .msg-pong { display:flex; justify-content:center; margin:6px 0; }
 .msg-music-song { display:flex; justify-content:flex-start; margin:6px 0; }
+.msg-music-song.from-me { justify-content:flex-end; }
 .msg-music-song-card { display:flex; align-items:center; gap:10px; width:min(280px,80vw); padding:10px; border:1px solid rgba(0,0,0,.08); border-radius:15px; background:rgba(255,255,255,.93); box-shadow:0 1px 3px rgba(0,0,0,.06); color:var(--ink); cursor:pointer; }
 .msg-music-song-cover { width:48px; height:48px; flex:none; object-fit:cover; border-radius:9px; background:rgba(0,0,0,.07); }
 .msg-music-song-cover.empty { display:flex; align-items:center; justify-content:center; font-size:24px; color:var(--muted); }
@@ -7391,7 +7411,7 @@ body.netease-shared #sm-f-mode { display:none; }
 .netease-favorites[hidden] { display:none; }
 .netease-favorites-head { font-size:13px; font-weight:600; margin-bottom:7px; }
 .netease-favorites-head span { display:block; font-size:10px; font-weight:400; color:var(--muted); }
-.netease-favorite-row { display:flex; align-items:center; gap:9px; padding:7px 0; border-top:1px solid var(--line); }
+.netease-favorite-row { display:flex; align-items:center; gap:9px; padding:7px 0; border-top:1px solid var(--line); cursor:pointer; }
 .netease-favorite-row img { width:34px; height:34px; object-fit:cover; border-radius:7px; flex-shrink:0; }
 .netease-favorite-info { flex:1; min-width:0; }
 .netease-favorite-info strong, .netease-favorite-info small { display:block; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
@@ -11005,7 +11025,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
            （名称+版号 / 部署时间+实时秒 / 版本检测行）收成一行；检测行随 ver-check.js 退役删除。
            data-build-ts / data-version 两属性保留：device.js 诊断、bg-keep 自检、pwa.js 旧包检测
            仍只读属性（诊断版本号走 data-version 兜底，device.js 两处缓存原生支持）。 -->
-      <div class="splash-ver" id="splash-ver" data-build-ts="1791571896881" data-version="v8.67">
+      <div class="splash-ver" id="splash-ver" data-build-ts="1791610510171" data-version="v8.67">
         <span class="sv-app">CiCi传讯</span>
       </div>
       <!-- v3.5.120：数据（IndexedDB 回填）加载完成前不显示「点击进入」按钮，
@@ -11946,7 +11966,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
       <div class="cal-card-title" style="padding:14px 14px 0">我添加的情话</div>
       <div id="cq-mine-list" style="padding:8px 14px 14px"></div>
     </div>
-    <div class="cal-card-title" style="padding:0 2px">桌面每天会从这些情话里随机展示一句</div>
+    <div class="cal-card-title" style="padding:0 2px">桌面每天会从情话和当前联系人收藏的歌词中展示一句</div>
   </div>
 </div>
 
@@ -15180,8 +15200,8 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         <div class="cal-card glass" data-mpanel="lib">
           <div class="sm-tools">
             <div class="netease-remote-actions" id="cici-netease-recommendations" hidden>
-              <button type="button" id="music-daily-recommend">网易云每日推荐</button>
-              <button type="button" id="music-heart-recommend">网易云心动模式</button>
+              <button type="button" id="music-daily-recommend">今日音乐</button>
+              <button type="button" id="music-heart-recommend">音乐时刻</button>
             </div>
             <button class="sm-tool" id="music-upload">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>上传音乐
@@ -15200,6 +15220,14 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>清理会员歌曲
             </button>
           </div>
+          <section class="sm-music-search" id="music-search" hidden aria-label="搜索网易云歌曲">
+            <form id="music-search-form" class="sm-music-search-form">
+              <input id="music-search-input" type="search" enterkeyhint="search" maxlength="100" autocomplete="off" placeholder="搜索歌名或歌手" aria-label="搜索歌名或歌手">
+              <button id="music-search-submit" type="submit">搜索</button>
+            </form>
+            <div id="music-search-status" class="sm-music-search-status" role="status" aria-live="polite"></div>
+            <div id="music-search-results"></div>
+          </section>
           <div class="music-lib-filter" id="music-lib-filter"></div>
           <div id="music-lib-list"></div>
           <div class="ta-empty" id="music-lib-empty" hidden>还没有音乐，上传本地音乐，建立属于你们的声音陪伴空间（只支持本机音频文件、网易云链接 / 歌单、音频直链；QQ音乐等其他 App 的分享链接不能导入）</div>
@@ -15210,9 +15238,9 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
         </div>
         <div class="cal-card glass" data-mpanel="fav" hidden>
           <div id="music-fav-list"></div>
-          <section class="music-lyric-favorites"><div class="music-lyric-favorites-title">我收藏的歌词</div><div id="music-lyric-fav-mine"></div></section>
+          <section class="music-lyric-favorites"><div class="music-lyric-favorites-title">我收藏的歌词 <small>点击歌词可发送到聊天</small></div><div id="music-lyric-fav-mine"></div></section>
           <section class="netease-favorites" id="netease-favorites" hidden>
-            <div class="netease-favorites-head">网易云收藏 <span>保存在 CiCi，需到网易云播放</span></div>
+            <div class="netease-favorites-head">网易云收藏 <span>点击歌曲由 CiCi 播放</span></div>
             <div id="netease-favorites-list"></div>
           </section>
         </div>
@@ -22847,4 +22875,4 @@ window.__mochiBootRetry = function () { try { location.reload(); } catch (e) {} 
 </body>
 </html>
 
-<!-- __MOCHI_EOF__ mv1bnewh -->
+<!-- __MOCHI_EOF__ mv1yn13v -->
