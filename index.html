@@ -5397,10 +5397,13 @@ background:rgba(255,255,255,.92); color:#111; font-size:12px; cursor:pointer;
 }
 .sm-tool:active { background:rgba(0,0,0,.04); }
 .sm-tool svg { width:15px; height:15px; flex-shrink:0; }
-.sm-music-search { margin-bottom:12px; }
+#page-music .fav-tabs { padding:0 0 8px; }
+.sm-music-search { margin-bottom:14px; }
 .sm-music-search[hidden] { display:none; }
+.sm-music-search-title { margin-bottom:10px; color:var(--ink); font-size:14px; font-weight:700; }
 .sm-music-search-form { display:flex; gap:8px; }
-.sm-music-search-form input {
+.sm-music-search-form input,
+.sm-music-search-form .ce-box {
 flex:1; min-width:0; padding:9px 11px; border:1px solid var(--card-border);
 border-radius:10px; background:var(--card-bg); color:var(--ink);
 font:inherit; font-size:13px;
@@ -5413,6 +5416,7 @@ font:inherit; font-size:12px; cursor:pointer;
 .sm-music-search-form button:disabled { opacity:.5; cursor:default; }
 .sm-music-search-status { margin:7px 2px 0; color:var(--muted); font-size:11px; }
 .sm-music-search-status:empty { display:none; }
+.sm-music-search #music-search-results:not(:empty) { margin-top:8px; }
 .sm-music-search .sm-song.active { background:var(--static-bg); }
 .music-lib-filter {
 display:flex; gap:8px; margin-bottom:12px; overflow-x:auto;
@@ -11025,7 +11029,7 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
            （名称+版号 / 部署时间+实时秒 / 版本检测行）收成一行；检测行随 ver-check.js 退役删除。
            data-build-ts / data-version 两属性保留：device.js 诊断、bg-keep 自检、pwa.js 旧包检测
            仍只读属性（诊断版本号走 data-version 兜底，device.js 两处缓存原生支持）。 -->
-      <div class="splash-ver" id="splash-ver" data-build-ts="1791610510171" data-version="v8.67">
+      <div class="splash-ver" id="splash-ver" data-build-ts="1791632736210" data-version="v8.67">
         <span class="sv-app">CiCi传讯</span>
       </div>
       <!-- v3.5.120：数据（IndexedDB 回填）加载完成前不显示「点击进入」按钮，
@@ -15188,15 +15192,24 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
           <button type="button" id="netease-remote-queue" disabled>查看播放列表</button>
         </div>
       </section>
-      <div class="fav-tabs">
+      <div class="cal-scroll sm-scroll">
+        <section class="cal-card glass sm-music-search" id="music-search" hidden aria-label="搜索网易云歌曲">
+          <div class="sm-music-search-title">搜索歌曲</div>
+          <form id="music-search-form" class="sm-music-search-form">
+            <input id="music-search-input" type="search" enterkeyhint="search" maxlength="100" autocomplete="off" placeholder="搜索歌名或歌手" aria-label="搜索歌名或歌手">
+            <button id="music-search-submit" type="submit">搜索</button>
+          </form>
+          <div id="music-search-status" class="sm-music-search-status" role="status" aria-live="polite"></div>
+          <div id="music-search-results"></div>
+        </section>
+        <div class="fav-tabs">
         <button class="fav-tab sel" data-mtab="lib">我的音乐库</button>
         <button class="fav-tab" data-mtab="pl">歌单</button>
         <button class="fav-tab" data-mtab="fav">我的收藏</button>
         <!-- v3.14.x：联系人的收藏——标题由 music-player.js syncTaFavTab() 按联系人昵称填充 -->
         <button class="fav-tab" data-mtab="favta">TA的收藏</button>
         <button class="fav-tab" data-mtab="his">梦角邀请听歌记录</button>
-      </div>
-      <div class="cal-scroll sm-scroll">
+        </div>
         <div class="cal-card glass" data-mpanel="lib">
           <div class="sm-tools">
             <div class="netease-remote-actions" id="cici-netease-recommendations" hidden>
@@ -15220,14 +15233,6 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>清理会员歌曲
             </button>
           </div>
-          <section class="sm-music-search" id="music-search" hidden aria-label="搜索网易云歌曲">
-            <form id="music-search-form" class="sm-music-search-form">
-              <input id="music-search-input" type="search" enterkeyhint="search" maxlength="100" autocomplete="off" placeholder="搜索歌名或歌手" aria-label="搜索歌名或歌手">
-              <button id="music-search-submit" type="submit">搜索</button>
-            </form>
-            <div id="music-search-status" class="sm-music-search-status" role="status" aria-live="polite"></div>
-            <div id="music-search-results"></div>
-          </section>
           <div class="music-lib-filter" id="music-lib-filter"></div>
           <div id="music-lib-list"></div>
           <div class="ta-empty" id="music-lib-empty" hidden>还没有音乐，上传本地音乐，建立属于你们的声音陪伴空间（只支持本机音频文件、网易云链接 / 歌单、音频直链；QQ音乐等其他 App 的分享链接不能导入）</div>
@@ -22875,4 +22880,4 @@ window.__mochiBootRetry = function () { try { location.reload(); } catch (e) {} 
 </body>
 </html>
 
-<!-- __MOCHI_EOF__ mv1yn13v -->
+<!-- __MOCHI_EOF__ mv2bvetu -->

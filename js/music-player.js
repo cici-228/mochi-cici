@@ -2134,6 +2134,7 @@ setupHandlers(m);
 if (callHoldPending) { try { syncPlayIcons(false); } catch (e) {} return; }
 taActive = true;
 wantPlay = true; // v3.10.x：用户点播/切歌＝意图播放（外部打断时自动续播的依据）
+nativePlaybackGuard(true);
 const resumeOnMetadata = !!(accountResumeSeek && m && accountResumeSeek.id === m.id &&
 accountResumeSeek.serial === accountPlaySerial);
 const p = resumeOnMetadata ? new Promise((resolve, reject) => {
@@ -2261,6 +2262,16 @@ document.removeEventListener('touchend', retry, true);
 document.removeEventListener('click', retry, true);
 }
 let wantPlay = false;
+let nativeGuardActive = false;
+function nativePlaybackGuard(active) {
+active = !!active;
+if (nativeGuardActive === active) return;
+nativeGuardActive = active;
+try {
+if (window.CiCiPlaybackGuard && window.CiCiPlaybackGuard.setActive)
+window.CiCiPlaybackGuard.setActive(active);
+} catch (e) {}
+}
 let bgBrokeAudio = false;
 try {
 Object.defineProperty(window, '__musicWantPlay', {
@@ -2553,7 +2564,11 @@ const nextId = mode === 'single' && index >= 0 ? id
 playTrack(nextId);
 }
 function finishTaReservation(id) {
-if (recommendationSession) { if (playQueue.length) next(); else nextRecommendation(true); return; }
+if (recommendationSession) {
+if (playQueue.length) next();
+else if (!nextRecommendation(true)) stopFromMediaSession();
+return;
+}
 const fallback = () => playNextLocalAfterReservation(id);
 if (window.mochiNeteaseResumeAfterReservation && window.mochiNeteaseResumeAfterReservation(fallback)) return;
 fallback();
@@ -2591,7 +2606,10 @@ if (playQueue.length) { next(); return; }
 }
 if (endedReservationId || endedInviteId) { finishTaReservation(currentId); return; }
 if (playQueue.length) { next(); return; }
-if (recommendationSession && !recommendationSession.ids.includes(currentId)) { nextRecommendation(true); return; }
+if (recommendationSession && !recommendationSession.ids.includes(currentId)) {
+if (!nextRecommendation(true)) stopFromMediaSession();
+return;
+}
 if (!recommendationSession && window.mochiNeteaseResumeAfterLocal && window.mochiNeteaseResumeAfterLocal()) return;
 let handled = false;
 try { handled = maybeTAAutoAction(); } catch(e) {}
@@ -2656,6 +2674,7 @@ currentTaReservationId = null;
 inviteReturnTrackId = null;
 clearExpectedPlayback();
 wantPlay = false;
+nativePlaybackGuard(false);
 try { window.__musicPlaying = false; } catch (e) {}
 clearBgResume();
 teardownAudio();
@@ -2790,7 +2809,7 @@ accountResumeSeek = null;
 }
 bufferLatchEl = null; syncPlayIcons(!el.paused);
 });
-el.onplay = function () { if (el !== audio) return; accountStreamStale = false; playRejected = false; bgResumeFails = 0; bufferLatchEl = null; clearStallGuard(); disarmAutoResume(); clearBgResume(); bgBrokeAudio = false; wantPlay = true; syncPlayIcons(true); if (m) failMap[m.id] = 0; try { if (navigator.mediaSession) navigator.mediaSession.playbackState = 'playing'; } catch (e) {} try { window.__musicPlaying = true; } catch (e) {} // #700：真播出来＝导入时的「放不了」探测是误报，自愈清除
+el.onplay = function () { if (el !== audio) return; nativePlaybackGuard(true); accountStreamStale = false; playRejected = false; bgResumeFails = 0; bufferLatchEl = null; clearStallGuard(); disarmAutoResume(); clearBgResume(); bgBrokeAudio = false; wantPlay = true; syncPlayIcons(true); if (m) failMap[m.id] = 0; try { if (navigator.mediaSession) navigator.mediaSession.playbackState = 'playing'; } catch (e) {} try { window.__musicPlaying = true; } catch (e) {} // #700：真播出来＝导入时的「放不了」探测是误报，自愈清除
 if (m && m.probeFail) { try { delete m.probeFail; saveLibrary(); renderLibrary(); } catch (e) {} }; // v3.28.x：每次真正出声都重新绑定歌曲媒体条——后台短暂打断被 bg-keep 接管媒体会话（元数据换成「CiCi 后台保活」）后，恢复播放时若不重设歌曲元数据，通知栏媒体条会停在保活条或直接消失
 try { updateMediaSession(true); } catch (e) {} };
 el.onpause = function () { if (el !== audio) return; syncPlayIcons(false); try { if (navigator.mediaSession) navigator.mediaSession.playbackState = (wantPlay && !callHoldPending) ? 'playing' : 'paused'; } catch (e) {} try { window.__musicPlaying = false; } catch (e) {} // v3.28.x：外部打断（还想播）保持 playbackState='playing'，避免 Chrome 把页面当闲置标签冻结、通知栏媒体条消失；仅用户主动暂停才标 'paused'。v3.10.x：非用户暂停（后台省电/音频焦点抢占/系统打断）→ 定时补播反击
@@ -2847,6 +2866,7 @@ renderMusicSearch();
 if (m.neteaseAccount && !accountStreamUrl) {
 const api = window.ciciNeteaseEnhanced;
 if (!api) { accountPlaybackFailed(id); return; }
+const resolveForPlayback = (attempt) => {
 api.resolveTrack(m)
 .then(result => {
 if (playSerial !== accountPlaySerial || currentId !== id) return;
@@ -2858,7 +2878,15 @@ if (!m.cover && result.metadata.picUrl) m.cover = result.metadata.picUrl;
 saveLibrary();
 playTrack(id, fromWidget, fromUnifiedQueue, result.url, result.source, resumeAt);
 })
-.catch(() => { if (playSerial === accountPlaySerial && currentId === id) accountPlaybackFailed(id); });
+.catch(() => {
+if (playSerial !== accountPlaySerial || currentId !== id) return;
+if (attempt === 0) setTimeout(() => {
+if (playSerial === accountPlaySerial && currentId === id) resolveForPlayback(1);
+}, 1200);
+else accountPlaybackFailed(id);
+});
+};
+resolveForPlayback(0);
 return;
 }
 if (!m.neteaseAccount && (m.source === 'local' || (!m.url && m.source !== 'url'))) {
@@ -2983,6 +3011,7 @@ toast('音乐库还没有歌曲');
 return;
 }
 if (audio.paused) {
+nativePlaybackGuard(true);
 const el = audio; // #795：手势链异步回调期间可能已切歌，只认点击时那个元素
 cancelTaPause();
 if (accountStreamStale && findTrack(currentId) && findTrack(currentId).neteaseAccount) {
@@ -3020,7 +3049,7 @@ armAutoResume();
 } else { armAutoResume(); }
 });
 }
-else { if (onlineAttempt && currentId === temporaryOnlineId) { onlineAttempt = null; clearExpectedPlayback(); } wantPlay = false; accountRecoveryAttempted = false; clearBgResume(); cancelTaPause(); pauseTogetherSession(); audio.pause(); } // 用户暂停仅隐藏陪听，保留 TA 当前在场状态和随机计时。
+else { if (onlineAttempt && currentId === temporaryOnlineId) { onlineAttempt = null; clearExpectedPlayback(); } wantPlay = false; nativePlaybackGuard(false); accountRecoveryAttempted = false; clearBgResume(); cancelTaPause(); pauseTogetherSession(); audio.pause(); } // 用户暂停仅隐藏陪听，保留 TA 当前在场状态和随机计时。
 }
 let callHoldPlaying = false;
 let callHoldFloatShown = false;
@@ -3033,7 +3062,7 @@ callHoldPlaying = !!(audio && !audio.paused);
 callHoldFloatShown = !!(el && !el.hidden);
 callHoldPending = !audio && !!currentId;
 cancelTaPause();
-if (audio && !audio.paused) { wantPlay = false; clearBgResume(); audio.pause(); } // v3.10.x：来电 hold＝清除意图，通话期间不自动续播
+if (audio && !audio.paused) { wantPlay = false; nativePlaybackGuard(false); clearBgResume(); audio.pause(); } // v3.10.x：来电 hold＝清除意图，通话期间不自动续播
 if (el) el.hidden = true;
 } else {
 if (audio && currentId && (callHoldPlaying || callHoldPending)) {
@@ -3446,6 +3475,13 @@ window.mochiMusicOpenQueue = openQueuePanel;
 function nextRecommendation(forceAdvance = false, fromWidget = false) {
 const s = recommendationSession;
 if (!s || !s.ids.length) return false;
+if (s.mode === 'search') {
+const nextIndex = s.index + 1;
+if (nextIndex >= s.ids.length) return false;
+s.index = nextIndex;
+playTrack(s.ids[nextIndex], fromWidget);
+return true;
+}
 let index;
 if (!forceAdvance && mode === 'single' && s.index >= 0) index = s.index;
 else if (!forceAdvance && mode === 'shuffle' && s.ids.length > 1) {
@@ -3489,14 +3525,19 @@ teardownAudio();
 currentId = null;
 updatePlayerBar();
 const s = recommendationSession;
-if (!s) { playbackPrompt('这首网易云歌曲无法完整播放'); return; }
+if (!s) { nativePlaybackGuard(false); playbackPrompt('这首网易云歌曲无法完整播放'); return; }
 s.failures = (s.failures || 0) + 1;
 if (s.failures >= 3) {
 recommendationSession = null;
+nativePlaybackGuard(false);
 playbackPrompt('连续三首无法完整播放，请在网易云音乐中播放');
 return;
 }
-nextRecommendation(true);
+if (!nextRecommendation(true)) {
+recommendationSession = null;
+nativePlaybackGuard(false);
+playbackPrompt('这首网易云歌曲无法完整播放');
+}
 }
 let recommendationLoading = false;
 function storeRecommendationSongs(modeName, songs) {
@@ -3589,6 +3630,13 @@ let musicSearchResults = [];
 let musicSearchStatus = '';
 let musicSearchSerial = 0;
 let musicSearchBusy = false;
+function clearMusicSearch() {
+++musicSearchSerial; // 让清空输入前尚未返回的搜索结果失效。
+musicSearchResults = [];
+musicSearchStatus = '';
+musicSearchBusy = false;
+renderMusicSearch();
+}
 function renderMusicSearch() {
 const list = document.getElementById('music-search-results');
 const status = document.getElementById('music-search-status');
@@ -3614,7 +3662,7 @@ if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); choose
 }
 async function searchMusic(query) {
 const term = String(query || '').trim();
-if (!term) { musicSearchStatus = '请输入歌名或歌手'; renderMusicSearch(); return; }
+if (!term) { clearMusicSearch(); return; }
 const api = window.ciciNeteaseEnhanced;
 if (!api) { musicSearchStatus = '请在安卓 App 中搜索网易云歌曲'; renderMusicSearch(); return; }
 const serial = ++musicSearchSerial;
@@ -3626,7 +3674,7 @@ try {
 await api.refresh();
 if (!api.loggedIn()) throw new Error('请先在音乐设置中扫码登录网易云');
 const songs = await api.findCandidates('search', term, 30);
-if (serial !== musicSearchSerial) return;
+if (serial !== musicSearchSerial || document.getElementById('music-search-input').value.trim() !== term) return;
 musicSearchResults = songs.filter(song => song && song.id && song.name);
 musicSearchStatus = musicSearchResults.length
 ? '找到 ' + musicSearchResults.length + ' 首，点选歌曲即可播放' : '没有找到歌曲，试试其他歌名或歌手';
@@ -3641,24 +3689,27 @@ function playMusicSearchResult(index) {
 const selected = musicSearchResults[index];
 if (!selected) return;
 if (recommendationLoading) { playbackPrompt('推荐歌单正在加载，请稍候'); return; }
-const oldIds = new Set(sessionTracks.keys());
-sessionTracks.clear();
-playQueue = playQueue.filter(id => !oldIds.has(id));
+if (window.mochiNeteaseSharedActive && window.mochiNeteaseSharedActive() &&
+window.mochiNeteasePrepareTemporaryLocalPlayback)
+window.mochiNeteasePrepareTemporaryLocalPlayback();
+let remaining = [];
+if (recommendationSession) {
+const position = Math.max(recommendationSession.index, recommendationSession.ids.indexOf(currentId));
+remaining = recommendationSession.ids.slice(position + 1);
+} else if (currentId) {
+const activeList = playableList();
+const position = activeList.findIndex(track => track.id === currentId);
+if (position >= 0) remaining = activeList.slice(position + 1).map(track => track.id);
+}
 const pid = 'cici_netease_search';
-const ids = [];
-musicSearchResults.forEach(song => {
-const id = 'cici_net_search_' + song.id;
-if (ids.includes(id)) return;
-sessionTracks.set(id, { id, playlistId: pid, neteaseId: String(song.id),
-name: song.name, artist: song.artists || '', cover: String(song.picUrl || '').replace(/^http:/i, 'https:'),
-duration: Number(song.duration || 0) / 1000, url: '', source: 'netease-account',
+const id = 'cici_net_search_' + selected.id;
+sessionTracks.set(id, { id, playlistId: pid, neteaseId: String(selected.id),
+name: selected.name, artist: selected.artists || '', cover: String(selected.picUrl || '').replace(/^http:/i, 'https:'),
+duration: Number(selected.duration || 0) / 1000, url: '', source: 'netease-account',
 neteaseAccount: true, addedAt: Date.now() });
-ids.push(id);
-});
-recommendationSession = { mode: 'search', pid, ids, index: ids.indexOf('cici_net_search_' + selected.id), failures: 0 };
+recommendationSession = { mode: 'search', pid, ids: [id, ...remaining.filter(nextId => nextId !== id && findTrack(nextId))], index: 0, failures: 0 };
 renderPage();
-renderMusicSearch();
-playTrack('cici_net_search_' + selected.id);
+playTrack(id);
 }
 function next(fromWidget) {
 markFloatSource(fromWidget);
@@ -3669,7 +3720,10 @@ if (findTrack(qid)) { if (taReservedIds.has(qid)) { taReservedIds.delete(qid); c
 if (taReservedIds.has(qid)) { taReservedIds.delete(qid); playbackPrompt('需要手动播放哦'); }
 }
 renderQueueBadge();
-if (recommendationSession) { nextRecommendation(false, fromWidget); return; }
+if (recommendationSession) {
+if (!nextRecommendation(false, fromWidget)) stopFromMediaSession();
+return;
+}
 if (window.mochiNeteaseResumeAfterLocal && window.mochiNeteaseResumeAfterLocal()) return;
 const list = playableList();
 if (!list.length) return;
@@ -5034,9 +5088,10 @@ window.mochiMusicTogetherForce('mochi', track.id);
 playTrack(track.id);
 armInvitePlayCheck();
 };
-function openMusicRequestPanel(kind, track, keyword) {
+function openMusicRequestPanel(kind, track, keyword, options) {
 if (!window.openTCPanel) return false;
-const card = window.taInvitePickKind ? window.taInvitePickKind('music') : null;
+const card = options && options.cardText ? { text: options.cardText }
+: window.taInvitePickKind ? window.taInvitePickKind('music') : null;
 if (!card || !String(card.text || '').trim()) return false;
 const name = partnerName();
 const cid = window.__activeCid || 'default';
@@ -5067,8 +5122,10 @@ window.openTCPanel('音乐', '<div class="sm-req"><div class="sm-req-hint">' + e
 const no = document.getElementById('sm-req-no');
 const yes = document.getElementById('sm-req-yes');
 if (!no || !yes) return false;
+if (!options || options.announce !== false) {
 sendMusicInviteLine(message);
 if (kind === 'named') sendNamedSongCard(track, 'TA 邀请你听这首歌');
+}
 let answered = false;
 const close = () => { document.getElementById('tc-mask').hidden = true; };
 no.addEventListener('click', () => {
@@ -5340,9 +5397,47 @@ const snapshots = taFavList().filter(item => item && (item.name || item.title) &
 .map(item => ({ source: 'onlineName', id: String(item.id || ''), name: String(item.name || item.title) }));
 return local.concat(remote, snapshots);
 }
+const BACKGROUND_MUSIC_INVITE_KEY = 'music-background-invite';
+const BACKGROUND_MUSIC_INVITE_MS = 10 * 60 * 1000;
+let backgroundMusicInviteTimer = null;
+function flushBackgroundMusicInvite() {
+const cid = window.__activeCid || 'default';
+const bucket = window.storeFor(cid);
+let pending = null;
+try { pending = JSON.parse(bucket.get(BACKGROUND_MUSIC_INVITE_KEY) || 'null'); } catch (e) {}
+if (!pending) {
+if (backgroundMusicInviteTimer) { clearInterval(backgroundMusicInviteTimer); backgroundMusicInviteTimer = null; }
+return;
+}
+if (Date.now() - pending.ts > BACKGROUND_MUSIC_INVITE_MS) { bucket.remove(BACKGROUND_MUSIC_INVITE_KEY); return; }
+const mask = document.getElementById('tc-mask');
+if (document.hidden || (mask && !mask.hidden)) return;
+const track = pending.track && (findTrack(pending.track.id) || pending.track);
+if (openMusicRequestPanel(pending.kind, track, pending.keyword || '',
+{ announce: false, cardText: pending.cardText })) bucket.remove(BACKGROUND_MUSIC_INVITE_KEY);
+}
+function queueBackgroundMusicInvite(kind, track, keyword, cardText) {
+const cid = window.__activeCid || 'default';
+const name = partnerName();
+const snapshot = track ? { id: track.id, name: track.name || track.title,
+title: track.title || track.name, artist: track.artist, cover: track.cover || track.picUrl,
+source: track.source } : null;
+try { window.storeFor(cid).set(BACKGROUND_MUSIC_INVITE_KEY, JSON.stringify({
+ts: Date.now(), kind, track: snapshot, keyword, cardText
+})); } catch (e) { return false; }
+const message = name + '对你发送了听歌邀请~';
+sendMusicInviteLine(message);
+if (kind === 'named') sendNamedSongCard(track, 'TA 邀请你听这首歌');
+if (window.bgNotifyCheck) window.bgNotifyCheck(message, Date.now(), { name, force: true });
+if (!backgroundMusicInviteTimer) backgroundMusicInviteTimer = setInterval(flushBackgroundMusicInvite, 2000);
+return true;
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) flushBackgroundMusicInvite(); });
+document.addEventListener('mochi-fg-resume', flushBackgroundMusicInvite);
+document.addEventListener('contact-switched', flushBackgroundMusicInvite);
+if (window.mochiOnDataReady) window.mochiOnDataReady(flushBackgroundMusicInvite);
 window.maybeMusicRequest = function () {
 try {
-if (document.hidden) { console.log('[music-req] return: page hidden'); return; }
 const prob = (typeof settings.reqProb === 'number' ? settings.reqProb : 5);
 console.log('[music-req] called', { libLen: library.length, cooldownAt: cooldownAt, cooldownMs: settings.cooldownMs, reqProb: settings.reqProb, prob: prob, now: Date.now() });
 const now = Date.now();
@@ -5370,7 +5465,14 @@ kind = 'keyword';
 keyword = keywords[Math.floor(Math.random() * keywords.length)];
 }
 }
+const card = document.hidden && window.taInvitePickKind ? window.taInvitePickKind('music') : null;
+const openVisibleRequest = () => {
 const opened = openMusicRequestPanel(kind, track, keyword);
+return opened;
+};
+const opened = document.hidden
+? !!(card && card.text && queueBackgroundMusicInvite(kind, track, keyword, String(card.text).trim()))
+: openVisibleRequest();
 if (!opened) { console.log('[music-req] panel open failed'); return; }
 cooldownAt = now;
 if (track && track.source !== 'netease' && findTrack(track.id)) prewarmLocalAudio(track.id);
@@ -5884,6 +5986,8 @@ if (musicSearchForm) musicSearchForm.addEventListener('submit', event => {
 event.preventDefault();
 void searchMusic(document.getElementById('music-search-input').value);
 });
+const musicSearchInput = document.getElementById('music-search-input');
+if (musicSearchInput) musicSearchInput.addEventListener('input', clearMusicSearch);
 const setBtn = document.getElementById('music-set');
 if (setBtn) setBtn.addEventListener('click', openSettings);
 const playBtn = document.getElementById('sm-play');

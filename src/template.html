@@ -4700,15 +4700,24 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
           <button type="button" id="netease-remote-queue" disabled>查看播放列表</button>
         </div>
       </section>
-      <div class="fav-tabs">
+      <div class="cal-scroll sm-scroll">
+        <section class="cal-card glass sm-music-search" id="music-search" hidden aria-label="搜索网易云歌曲">
+          <div class="sm-music-search-title">搜索歌曲</div>
+          <form id="music-search-form" class="sm-music-search-form">
+            <input id="music-search-input" type="search" enterkeyhint="search" maxlength="100" autocomplete="off" placeholder="搜索歌名或歌手" aria-label="搜索歌名或歌手">
+            <button id="music-search-submit" type="submit">搜索</button>
+          </form>
+          <div id="music-search-status" class="sm-music-search-status" role="status" aria-live="polite"></div>
+          <div id="music-search-results"></div>
+        </section>
+        <div class="fav-tabs">
         <button class="fav-tab sel" data-mtab="lib">我的音乐库</button>
         <button class="fav-tab" data-mtab="pl">歌单</button>
         <button class="fav-tab" data-mtab="fav">我的收藏</button>
         <!-- v3.14.x：联系人的收藏——标题由 music-player.js syncTaFavTab() 按联系人昵称填充 -->
         <button class="fav-tab" data-mtab="favta">TA的收藏</button>
         <button class="fav-tab" data-mtab="his">梦角邀请听歌记录</button>
-      </div>
-      <div class="cal-scroll sm-scroll">
+        </div>
         <div class="cal-card glass" data-mpanel="lib">
           <div class="sm-tools">
             <div class="netease-remote-actions" id="cici-netease-recommendations" hidden>
@@ -4732,14 +4741,6 @@ html:not(.mochi-started) .phone { visibility: hidden; pointer-events: none; }
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>清理会员歌曲
             </button>
           </div>
-          <section class="sm-music-search" id="music-search" hidden aria-label="搜索网易云歌曲">
-            <form id="music-search-form" class="sm-music-search-form">
-              <input id="music-search-input" type="search" enterkeyhint="search" maxlength="100" autocomplete="off" placeholder="搜索歌名或歌手" aria-label="搜索歌名或歌手">
-              <button id="music-search-submit" type="submit">搜索</button>
-            </form>
-            <div id="music-search-status" class="sm-music-search-status" role="status" aria-live="polite"></div>
-            <div id="music-search-results"></div>
-          </section>
           <div class="music-lib-filter" id="music-lib-filter"></div>
           <div id="music-lib-list"></div>
           <div class="ta-empty" id="music-lib-empty" hidden>还没有音乐，上传本地音乐，建立属于你们的声音陪伴空间（只支持本机音频文件、网易云链接 / 歌单、音频直链；QQ音乐等其他 App 的分享链接不能导入）</div>

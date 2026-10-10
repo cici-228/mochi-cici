@@ -3097,7 +3097,7 @@ const rsMax = Math.max(rsMin, Number(c['rs-max']) || rsMin);
 const wait = Math.max(400, Math.min(chatTypingHorizonMs(), (rsMin + Math.random() * (rsMax - rsMin)) * 1000 - age));
 try { window.__chatReplyDebtFired = (window.__chatReplyDebtFired || 0) + 1; } catch (e0) {}
 showTyping(); // 把上一场没兑现的那句承诺接续上：先让人看到「正在输入」，再等这一发落地
-setTimeout(() => {
+scheduleBackgroundChatTimer(() => {
 try { hideTyping(); } catch (e1) {}
 try { replyOnce(c, null); } catch (e2) {}
 }, wait);
@@ -8252,6 +8252,35 @@ return { text: reply, type: type, cards: replyCards };
 // 说，不再按你发了几条放大；引用取轮内末尾那句。每多一条把到点往后推 TURN_HOLD、封顶 TURN_HOLD_MAX。
 const TURN_HOLD = 1500, TURN_HOLD_MAX = 8000;
 const replyTurns = {}; /* cid -> { due, cap, timer } */
+// Android WebView can freeze ordinary timers as soon as the app goes to the background.
+// Keep due times alongside the timers so the native foreground service can deliver them.
+const backgroundChatTimers = new Map();
+function runBackgroundChatTimer(id) {
+const job = backgroundChatTimers.get(id);
+if (!job) return;
+backgroundChatTimers.delete(id);
+clearTimeout(id);
+job.run();
+}
+function scheduleBackgroundChatTimer(run, delay) {
+const wait = Math.max(0, Number(delay) || 0);
+let id = setTimeout(() => runBackgroundChatTimer(id), wait);
+backgroundChatTimers.set(id, { due: Date.now() + wait, run });
+return id;
+}
+function clearBackgroundChatTimer(id) {
+clearTimeout(id);
+backgroundChatTimers.delete(id);
+}
+window.ciciBackgroundTick = function () {
+const now = Date.now();
+let delivered = 0;
+for (const [id, job] of backgroundChatTimers) {
+if (job.due > now) continue;
+runBackgroundChatTimer(id);
+if (++delivered >= 30) break; // Avoid a long burst if the WebView was briefly frozen.
+}
+};
 window.__replyTurnKeys = function () { try { return Object.keys(replyTurns); } catch (e) { return []; } }; // 只读诊断：此刻有哪几个联系人各排着一轮
 // 回复机制两条并存，由设置里「连发的算一轮」（turn-en，**默认关闭**）选一条：
 // 关＝mochi 原机制一字不变（每发一条各排一批，且受「总量限流」计数与拦）；
@@ -8275,13 +8304,13 @@ const c = cfg();
 //   设置→复制诊断信息，下次报障可一眼区分「设定即此延迟」与「真处理卡顿」。零行为改动。
 try { window.__replyWaitT0 = Date.now(); } catch (eRW) {}
 if (hit(c['rn-prob'])) {
-setTimeout(() => { if (!sameCid()) return; addIn('', { special: 'read' }); }, randInt(1000, 4000));
+scheduleBackgroundChatTimer(() => { if (!sameCid()) return; addIn('', { special: 'read' }); }, randInt(1000, 4000));
 return;
 }
 const delay = (c['rs-min'] + Math.random() * Math.max(1, c['rs-max'] - c['rs-min'])) * 1000;
 try { window.__rsDrawS = Math.round(delay / 100) / 10; } catch (eRD) {} // #571 本次掷到的设定延迟（秒）
 showTyping();
-setTimeout(() => {
+scheduleBackgroundChatTimer(() => {
 if (!sameCid()) { hideTyping(); return; }
 hideTyping();
 if (hit(c['touch-prob'])) {
@@ -8302,8 +8331,8 @@ let t = replyTurns[myCid];
 if (t && t.silent) {
 // 这一轮起手已判「已读不回」：你补的那几句不再另掷一次、也不演「正在输入」，只把这轮的释放往后推
 t.due = Math.min(t.cap, Math.max(t.due, nowT + TURN_HOLD));
-clearTimeout(t.timer);
-t.timer = setTimeout(() => { if (replyTurns[myCid] === t) delete replyTurns[myCid]; }, Math.max(0, t.due - nowT));
+clearBackgroundChatTimer(t.timer);
+t.timer = scheduleBackgroundChatTimer(() => { if (replyTurns[myCid] === t) delete replyTurns[myCid]; }, Math.max(0, t.due - nowT));
 return;
 }
 if (!t) {
@@ -8313,8 +8342,8 @@ t = replyTurns[myCid] = { due: nowT + draw, cap: nowT + draw + TURN_HOLD_MAX, ti
 if (hit(c['rn-prob'])) {
 // 整轮只掷这一次：起手 1~4 秒落「已读不回」那枚小字，槽位守到原来到点才释放（期间补的话不另掷）
 t.silent = 1;
-setTimeout(() => { if ((window.__activeCid || 'default') === myCid) addIn('', { special: 'read' }); }, randInt(1000, 4000));
-t.timer = setTimeout(() => { if (replyTurns[myCid] === t) delete replyTurns[myCid]; }, Math.max(0, t.due - nowT));
+scheduleBackgroundChatTimer(() => { if ((window.__activeCid || 'default') === myCid) addIn('', { special: 'read' }); }, randInt(1000, 4000));
+t.timer = scheduleBackgroundChatTimer(() => { if (replyTurns[myCid] === t) delete replyTurns[myCid]; }, Math.max(0, t.due - nowT));
 return;
 }
 } else {
@@ -8322,8 +8351,8 @@ return;
 t.due = Math.min(t.cap, Math.max(t.due, nowT + TURN_HOLD));
 }
 showTyping();
-clearTimeout(t.timer); // 只撤自己这一轮，别的联系人排着的轮照旧
-t.timer = setTimeout(() => { if (replyTurns[myCid] === t) delete replyTurns[myCid]; runReplyTurn(myCid); }, Math.max(0, t.due - nowT));
+clearBackgroundChatTimer(t.timer); // 只撤自己这一轮，别的联系人排着的轮照旧
+t.timer = scheduleBackgroundChatTimer(() => { if (replyTurns[myCid] === t) delete replyTurns[myCid]; runReplyTurn(myCid); }, Math.max(0, t.due - nowT));
 }
 // 共用尾段：一条/一批到点后「掷条数 → 逐条投递」。两条机制都调这里（改动只落一处，
 // 也让「replyGuideHint 接了几处」这类按次数判定的回归断言不被复制体顶偏）。
@@ -8337,7 +8366,7 @@ if (count >= 2 && window.replyGuideHint) window.replyGuideHint('py');
 try { console.log('[mochi-reply] scheduleReply count=%s rpMin=%s rpMax=%s raw reply-min=%s reply-max=%s', count, rpMin, rpMax, c['reply-min'], c['reply-max']); window.__replyDiag = (window.__replyDiag||0)+1; window.__replyOnceDiag = 0; } catch(e){}
 const wantQuote = hit(c['quote-prob']) && !!quoteSrc;
 for (let i = 0; i < count; i++) {
-setTimeout(() => {
+scheduleBackgroundChatTimer(() => {
 if (!sameCid()) return;
 hideTyping();
 const q = (wantQuote && i === 0 && quoteKey && quoteKey !== lastQuotedText) ? quoteSrc : null;
@@ -8345,7 +8374,7 @@ if (q) lastQuotedText = quoteKey;
 replyOnce(c, q, i > 0, q ? quoteSrcIdx : -1);
 if (i < count - 1) showTyping();
 if (i === count - 1) {
-setTimeout(() => { if (!sameCid()) return; if (window.maybeMovieRequest && window.maybeMovieRequest()) return; if (window.maybeMusicRequest) window.maybeMusicRequest(); }, 2000);
+scheduleBackgroundChatTimer(() => { if (!sameCid()) return; if (window.maybeMovieRequest && window.maybeMovieRequest()) return; if (window.maybeMusicRequest) window.maybeMusicRequest(); }, 2000);
 }
 }, i * randInt(1200, 2800));
 }
@@ -8625,8 +8654,8 @@ setTimeout(() => { if (!sameCid()) return; hideTyping(); replyOnce(c, null); }, 
 }
 }, retractDelayMs());
 }
-setTimeout(() => { if (!sameCid()) return; if (window.callMaybeTrigger) window.callMaybeTrigger(); }, 3500);
-setTimeout(() => { if (!sameCid()) return; trySystemAutoSend(); trySystemAskMochi(); tryCollectPending(); if (window.maybeAutoGift) window.maybeAutoGift(); }, 2500);
+scheduleBackgroundChatTimer(() => { if (!sameCid()) return; if (window.callMaybeTrigger) window.callMaybeTrigger(); }, 3500);
+scheduleBackgroundChatTimer(() => { if (!sameCid()) return; trySystemAutoSend(); trySystemAskMochi(); tryCollectPending(); if (window.maybeAutoGift) window.maybeAutoGift(); }, 2500);
 }
 window.continueChat = function () {
 // #1015：点「继续说」＝用户当刻要求的回应，夜间照常（同你自己发消息，置对话窗口）。
@@ -8647,11 +8676,11 @@ count = (c['py-en'] !== 1) ? 1 : randInt(rpMin, rpMax);
 delay = randInt(300, 1000); count = 1;
 }
 showTyping();
-setTimeout(() => {
+scheduleBackgroundChatTimer(() => {
 if (!sameCid()) { hideTyping(); return; }
 hideTyping();
 for (let i = 0; i < count; i++) {
-setTimeout(() => {
+scheduleBackgroundChatTimer(() => {
 if (!sameCid()) return;
 hideTyping();
 // FIX 2026-09-22 #1023（用户实报「点击【让对方继续说】的功能，聊天记录没有自动滑动」，单聊与
@@ -8665,7 +8694,7 @@ hideTyping();
 chatUserFollowScroll = true; // #1023 用户主动要的回应：本条落地即贴底（上翻态也滑过来）
 replyOnce(c, null, i > 0);
 if (i < count - 1) showTyping();
-if (i === count - 1) setTimeout(() => { if (!sameCid()) return; if (window.maybeMovieRequest && window.maybeMovieRequest()) return; if (window.maybeMusicRequest) window.maybeMusicRequest(); }, 2000);
+if (i === count - 1) scheduleBackgroundChatTimer(() => { if (!sameCid()) return; if (window.maybeMovieRequest && window.maybeMovieRequest()) return; if (window.maybeMusicRequest) window.maybeMusicRequest(); }, 2000);
 }, i * randInt(1200, 2800));
 }
 }, delay);
@@ -9059,10 +9088,10 @@ return (t && !_isMediaRep) ? t : null;
 };
 let autoTimer = null;
 function scheduleAutoSend() {
-clearTimeout(autoTimer);
+clearBackgroundChatTimer(autoTimer);
 const c = cfg();
 if (cfgn(c, 'as-en', 1) !== 1) {
-autoTimer = setTimeout(scheduleAutoSend, 30000);
+autoTimer = scheduleBackgroundChatTimer(scheduleAutoSend, 30000);
 return;
 }
 let asMin = Math.min(600, Math.max(1, Number(cfgn(c, 'as-min', 5)) || 5)) * 60;
@@ -9070,7 +9099,7 @@ let asMax = Math.min(600, Math.max(1, Number(cfgn(c, 'as-max', 10)) || 10)) * 60
 if (cfgn(c, 'dnd-en', 0) === 1) { asMin = 30 * 60; asMax = 180 * 60; }
 if (asMax < asMin) asMax = asMin;
 const delay = (asMin + Math.random() * Math.max(1, asMax - asMin)) * 1000;
-autoTimer = setTimeout(() => {
+autoTimer = scheduleBackgroundChatTimer(() => {
 tryAutoSend();
 scheduleAutoSend();
 }, delay);
@@ -9108,7 +9137,7 @@ if (cfgn(c, 'as-en', 1) !== 1) return;
 const minMs = asCatchupMinMs(c);
 if (away < minMs) return; // 短离场：正常定时器还挂着，不抢
 if (now - asLastTryAt < minMs) return; // 上一轮刚开掷过（含后台节流迟到的旧定时器先跑）＝不双掷
-clearTimeout(autoTimer);
+clearBackgroundChatTimer(autoTimer);
 tryAutoSend();
 scheduleAutoSend();
 try { console.log('[mochi-auto] fg catchup fired, away_ms=%s', away); } catch (e) {}
@@ -9336,12 +9365,44 @@ match3: { title: '游戏邀请' },
 auction: { title: '游戏邀请' },
 cuddle: { title: '贴贴邀请' }
 };
+const TA_INVITE_PENDING_KEY = 'ta-invite-background-pending';
+const TA_INVITE_PENDING_MS = 10 * 60 * 1000;
+let taInvitePendingTimer = null;
+function taInvitePendingStore(cid) {
+return window.storeFor ? window.storeFor(cid) : window.activeStore();
+}
+function flushTaInvitePending() {
+const cid = window.__activeCid || 'default';
+const bucket = taInvitePendingStore(cid);
+let pending = null;
+try { pending = JSON.parse(bucket.get(TA_INVITE_PENDING_KEY) || 'null'); } catch (e) {}
+if (!pending) { if (taInvitePendingTimer) { clearInterval(taInvitePendingTimer); taInvitePendingTimer = null; } return; }
+if (Date.now() - pending.ts > TA_INVITE_PENDING_MS) { bucket.remove(TA_INVITE_PENDING_KEY); return; }
+if (document.hidden || _cpBusy() || !window.openModal) return;
+bucket.remove(TA_INVITE_PENDING_KEY);
+const inv = { kind: pending.kind, text: pending.text };
+const name = pending.name;
+const meta = INVITE_KIND_META[inv.kind] || INVITE_KIND_META.rps;
+openInviteConfirm(name + ' 的' + meta.title, name + ' ' + inv.text, () => openInvitePanelFor(inv.kind, name));
+}
+function queueTaInvitePending(inv, name, cid) {
+try { taInvitePendingStore(cid).set(TA_INVITE_PENDING_KEY, JSON.stringify({
+kind: inv.kind, text: inv.text, name, ts: Date.now()
+})); } catch (e) { return; }
+if (!taInvitePendingTimer) taInvitePendingTimer = setInterval(flushTaInvitePending, 2000);
+flushTaInvitePending();
+}
+document.addEventListener('visibilitychange', function () { if (!document.hidden) flushTaInvitePending(); });
+document.addEventListener('mochi-fg-resume', flushTaInvitePending);
+document.addEventListener('contact-switched', flushTaInvitePending);
+if (window.mochiOnDataReady) window.mochiOnDataReady(flushTaInvitePending);
 function sendTaInvite(inv, name) {
 const meta = INVITE_KIND_META[inv && inv.kind] || INVITE_KIND_META.rps;
+const inviteCid = window.__activeCid || 'default';
 // v3.16.x：邀请消息带 gInv 游戏类型字段（渲染仍走 poke），供聊天统计「小游戏记录」识别 TA 主动邀请
 addIn(name + ' ' + (inv.text || ''), { special: 'poke', initiative: true, gInv: inv.kind });
 showTyping();
-setTimeout(() => {
+scheduleBackgroundChatTimer(() => {
 hideTyping();
 // FIX 2026-09-15 #510 贴贴邀请：同意（你接受了…）/拒绝（你拒绝了…）各落一条系统消息，
 // 与听歌邀请、换头像邀请同款留痕；原链路同意只震动+TA 回应一句、拒绝只发婉拒话术，
@@ -9356,6 +9417,10 @@ const _cuddleInv = inv.kind === 'cuddle';
 // window.queueCuddleInvite 缺失（本文件没装载到的极端场景）才退回旧链路，至少不静默吞掉这次邀请。
 if (_cuddleInv && window.queueCuddleInvite) {
 try { window.queueCuddleInvite({ name: name, text: inv.text || '' }); } catch (e) {}
+return;
+}
+if (document.hidden || _cpBusy()) {
+queueTaInvitePending(inv, name, inviteCid);
 return;
 }
 openInviteConfirm(name + ' 的' + meta.title, name + ' ' + (inv.text || ''), () => {
@@ -9479,7 +9544,7 @@ const acMin = Math.max(1, Number(cfgn(c, 'as-count-min', 1)) || 1);
 const acMax = Math.max(acMin, Number(cfgn(c, 'as-count-max', 2)) || 2);
 const count = randInt(acMin, acMax);
 for (let i = 0; i < count; i++) {
-setTimeout(() => {
+scheduleBackgroundChatTimer(() => {
 if (!sameAutoCid()) return; // FIX #187
 hideTyping();
 const am = autoMsg();
@@ -9506,8 +9571,8 @@ setTimeout(() => { if (!sameAutoCid()) return; hideTyping(); addIn(pick(pool.tex
 if (i < count - 1) showTyping();
 }, i * randInt(900, 2600));
 }
-setTimeout(() => { if (!sameAutoCid()) return; if (window.callMaybeTrigger) window.callMaybeTrigger(); }, count * 2600 + 3500);
-setTimeout(() => { if (!sameAutoCid()) return; trySystemAutoSend(); trySystemAskMochi(); tryCollectPending(); if (window.maybeAutoGift) window.maybeAutoGift(); }, count * 2600 + 2500);
+scheduleBackgroundChatTimer(() => { if (!sameAutoCid()) return; if (window.callMaybeTrigger) window.callMaybeTrigger(); }, count * 2600 + 3500);
+scheduleBackgroundChatTimer(() => { if (!sameAutoCid()) return; trySystemAutoSend(); trySystemAskMochi(); tryCollectPending(); if (window.maybeAutoGift) window.maybeAutoGift(); }, count * 2600 + 2500);
 })();
 } catch (e) {
 try {
@@ -15971,6 +16036,81 @@ let voiceStartTs = 0, voiceDataUrl = '', voiceDur = 0, voiceSilent = false, voic
 let voiceStopping = false, voiceStopWatchdog = null, voiceStopSettled = false, voiceMimeFallback = false;
 let voiceProbeSeq = 0; // FIX #1308 回执闸轮次号：内核那一窗的回话迟到时，只有「还是当前这一轮」才允许动面板
 let voiceStopTs = 0; // FIX #6xx 停止时刻钉死：慢壳 onstop 迟到/看门狗收尾时用「点停止那一刻」算时长，不再按结账瞬间 Date.now() 虚涨（报障：录 3 秒点结束卡住后变 20 秒）
+let voiceNativeToken = '', voiceNativePending = null;
+function nativeVoiceAvailable() {
+return !!(window.MochiVoiceRecorder && typeof window.MochiVoiceRecorder.start === 'function'
+  && typeof window.MochiVoiceRecorder.stop === 'function');
+}
+function nativeVoiceErrorText(code) {
+if (code === 'permission-denied') return '麦克风权限被拒绝，请在系统设置中允许后重试';
+if (code === 'too-short') return '录音太短，请录满 1 秒以上';
+if (code === 'busy') return '麦克风正忙，请稍候重试';
+if (code === 'read-failed') return '录音数据读取失败，请重试';
+if (code === 'not-recording') return '录音已结束，请重试';
+return '无法启动麦克风，请检查系统麦克风开关或其他应用是否占用';
+}
+function startNativeVoice() {
+return new Promise((resolve, reject) => {
+const token = String(Date.now()) + '-' + Math.random().toString(36).slice(2);
+voiceNativeToken = token;
+voiceNativePending = { resolve, reject };
+try { window.MochiVoiceRecorder.start(token); }
+catch (e) { voiceNativePending = null; voiceNativeToken = ''; reject(e); }
+});
+}
+window.mochiNativeVoiceResult = function (token, status, payload) {
+if (!voiceNativeToken || token !== voiceNativeToken) return;
+if (status === 'started' && voiceNativePending) {
+const pending = voiceNativePending;
+voiceNativePending = null;
+pending.resolve({
+state: 'recording', start() {},
+stop() {
+if (this.state !== 'recording') return;
+this.state = 'inactive';
+window.MochiVoiceRecorder.stop(token);
+}
+});
+return;
+}
+if (status === 'stopped') {
+let bytes;
+try {
+const binary = atob(String(payload || ''));
+bytes = new Uint8Array(binary.length);
+for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+} catch (e) { status = 'error'; payload = 'read-failed'; }
+if (status === 'stopped') {
+voiceNativeToken = '';
+if (voiceRec && voiceRec.state === 'recording') { voiceRec.state = 'inactive'; voiceStopTs = Date.now(); }
+if (voiceTimer) { clearInterval(voiceTimer); voiceTimer = null; }
+if (voiceVisHandler) { document.removeEventListener('visibilitychange', voiceVisHandler); voiceVisHandler = null; }
+voiceChunks = [new Blob([bytes], { type: 'audio/mp4' })];
+voiceFinalizeStop();
+return;
+}
+}
+if (status !== 'error') return;
+voiceNativeToken = '';
+const pending = voiceNativePending;
+voiceNativePending = null;
+if (pending) {
+const error = new Error(nativeVoiceErrorText(payload));
+error.name = payload === 'permission-denied' ? 'NotAllowedError' : 'NotReadableError';
+pending.reject(error);
+return;
+}
+if (voiceTimer) { clearInterval(voiceTimer); voiceTimer = null; }
+if (voiceVisHandler) { document.removeEventListener('visibilitychange', voiceVisHandler); voiceVisHandler = null; }
+if (voiceStopWatchdog) { clearTimeout(voiceStopWatchdog); voiceStopWatchdog = null; }
+voiceStopping = false;
+voiceStopSettled = true;
+voiceRec = null;
+voiceChunks = [];
+voiceDataUrl = ''; voiceDur = 0;
+renderVoiceIdle();
+if (voicePanel && !voicePanel.hidden) toast(nativeVoiceErrorText(payload));
+};
 function voiceEnabled() {
 try { return store.get('cs-voice-send') === '1'; } catch (e) { return false; }
 }
@@ -16007,6 +16147,12 @@ if (sb) { sb.disabled = true; sb.textContent = '发送到聊天'; }
 function closeVoicePanel() {
 if (!voicePanel || voicePanel.hidden) return;
 stopVoiceRec(true);
+if (voiceNativePending) {
+const token = voiceNativeToken, pending = voiceNativePending;
+voiceNativePending = null; voiceNativeToken = '';
+try { window.MochiVoiceRecorder.cancel(token); } catch (e) {}
+pending.reject(Object.assign(new Error('recording canceled'), { name: 'AbortError' }));
+}
 voiceStopPreview();
 voiceDataUrl = ''; voiceDur = 0;
 voicePanel.hidden = true;
@@ -16119,23 +16265,31 @@ async function startVoiceRecInner() {
 voiceStopSettled = false; // FIX #228 新一轮录音：停止结账闩复位
 voiceProbeSeq++; // FIX #1308 新一轮录音作废上一轮迟到的内核回执
 voiceStopTs = 0; // FIX #6xx 新一轮录音：停止时刻清零，待 stop 时钉住
-if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') {
+const useNativeVoice = nativeVoiceAvailable();
+if (!useNativeVoice && (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined')) {
 toast('当前浏览器不支持录音'); return;
 }
 let stream = null;
+let nativeRec = null;
 try {
-stream = await acquireVoiceStreamGuarded(15000); // FIX #228 挂起壳 15s 无响应即报错复位，不再永久锁死 voiceStarting
+if (useNativeVoice) nativeRec = await startNativeVoice();
+else stream = await acquireVoiceStreamGuarded(15000); // FIX #228 挂起壳 15s 无响应即报错复位，不再永久锁死 voiceStarting
 } catch (e) {
-toast(e && e.name === 'TimeoutError' ? '麦克风无响应，请检查录音权限或重启浏览器后重试' : (e && e.name === 'NotAllowedError' ? '麦克风权限被拒绝，请在浏览器设置里允许后重试' : '无法访问麦克风'));
+if (e && e.name === 'AbortError') return;
+toast(useNativeVoice ? (e && e.message || '无法启动麦克风') :
+  (e && e.name === 'TimeoutError' ? '麦克风无响应，请检查录音权限或重启浏览器后重试' :
+  (e && e.name === 'NotAllowedError' ? '麦克风权限被拒绝，请在浏览器设置里允许后重试' : '无法访问麦克风')));
 return;
 }
 voiceStopPreview();
 voiceStream = stream;
 voiceChunks = [];
-let rec = null;
+let rec = nativeRec;
 try {
+if (!rec) {
 const mime = pickVoiceMime();
 rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+}
 } catch (e) {}
 if (!rec) { voiceStopStream(); toast('当前浏览器不支持录音'); return; }
 rec.ondataavailable = (ev) => { if (ev.data && ev.data.size) voiceChunks.push(ev.data); };
@@ -16195,7 +16349,7 @@ if (rb) rb.classList.remove('rec');
 if (voiceRec && voiceRec.state === 'recording') {
 voiceStopping = true; // FIX #228 结账前挡住重入（连点停止/立刻再开始都会偷句柄）
 voiceStopTs = Date.now(); // FIX #6xx 停止时刻钉死：时长按此刻算，不按结账瞬间（慢壳 onstop 迟到会虚涨）
-armVoiceStopWatchdog(); // FIX #228 慢壳 onstop 迟到/丢失兜底
+armVoiceStopWatchdog(); // 原生录音回传文件需留足时间，网页仍保留原 3 秒看门狗
 const st0 = document.getElementById('voice-status');
 if (st0) st0.textContent = '正在停止录音…'; // FIX #6xx 立即反馈：onstop 迟到窗口不再显示定格「正在录音…」像卡死
 try { voiceRec.stop(); } catch (e) { voiceFinalizeStop(); } // stop 都抛了就没有 onstop，直接结账（空数据走可见失败）
@@ -16207,7 +16361,8 @@ voiceStopStream();
 // 已到的分片自行收尾；voiceFinalizeStop 幂等（voiceStopSettled 闩），onstop 与看门狗谁先到都只结一次账
 function armVoiceStopWatchdog() {
 if (voiceStopWatchdog) clearTimeout(voiceStopWatchdog);
-voiceStopWatchdog = setTimeout(() => { voiceStopWatchdog = null; voiceFinalizeStop(); }, 3000);
+if (voiceNativeToken) voiceStopWatchdog = setTimeout(() => { voiceStopWatchdog = null; voiceFinalizeStop(); }, 12000);
+else voiceStopWatchdog = setTimeout(() => { voiceStopWatchdog = null; voiceFinalizeStop(); }, 3000);
 }
 function onVoiceRecStop() { voiceFinalizeStop(); }
 // FIX 2026-09-07 #228 停止结账统一收口（原 onVoiceRecStop 主体）：空数据不再静默 return（面板永远停在
@@ -16217,6 +16372,10 @@ function voiceFinalizeStop() {
 if (voiceStopSettled) return;
 voiceStopSettled = true;
 if (voiceStopWatchdog) { clearTimeout(voiceStopWatchdog); voiceStopWatchdog = null; }
+if (voiceNativeToken) {
+try { window.MochiVoiceRecorder.cancel(voiceNativeToken); } catch (e) {}
+voiceNativeToken = '';
+}
 voiceStopping = false;
 voiceStopStream();
 voiceRec = null;

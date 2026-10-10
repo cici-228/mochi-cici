@@ -1,0 +1,53 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.mochi.remote'
+    compileSdk 33
+
+    defaultConfig {
+        applicationId 'com.mochi.remote'
+        minSdk 26
+        targetSdk 33
+        versionCode 24
+        versionName '1.23'
+        manifestPlaceholders = [appLabel: 'CiCi传讯']
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    signingConfigs {
+        release {
+            if (System.getenv('MOCHI_KEYSTORE')) {
+                storeFile file(System.getenv('MOCHI_KEYSTORE'))
+                storePassword System.getenv('MOCHI_STOREPASS')
+                keyAlias 'mochi-remote'
+                keyPassword System.getenv('MOCHI_KEYPASS')
+            }
+        }
+    }
+    buildTypes {
+        debug {
+            applicationIdSuffix '.test'
+            manifestPlaceholders = [appLabel: 'CiCi传讯测试']
+        }
+        release {
+            minifyEnabled false
+            if (System.getenv('MOCHI_KEYSTORE')) signingConfig signingConfigs.release
+        }
+    }
+    sourceSets.main.assets.srcDirs += [layout.buildDirectory.dir('generated/mochiAssets')]
+}
+
+dependencies {
+    implementation 'androidx.core:core:1.10.1'
+}
+
+tasks.register('copyMochiWeb', Copy) {
+    from(file('../..')) {
+        include 'index.html', 'js/**', 'sw.js', 'manifest.json', 'notice.json', 'version.json', 'icon-*.png'
+    }
+    from(file('../third_party')) { include 'music_jx-LICENSE', 'short_videos-LICENSE', 'qrcode-generator-LICENSE', 'Mei-LICENSE' }
+    into(layout.buildDirectory.dir('generated/mochiAssets'))
+}
+tasks.named('preBuild').configure { dependsOn tasks.named('copyMochiWeb') }

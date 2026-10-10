@@ -2633,11 +2633,14 @@ body.mail-emoji-mode #emoji-panel { bottom: calc(64px + var(--mochi-safe-bottom,
 }
 .sm-tool:active { background:rgba(0,0,0,.04); }
 .sm-tool svg { width:15px; height:15px; flex-shrink:0; }
-/* 网易云账号歌曲搜索：结果是本次播放列表，不自动导入音乐库。 */
-.sm-music-search { margin-bottom:12px; }
+/* 网易云账号歌曲搜索：独立卡片，展开结果时向下推音乐库。 */
+#page-music .fav-tabs { padding:0 0 8px; }
+.sm-music-search { margin-bottom:14px; }
 .sm-music-search[hidden] { display:none; }
+.sm-music-search-title { margin-bottom:10px; color:var(--ink); font-size:14px; font-weight:700; }
 .sm-music-search-form { display:flex; gap:8px; }
-.sm-music-search-form input {
+.sm-music-search-form input,
+.sm-music-search-form .ce-box {
   flex:1; min-width:0; padding:9px 11px; border:1px solid var(--card-border);
   border-radius:10px; background:var(--card-bg); color:var(--ink);
   font:inherit; font-size:13px;
@@ -2650,6 +2653,7 @@ body.mail-emoji-mode #emoji-panel { bottom: calc(64px + var(--mochi-safe-bottom,
 .sm-music-search-form button:disabled { opacity:.5; cursor:default; }
 .sm-music-search-status { margin:7px 2px 0; color:var(--muted); font-size:11px; }
 .sm-music-search-status:empty { display:none; }
+.sm-music-search #music-search-results:not(:empty) { margin-top:8px; }
 .sm-music-search .sm-song.active { background:var(--static-bg); }
 /* 音乐库分类筛选条 —— v3.9.x（全部音乐 / 未分类音乐 / 各歌单，横向滚动） */
 .music-lib-filter {

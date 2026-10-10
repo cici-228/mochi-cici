@@ -1095,6 +1095,11 @@
   };
 
   function startKeepAlive(showToast) {
+    if (window.CiCiChatKeepAlive) {
+      try { window.CiCiChatKeepAlive.setActive(true); } catch (e) {}
+      if (showToast) toast('安卓后台聊天已开启');
+      return;
+    }
     if (keepAudio) return;
     try {
       // v3.5.160：保活音频改用 <audio> 元素循环播放极轻正弦波——媒体通知条才会显示
@@ -1226,6 +1231,11 @@
     } catch (e) {}
   }
   function stopKeepAlive(showToast) {
+    if (window.CiCiChatKeepAlive) {
+      try { window.CiCiChatKeepAlive.setActive(false); } catch (e) {}
+      if (showToast) toast('安卓后台聊天已关闭');
+      return;
+    }
     // v3.5.160：停掉 <audio> 保活音频（原来 stop osc/close ctx）
     // FIX 2026-09-20 #924b：改 removeAttribute+load——原 `el.src = ''` 会把 src 置成
     //   当前文档 URL（空字符串按相对路径解析），iOS WebKit 等内核随即发起「把整个页面
@@ -1425,7 +1435,10 @@
       // FIX 2026-09-16 #601d：记住「用户手动关过保活」——开启「后台通知」时的自动联动
       // 与任何回填不得再把它强行打开（用户反馈：关掉后过一会/重开又变回开启）。
       gSet('__ka-user-off', keepEnabled ? '0' : '1');
-      if (keepEnabled) { startKeepAlive(true); kaOpenEnableHints(); }
+      if (keepEnabled) {
+        if (window.CiCiChatKeepAlive) startKeepAlive(true);
+        else { startKeepAlive(true); kaOpenEnableHints(); }
+      }
       else stopKeepAlive(true);
     });
   }
@@ -1456,6 +1469,12 @@
       const old = store.get('bg-keepalive');
       if (old !== null) { gSet('bg-keepalive', old); saved = old; }
     }
+    if (window.CiCiChatKeepAlive && gGet('__native-chat-keep-v1') !== '1') {
+      gSet('__native-chat-keep-v1', '1');
+      saved = '1';
+      gSet('bg-keepalive', '1');
+      gSet('__ka-user-off', '0');
+    }
     keepEnabled = saved === null ? false : saved === '1';
     // FIX 2026-09-16 #601d：用户手动关过的保活，启动时一律保持关闭——防任何来源（旧版迁移 /
     // 通知联动 / 存储回填）把存储里的值又写成 '1' 造成「重开又自己变回开启」。
@@ -1469,6 +1488,16 @@
 
   // ===== v3.44.x：保活音频选择入口（「保活音频」行右侧按钮）=====
   const kaAudioBtn = document.getElementById('bg-keep-audio-btn');
+  if (window.CiCiChatKeepAlive) {
+    if (kaAudioBtn && kaAudioBtn.closest('.gs-row')) kaAudioBtn.closest('.gs-row').hidden = true;
+    if (kaNoduckBtn && kaNoduckBtn.closest('.gs-row')) kaNoduckBtn.closest('.gs-row').hidden = true;
+    const noduckHelp = document.getElementById('bg-keep-noduck-sub');
+    if (noduckHelp) noduckHelp.hidden = true;
+    const keepHelp = document.getElementById('bg-keep-sub');
+    if (keepHelp) keepHelp.textContent = '安卓 App 用原生前台服务维持后台聊天，期间通知栏会显示常驻状态。关闭本开关会停止后台聊天服务；手机强制结束 App 后，消息会在下次打开时恢复检查。';
+    const notifyHelp = document.getElementById('bg-notify-sub');
+    if (notifyHelp) notifyHelp.textContent = '开启后，TA 在后台发来的聊天消息会由安卓系统通知提醒。首次开启时请允许 CiCi传讯发送通知；可点右侧「测试」检查。';
+  }
   function syncKaAudioUI() { if (kaAudioBtn) kaAudioBtn.textContent = kaAudioLabel(); }
   if (kaAudioBtn) kaAudioBtn.addEventListener('click', function (e) {
     e.preventDefault();
@@ -1726,6 +1755,11 @@
     };
     return new Promise(function (resolve) {
       try {
+        if (window.CiCiChatNotify) {
+          note('native');
+          resolve(!!window.CiCiChatNotify.notify(String(title || 'CiCi传讯'), String(opts.body || '收到新消息'), String(opts.tag || '')));
+          return;
+        }
         if (!('Notification' in window) || Notification.permission !== 'granted') { note('none'); resolve(false); return; }
         const hidden = document.visibilityState === 'hidden';
         const pageFallback = function () {
@@ -1808,6 +1842,13 @@
     const quiet = !!(opts && opts.quiet);
     const say = function (m) { if (!quiet) toast(m); };
     const fail = function (why) { if (failCb) failCb(why); };
+    if (window.CiCiChatNotify) {
+      try {
+        if (window.CiCiChatNotify.permissionState() === 'granted') { if (cb) cb(); }
+        else { window.CiCiChatNotify.requestPermission(); fail('pending'); }
+      } catch (e) { fail('error'); }
+      return;
+    }
     if (!('Notification' in window)) {
       // v3.7.x：按平台区分文案——安卓阉割 WebView（OPPO 自带/Via 等）也无 Notification API，
       //   原文案硬编码"iPhone"对安卓用户很困惑。
@@ -1868,6 +1909,7 @@
   const nbBtn = document.getElementById('bg-notify');
   function syncNotifyUI() { if (nbBtn) nbBtn.checked = notifyEnabled; }
   function nbPermState() {
+    try { if (window.CiCiChatNotify) return window.CiCiChatNotify.permissionState(); } catch (e) {}
     try { return ('Notification' in window) ? Notification.permission : 'unsupported'; } catch (e) { return 'unsupported'; }
   }
   // ===== FIX 2026-09-21 #988：开启「后台通知」的流程重写 =====
@@ -1911,6 +1953,7 @@
     //   页面定时器在后台仍运行（静音音频保活）；否则开关开了但页面休眠，
     //   消息根本不产生，通知永远不会弹（旧版只 toast 提醒，用户容易漏开）
     setTimeout(function () {
+      if (window.CiCiChatKeepAlive) return; // 安卓 App 由原生后台服务运行，不再启动静音音频。
       const keep = document.getElementById('bg-keepalive');
       const keepOn = keepEnabled;
       // FIX 2026-09-16 #601d：用户已手动关过保活（存储 '0' 或标记 __ka-user-off=1）时
@@ -1957,6 +2000,8 @@
   }
   function nbPermWarnText() {
     const p = nbPermState();
+    if (window.CiCiChatNotify) return notifyEnabled && p !== 'granted'
+      ? '⚠ 请在系统权限弹窗中允许 CiCi传讯发送通知；若已拒绝，请到手机「应用信息 → CiCi传讯 → 通知」开启。' : '';
     if (p === 'unsupported') {
       // 能力限制与开关无关，一直显示（这类设备点多少次都不会好）
       return (window.mochiDevice || {}).isIOS
@@ -2147,6 +2192,13 @@
       const old = store.get('bg-notify');
       if (old !== null) { gSet('bg-notify', old); saved = old; }
     }
+    // 此版默认关闭聊天消息通知；后台保活仍由独立开关控制。
+    // 只迁移一次，之后用户手动调整通知开关时不再覆盖。
+    if (window.CiCiChatNotify && gGet('__native-chat-notify-off-v2') !== '1') {
+      gSet('__native-chat-notify-off-v2', '1');
+      saved = '0';
+      gSet('bg-notify', '0');
+    }
     // v3.5.131：恢复时校验权限（浏览器/系统回收权限后开关仍显示"开"但通知静默失效）。
     // FIX 2026-09-20 #921g：'default' 一律视为瞬态误读（诊断实锤：实际 granted 却被读成 default，
     //   开关被落 '0'＝「重进后通知自动关闭」）。
@@ -2245,11 +2297,16 @@
         : '✗ 后台通知开关：未开启——后台消息不会弹通知（点本行开关把它打开）');
       const p = nbPermState();
       if (p === 'granted') env.push('✓ 通知权限：已允许');
+      else if (window.CiCiChatNotify) env.push('✗ 通知权限：请到手机「应用信息 → CiCi传讯 → 通知」开启');
       else if (p === 'default') env.push('✗ 通知权限：还没允许——地址栏左侧图标 → 网站设置 → 通知 → 允许');
       else if (p === 'denied') env.push('✗ 通知权限：被浏览器挡着——地址栏左侧图标 → 网站设置 → 通知 → 允许（允许后自动生效）');
       else env.push('✗ 通知权限：本机浏览器没有通知能力——请改用 Chrome / Edge（安卓或电脑都行）');
       let kp = null;
       try { kp = (typeof window.__kaProbe === 'function') ? window.__kaProbe() : null; } catch (e) {}
+      if (window.CiCiChatNotify) {
+        env.push('✓ 安卓原生后台服务：聊天计时与通知由 App 接管');
+        return;
+      }
       if (!kp || !kp.keep) env.push('✗ 后台保活：未开启（后台不产生消息，通知无从弹起）');
       else {
         env.push((kp.audio && !kp.audio.paused) ? '✓ 后台保活：音频播放中' : '! 后台保活：音频已暂停（回本页自动恢复；后台消息可能到不了）');
@@ -2272,6 +2329,7 @@
     // 第 1.5 层·回读 SW 通知队列：API 受理 ≠ 系统真挂出来（系统通知总开关被关时 showNotification
     //   照常受理）——把「应用内成功」与「系统层拦截」分开归因。不阻塞结果（#1014）。
     const queueProbe = function (wasHidden) {
+      if (window.CiCiChatNotify) return;
       kaSWReady().then(function (reg) {
         if (!reg || !reg.getNotifications) return null;
         return new Promise(function (res) {
@@ -2453,6 +2511,14 @@
       const my = ++testSeq;
       toast('正在检查通知环境…');
       envCheck();
+      if (window.CiCiChatNotify) {
+        if (nbPermState() !== 'granted') {
+          window.CiCiChatNotify.requestPermission();
+          pushLine('请先允许 CiCi传讯发送通知，再点一次测试');
+          showResult();
+        } else runTest(my);
+        return;
+      }
       if (!('Notification' in window)) {
         // 三分支（#978 口径不变）：非安全上下文 / iOS 平台限制 / 本机浏览器没有通知能力
         if (!window.isSecureContext) {
@@ -2595,6 +2661,24 @@
       if (typeof window.enterChat === 'function') { window.enterChat(); return true; }
     } catch (x) {}
     return false;
+  }
+  // 安卓原生通知携带与网页通知相同的 tag，点击时复用归属桌面与聊天跳转。
+  window.ciciHandleNativeNotification = function (tag) {
+    tag = String(tag || '');
+    if (!tag) return;
+    let handled = false;
+    const route = function () {
+      if (handled) return;
+      handled = true;
+      notifyRoute(notifyConsume(tag) || notifyEntryFromTag(tag));
+    };
+    if (window.mochiOnDataReady) window.mochiOnDataReady(route);
+    else route();
+  };
+  if (window.__ciciNativeNotificationTag) {
+    const tag = window.__ciciNativeNotificationTag;
+    window.__ciciNativeNotificationTag = '';
+    window.ciciHandleNativeNotification(tag);
   }
   // 页面被系统回收后重启：sw 那一发 postMessage 落在还没挂监听的身体上＝点击被吞。点击侧顺手
   //   把 tag 写进 IDB（sw.js 的 __notify-click），开机后问一句「刚才是不是点过一条没消费掉的」。
@@ -2909,7 +2993,7 @@
     // 去重闸门——不在这里 markSeen（否则下面的 seenDup 会被自己刚记的账吞掉），
     // 同一内容前台真看过（seenDup/已发窗）照样吞，绝不双弹。
     if (document.visibilityState === 'visible') { if (!extra.late) { markSeen(nkey); return; } }
-    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    if (nbPermState() !== 'granted') return;
     // FIX 2026-09-18 #780：消息身份闸门（治「切后台突然弹前几分钟看过的消息」）——
     // 整页冻结解冻时积压的回复链一口气重投，下面三道内容去重窗口起点全是 Date.now()
     // （已弹 2min / 已看 3min / 历史 5min），冻结几分钟就全部熬过期，重放被判成新内容。

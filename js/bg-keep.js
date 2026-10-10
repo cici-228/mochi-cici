@@ -754,6 +754,11 @@ ev: { stall: kaEv.stall, died: kaEv.died }
 };
 };
 function startKeepAlive(showToast) {
+if (window.CiCiChatKeepAlive) {
+try { window.CiCiChatKeepAlive.setActive(true); } catch (e) {}
+if (showToast) toast('安卓后台聊天已开启');
+return;
+}
 if (keepAudio) return;
 try {
 if (!kaBuildTransducer(KA_VOL_BASE)) { if (showToast) toast('后台保活启动失败（无法生成保活音频）'); return; }
@@ -835,6 +840,11 @@ toast(ok
 } catch (e) {}
 }
 function stopKeepAlive(showToast) {
+if (window.CiCiChatKeepAlive) {
+try { window.CiCiChatKeepAlive.setActive(false); } catch (e) {}
+if (showToast) toast('安卓后台聊天已关闭');
+return;
+}
 try { if (keepAudio && keepAudio.el) { keepAudio.el.pause(); keepAudio.el.removeAttribute('src'); try { keepAudio.el.load(); } catch (e2) {} } } catch (e) {}
 try { if (keepAudio && keepAudio.kill) keepAudio.kill(); } catch (e) {}
 kaClearKeepMediaSession();
@@ -958,7 +968,10 @@ keepUserTouched = true; // #88：手动动过 → 回填后不再重读覆盖
 keepEnabled = kaBtn.checked;
 gSet('bg-keepalive', keepEnabled ? '1' : '0');
 gSet('__ka-user-off', keepEnabled ? '0' : '1');
-if (keepEnabled) { startKeepAlive(true); kaOpenEnableHints(); }
+if (keepEnabled) {
+if (window.CiCiChatKeepAlive) startKeepAlive(true);
+else { startKeepAlive(true); kaOpenEnableHints(); }
+}
 else stopKeepAlive(true);
 });
 }
@@ -982,6 +995,12 @@ if (saved === null) {
 const old = store.get('bg-keepalive');
 if (old !== null) { gSet('bg-keepalive', old); saved = old; }
 }
+if (window.CiCiChatKeepAlive && gGet('__native-chat-keep-v1') !== '1') {
+gSet('__native-chat-keep-v1', '1');
+saved = '1';
+gSet('bg-keepalive', '1');
+gSet('__ka-user-off', '0');
+}
 keepEnabled = saved === null ? false : saved === '1';
 if (gGet('__ka-user-off') === '1') {
 keepEnabled = false;
@@ -991,6 +1010,16 @@ syncKeepUI();
 if (keepEnabled) startKeepAlive(false);
 })();
 const kaAudioBtn = document.getElementById('bg-keep-audio-btn');
+if (window.CiCiChatKeepAlive) {
+if (kaAudioBtn && kaAudioBtn.closest('.gs-row')) kaAudioBtn.closest('.gs-row').hidden = true;
+if (kaNoduckBtn && kaNoduckBtn.closest('.gs-row')) kaNoduckBtn.closest('.gs-row').hidden = true;
+const noduckHelp = document.getElementById('bg-keep-noduck-sub');
+if (noduckHelp) noduckHelp.hidden = true;
+const keepHelp = document.getElementById('bg-keep-sub');
+if (keepHelp) keepHelp.textContent = '安卓 App 用原生前台服务维持后台聊天，期间通知栏会显示常驻状态。关闭本开关会停止后台聊天服务；手机强制结束 App 后，消息会在下次打开时恢复检查。';
+const notifyHelp = document.getElementById('bg-notify-sub');
+if (notifyHelp) notifyHelp.textContent = '开启后，TA 在后台发来的聊天消息会由安卓系统通知提醒。首次开启时请允许 CiCi传讯发送通知；可点右侧「测试」检查。';
+}
 function syncKaAudioUI() { if (kaAudioBtn) kaAudioBtn.textContent = kaAudioLabel(); }
 if (kaAudioBtn) kaAudioBtn.addEventListener('click', function (e) {
 e.preventDefault();
@@ -1168,6 +1197,11 @@ if (typeof chanOut === 'function') { try { chanOut(ch); } catch (e) {} }
 };
 return new Promise(function (resolve) {
 try {
+if (window.CiCiChatNotify) {
+note('native');
+resolve(!!window.CiCiChatNotify.notify(String(title || 'CiCi传讯'), String(opts.body || '收到新消息'), String(opts.tag || '')));
+return;
+}
 if (!('Notification' in window) || Notification.permission !== 'granted') { note('none'); resolve(false); return; }
 const hidden = document.visibilityState === 'hidden';
 const pageFallback = function () {
@@ -1213,6 +1247,13 @@ function requestNotifyPermission(cb, failCb, opts) {
 const quiet = !!(opts && opts.quiet);
 const say = function (m) { if (!quiet) toast(m); };
 const fail = function (why) { if (failCb) failCb(why); };
+if (window.CiCiChatNotify) {
+try {
+if (window.CiCiChatNotify.permissionState() === 'granted') { if (cb) cb(); }
+else { window.CiCiChatNotify.requestPermission(); fail('pending'); }
+} catch (e) { fail('error'); }
+return;
+}
 if (!('Notification' in window)) {
 const _isIOS = !!(window.mochiDevice || {}).isIOS;
 say(_isIOS
@@ -1258,6 +1299,7 @@ else { gSet('bg-notify-nodedup', '0'); toast('已关闭：恢复去重（内容�
 const nbBtn = document.getElementById('bg-notify');
 function syncNotifyUI() { if (nbBtn) nbBtn.checked = notifyEnabled; }
 function nbPermState() {
+try { if (window.CiCiChatNotify) return window.CiCiChatNotify.permissionState(); } catch (e) {}
 try { return ('Notification' in window) ? Notification.permission : 'unsupported'; } catch (e) { return 'unsupported'; }
 }
 const NB_SETTLE_MS = 12000; // 待决等待上限：覆盖「系统弹窗弹着、用户过几秒才点允许」的正常窗口
@@ -1282,6 +1324,7 @@ nbSyncPermWarn();   // #1014：权限已到位，撤掉行下那条标红说明�
 showSysNotification('通知已开启', { body: '后台消息提醒将正常弹窗' });
 if (kaIsIOS()) setTimeout(function () { toast('iPhone 提示：受系统限制，后台弹窗不保证弹出；消息不会丢，回来自动补看'); }, 1600);
 setTimeout(function () {
+if (window.CiCiChatKeepAlive) return; // 安卓 App 由原生后台服务运行，不再启动静音音频。
 const keep = document.getElementById('bg-keepalive');
 const keepOn = keepEnabled;
 const userWantsKeepOff = gGet('bg-keepalive') === '0' || gGet('__ka-user-off') === '1';
@@ -1307,6 +1350,8 @@ toast(msg, 7000);
 }
 function nbPermWarnText() {
 const p = nbPermState();
+if (window.CiCiChatNotify) return notifyEnabled && p !== 'granted'
+? '⚠ 请在系统权限弹窗中允许 CiCi传讯发送通知；若已拒绝，请到手机「应用信息 → CiCi传讯 → 通知」开启。' : '';
 if (p === 'unsupported') {
 return (window.mochiDevice || {}).isIOS
 ? '⚠ 本机没有网页通知能力（iPhone / iPad 的能力只在「Safari → 添加到主屏幕」后的独立应用形态里，Safari 标签页里没有）：装过去再回来开这个开关；期间请靠「桌面消息弹窗」的应用内横幅'
@@ -1462,6 +1507,11 @@ if (saved === null) {
 const old = store.get('bg-notify');
 if (old !== null) { gSet('bg-notify', old); saved = old; }
 }
+if (window.CiCiChatNotify && gGet('__native-chat-notify-off-v2') !== '1') {
+gSet('__native-chat-notify-off-v2', '1');
+saved = '0';
+gSet('bg-notify', '0');
+}
 notifyEnabled = saved === '1';
 if ('Notification' in window && Notification.permission === 'granted') { getBadgeUrl(function () {}); }
 syncNotifyUI();
@@ -1523,11 +1573,16 @@ env.push(notifyEnabled
 : '✗ 后台通知开关：未开启——后台消息不会弹通知（点本行开关把它打开）');
 const p = nbPermState();
 if (p === 'granted') env.push('✓ 通知权限：已允许');
+else if (window.CiCiChatNotify) env.push('✗ 通知权限：请到手机「应用信息 → CiCi传讯 → 通知」开启');
 else if (p === 'default') env.push('✗ 通知权限：还没允许——地址栏左侧图标 → 网站设置 → 通知 → 允许');
 else if (p === 'denied') env.push('✗ 通知权限：被浏览器挡着——地址栏左侧图标 → 网站设置 → 通知 → 允许（允许后自动生效）');
 else env.push('✗ 通知权限：本机浏览器没有通知能力——请改用 Chrome / Edge（安卓或电脑都行）');
 let kp = null;
 try { kp = (typeof window.__kaProbe === 'function') ? window.__kaProbe() : null; } catch (e) {}
+if (window.CiCiChatNotify) {
+env.push('✓ 安卓原生后台服务：聊天计时与通知由 App 接管');
+return;
+}
 if (!kp || !kp.keep) env.push('✗ 后台保活：未开启（后台不产生消息，通知无从弹起）');
 else {
 env.push((kp.audio && !kp.audio.paused) ? '✓ 后台保活：音频播放中' : '! 后台保活：音频已暂停（回本页自动恢复；后台消息可能到不了）');
@@ -1547,6 +1602,7 @@ pushLine(reg
 } catch (e) {}
 };
 const queueProbe = function (wasHidden) {
+if (window.CiCiChatNotify) return;
 kaSWReady().then(function (reg) {
 if (!reg || !reg.getNotifications) return null;
 return new Promise(function (res) {
@@ -1709,6 +1765,14 @@ testBtn.addEventListener('click', function () {
 const my = ++testSeq;
 toast('正在检查通知环境…');
 envCheck();
+if (window.CiCiChatNotify) {
+if (nbPermState() !== 'granted') {
+window.CiCiChatNotify.requestPermission();
+pushLine('请先允许 CiCi传讯发送通知，再点一次测试');
+showResult();
+} else runTest(my);
+return;
+}
 if (!('Notification' in window)) {
 if (!window.isSecureContext) {
 pushLine('✗ 当前浏览器不支持 Notification API');
@@ -1818,6 +1882,23 @@ if (entry && entry.kind === 'mail' && typeof window.openMailPage === 'function')
 if (typeof window.enterChat === 'function') { window.enterChat(); return true; }
 } catch (x) {}
 return false;
+}
+window.ciciHandleNativeNotification = function (tag) {
+tag = String(tag || '');
+if (!tag) return;
+let handled = false;
+const route = function () {
+if (handled) return;
+handled = true;
+notifyRoute(notifyConsume(tag) || notifyEntryFromTag(tag));
+};
+if (window.mochiOnDataReady) window.mochiOnDataReady(route);
+else route();
+};
+if (window.__ciciNativeNotificationTag) {
+const tag = window.__ciciNativeNotificationTag;
+window.__ciciNativeNotificationTag = '';
+window.ciciHandleNativeNotification(tag);
 }
 window.xyPendingNotifyClick = function () { return new Promise(function (res) { try { notifyPendingClick(res); } catch (e) { res(null); } }); };
 function notifyPendingClick(cb) {
@@ -2026,7 +2107,7 @@ if (!notifyEnabled) return;
 extra = extra || {};
 const nkey = msgFingerprint(text, extra.img);
 if (document.visibilityState === 'visible') { if (!extra.late) { markSeen(nkey); return; } }
-if (!('Notification' in window) || Notification.permission !== 'granted') return;
+if (nbPermState() !== 'granted') return;
 if (!extra.force && extra.msgTs) {
 try {
 const d = window.__mochiMsgDelivered ? window.__mochiMsgDelivered(extra.msgTs, 'in') : null;

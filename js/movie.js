@@ -147,20 +147,7 @@ window.movieInviteAcceptedFor = function (cid) {
 try { window.storeForCid(cid).set(INVITE_ACCEPTED_KEY, '1'); } catch (e) {}
 if ((window.__activeCid || 'default') === cid) startCompanion();
 };
-window.maybeMovieRequest = function () {
-const chatPage = document.getElementById('page-chat');
-const mask = document.getElementById('tc-mask');
-if (document.hidden || !chatPage || chatPage.hidden || !window.openTCPanel ||
-(mask && !mask.hidden) || playing || watchStartedAt || inviteForced) return false;
-let declinedAt = 0;
-try { declinedAt = Number(window.activeStore().get(INVITE_COOLDOWN_KEY)) || 0; } catch (e) {}
-if (Date.now() - declinedAt < INVITE_COOLDOWN_MS) return false;
-const chance = inviteSetting('inviteProb');
-if (Math.random() * 100 >= chance) return false;
-const card = window.taInvitePickKind ? window.taInvitePickKind('movie') : null;
-if (!card || !String(card.text || '').trim()) return false;
-const cid = window.__activeCid || 'default';
-const name = partnerName();
+function openMovieInvite(card, cid, name, announce) {
 const inviteLine = name + '对你发送了看电影邀请~';
 window.openTCPanel('看电影',
 '<div class="sm-req"><div class="sm-req-hint" id="movie-invite-line"></div>' +
@@ -169,7 +156,7 @@ window.openTCPanel('看电影',
 '<button class="cc-tool" id="movie-invite-accept" type="button">同意</button></div>');
 document.getElementById('movie-invite-line').textContent = name + '对你发送了看电影邀请~';
 document.getElementById('movie-invite-detail').textContent = String(card.text).trim();
-try { if (window.chatAddIn) window.chatAddIn(inviteLine, { special: 'poke', initiative: true, silent: true }); } catch (e) {}
+if (announce) try { if (window.chatAddIn) window.chatAddIn(inviteLine, { special: 'poke', initiative: true, silent: true }); } catch (e) {}
 const close = () => { const panel = document.getElementById('tc-mask'); if (panel) panel.hidden = true; };
 document.getElementById('movie-invite-later').addEventListener('click', () => {
 close();
@@ -186,6 +173,51 @@ movieSay('你同意了 ' + name + ' 的看电影邀请');
 app.click();
 hallTab.click();
 });
+return true;
+}
+const BACKGROUND_MOVIE_INVITE_KEY = 'movie-background-invite';
+const BACKGROUND_MOVIE_INVITE_MS = 10 * 60 * 1000;
+let backgroundMovieInviteTimer = null;
+function flushBackgroundMovieInvite() {
+const cid = window.__activeCid || 'default';
+const bucket = window.storeForCid(cid);
+let pending = null;
+try { pending = JSON.parse(bucket.get(BACKGROUND_MOVIE_INVITE_KEY) || 'null'); } catch (e) {}
+if (!pending) {
+if (backgroundMovieInviteTimer) { clearInterval(backgroundMovieInviteTimer); backgroundMovieInviteTimer = null; }
+return;
+}
+if (Date.now() - pending.ts > BACKGROUND_MOVIE_INVITE_MS) { bucket.remove(BACKGROUND_MOVIE_INVITE_KEY); return; }
+const mask = document.getElementById('tc-mask');
+if (document.hidden || (mask && !mask.hidden)) return;
+if (openMovieInvite({ text: pending.text }, cid, pending.name, false)) bucket.remove(BACKGROUND_MOVIE_INVITE_KEY);
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) flushBackgroundMovieInvite(); });
+document.addEventListener('mochi-fg-resume', flushBackgroundMovieInvite);
+document.addEventListener('contact-switched', flushBackgroundMovieInvite);
+if (window.mochiOnDataReady) window.mochiOnDataReady(flushBackgroundMovieInvite);
+window.maybeMovieRequest = function () {
+const chatPage = document.getElementById('page-chat');
+const mask = document.getElementById('tc-mask');
+if (!chatPage || chatPage.hidden || !window.openTCPanel ||
+(!document.hidden && mask && !mask.hidden) || playing || watchStartedAt || inviteForced) return false;
+let declinedAt = 0;
+try { declinedAt = Number(window.activeStore().get(INVITE_COOLDOWN_KEY)) || 0; } catch (e) {}
+if (Date.now() - declinedAt < INVITE_COOLDOWN_MS) return false;
+const chance = inviteSetting('inviteProb');
+if (Math.random() * 100 >= chance) return false;
+const card = window.taInvitePickKind ? window.taInvitePickKind('movie') : null;
+if (!card || !String(card.text || '').trim()) return false;
+const cid = window.__activeCid || 'default';
+const name = partnerName();
+if (!document.hidden) return openMovieInvite(card, cid, name, true);
+try { window.storeForCid(cid).set(BACKGROUND_MOVIE_INVITE_KEY, JSON.stringify({
+ts: Date.now(), text: String(card.text).trim(), name
+})); } catch (e) { return false; }
+const inviteLine = name + '对你发送了看电影邀请~';
+try { if (window.chatAddIn) window.chatAddIn(inviteLine, { special: 'poke', initiative: true, silent: true }); } catch (e) {}
+if (window.bgNotifyCheck) window.bgNotifyCheck(inviteLine, Date.now(), { name, force: true });
+if (!backgroundMovieInviteTimer) backgroundMovieInviteTimer = setInterval(flushBackgroundMovieInvite, 2000);
 return true;
 };
 function bubbleColor(name) {
